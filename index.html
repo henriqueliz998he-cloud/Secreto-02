@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="Sistema pessoal de metas">
+    <title>Minhas Metas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- TELA DE SENHA -->
+    <section id="loginScreen" class="screen login-screen">
+
+        <div class="login-card">
+
+            <div class="logo">🎯</div>
+
+            <h1>Minhas Metas</h1>
+
+            <p>Digite sua senha para entrar.</p>
+
+            <input
+                type="password"
+                id="passwordInput"
+                placeholder="Senha"
+                autocomplete="off"
+            >
+
+            <button id="loginButton">
+                Entrar
+            </button>
+
+            <p id="loginMessage" class="message"></p>
+
+        </div>
+
+    </section>
+
+
+    <!-- MENU PRINCIPAL -->
+    <section id="homeScreen" class="screen hidden">
+
+        <header class="top-bar">
+
+            <div>
+                <h1>Meu Espaço</h1>
+                <p id="currentDate">00/00/0000</p>
+            </div>
+
+            <div class="clock-box">
+                <span id="currentTime">00:00:00</span>
+            </div>
+
+        </header>
+
+
+        <main class="home-content">
+
+            <h2>O que você quer fazer?</h2>
+
+            <div class="menu-grid">
+
+                <button class="menu-card" data-screen="goalsScreen">
+                    <span class="menu-icon">🎯</span>
+                    <strong>Metas</strong>
+                    <small>Organize seus objetivos</small>
+                </button>
+
+                <button class="menu-card" data-screen="tasksScreen">
+                    <span class="menu-icon">📋</span>
+                    <strong>Tarefas</strong>
+                    <small>Organize suas tarefas</small>
+                </button>
+
+                <button class="menu-card" data-screen="timerScreen">
+                    <span class="menu-icon">⏱️</span>
+                    <strong>Cronômetro</strong>
+                    <small>Controle seu tempo</small>
+                </button>
+
+                <button class="menu-card" data-screen="progressScreen">
+                    <span class="menu-icon">📊</span>
+                    <strong>Progresso</strong>
+                    <small>Acompanhe seus resultados</small>
+                </button>
+
+                <button class="menu-card" data-screen="settingsScreen">
+                    <span class="menu-icon">⚙️</span>
+                    <strong>Configurações</strong>
+                    <small>Configure seu espaço</small>
+                </button>
+
+            </div>
+
+        </main>
+
+    </section>
+
+
+    <!-- TELA DE METAS -->
+    <section id="goalsScreen" class="screen hidden">
+
+        <header class="page-header">
+
+            <button class="back-button" data-back="homeScreen">
+                ←
+            </button>
+
+            <div>
+                <h1>🎯 Metas</h1>
+                <p>Gerencie seus objetivos.</p>
+            </div>
+
+        </header>
+
+        <main class="page-content">
+
+            <button id="addGoalButton" class="primary-button">
+                ＋ Nova meta
+            </button>
+
+            <div id="goalsList" class="items-list"></div>
+
+        </main>
+
+    </section>
+
+
+    <!-- TELA DE TAREFAS -->
+    <section id="tasksScreen" class="screen hidden">
+
+        <header class="page-header">
+
+            <button class="back-button" data-back="homeScreen">
+                ←
+            </button>
+
+            <div>
+                <h1>📋 Tarefas</h1>
+                <p>Organize o que precisa ser feito.</p>
+            </div>
+
+        </header>
+
+        <main class="page-content">
+
+            <button id="addTaskButton" class="primary-button">
+                ＋ Nova tarefa
+            </button>
+
+            <div id="tasksList" class="items-list"></div>
+
+        </main>
+
+    </section>
+
+
+    <!-- TELA DE CRONÔMETRO -->
+    <section id="timerScreen" class="screen hidden">
+
+        <header class="page-header">
+
+            <button class="back-button" data-back="homeScreen">
+                ←
+            </button>
+
+            <div>
+                <h1>⏱️ Cronômetro</h1>
+                <p>Controle seu tempo.</p>
+            </div>
+
+        </header>
+
+        <main class="page-content timer-content">
+
+            <div class="timer-display" id="timerDisplay">
+                00:00:00
+            </div>
+
+            <div class="timer-buttons">
+
+                <button id="startTimerButton" class="primary-button">
+                    ▶️ Iniciar
+                </button>
+
+                <button id="pauseTimerButton" class="secondary-button">
+                    ⏸️ Pausar
+                </button>
+
+                <button id="resetTimerButton" class="secondary-button">
+                    🔄 Zerar
+                </button>
+
+            </div>
+
+        </main>
+
+    </section>
+
+
+    <!-- TELA DE PROGRESSO -->
+    <section id="progressScreen" class="screen hidden">
+
+        <header class="page-header">
+
+            <button class="back-button" data-back="homeScreen">
+                ←
+            </button>
+
+            <div>
+                <h1>📊 Progresso</h1>
+                <p>Acompanhe suas metas.</p>
+            </div>
+
+        </header>
+
+        <main class="page-content">
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <span>🎯</span>
+                    <strong id="totalGoals">0</strong>
+                    <small>Metas totais</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>✅</span>
+                    <strong id="completedGoals">0</strong>
+                    <small>Metas concluídas</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>🔄</span>
+                    <strong id="activeGoals">0</strong>
+                    <small>Em andamento</small>
+                </div>
+
+            </div>
+
+            <div class="chart-section">
+
+                <h2>Gráfico de metas</h2>
+
+                <div class="chart-container">
+
+                    <div
+                        id="chartCompleted"
+                        class="chart-bar completed"
+                    >
+                        <span>Concluídas</span>
+                    </div>
+
+                    <div
+                        id="chartActive"
+                        class="chart-bar active"
+                    >
+                        <span>Em andamento</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </section>
+
+
+    <!-- TELA DE CONFIGURAÇÕES -->
+    <section id="settingsScreen" class="screen hidden">
+
+        <header class="page-header">
+
+            <button class="back-button" data-back="homeScreen">
+                ←
+            </button>
+
+            <div>
+                <h1>⚙️ Configurações</h1>
+                <p>Configure seu espaço.</p>
+            </div>
+
+        </header>
+
+        <main class="page-content">
+
+            <div class="settings-card">
+
+                <h2>🔐 Segurança</h2>
+
+                <button id="lockButton" class="secondary-button">
+                    🔒 Bloquear agora
+                </button>
+
+            </div>
+
+            <div class="settings-card">
+
+                <h2>💾 Dados</h2>
+
+                <button id="exportButton" class="secondary-button">
+                    📤 Exportar dados
+                </button>
+
+                <button id="importButton" class="secondary-button">
+                    📥 Importar dados
+                </button>
+
+                <input
+                    type="file"
+                    id="importFile"
+                    accept=".json"
+                    hidden
+                >
+
+            </div>
+
+        </main>
+
+    </section>
+
+
+    <script src="script.js"></script>
+
+</body>
+  </html>
