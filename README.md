@@ -1,348 +1,321 @@
-# 🔐 Secreto V3
+# Secreto V3
 
-Projeto #016 desenvolvido para testes e utilização de recursos modernos da web através do GitHub Pages.
+Projeto pessoal #016 desenvolvido como uma aplicação web estática para GitHub Pages.
 
-O projeto funciona diretamente no navegador, sem banco de dados e sem servidor próprio.
+## Sobre
 
----
+O Secreto V3 é um espaço pessoal para organizar:
 
-## 🏠 Estrutura principal
+1. Notas
+2. Metas
+3. Tarefas
+4. Roupas Sítio
+5. Cronômetro
+6. Progresso
+7. Configurações
 
-Depois da senha, o aplicativo apresenta:
-
-- 📝 Notas
-- 🎯 Metas
-- 📋 Tarefas
-- 👕 Roupas Sítio
-- ⏱️ Cronômetro
-- 📊 Progresso
-- ⚙️ Configurações
+A aplicação funciona diretamente no navegador e não utiliza banco de dados ou servidor próprio.
 
 ---
 
-## 🔐 Acesso
+## Acesso
 
-Senha inicial:
+A senha inicial é:
 
 `Hg99`
 
-A senha pode ser alterada dentro das configurações.
+A senha pode ser alterada dentro de:
 
-O título da página é:
+**Configurações → Alterar senha de acesso**
 
-`Secreto V3`
+A senha usada para confirmar o recurso "Apagar geral" é:
+
+`Hg88`
+
+Essa senha é fixa.
+
+> A autenticação é apenas uma barreira do lado do navegador. Como o projeto é estático e o código fica disponível no GitHub Pages, isso não deve ser considerado um sistema de segurança real.
 
 ---
 
-# 📝 Notas
+## Notas
 
 As notas possuem:
 
 - Título
 - Conteúdo
 - Data e hora de criação
-- Pesquisa pelo título
 - Fixar
 - Editar
 - Excluir
-- Compartilhar
+- Pesquisa pelo título
+- Compartilhamento
 
-A lista apresenta o título da nota.
+A lista mostra somente o título.
 
-Ao tocar no título, o conteúdo completo é exibido.
+Ao tocar no título, uma tela separada mostra:
+
+- Título
+- Conteúdo
+- Data e hora de criação
 
 ---
 
-# 🎯 Metas
+## Metas
 
 As metas possuem:
 
 - Título
-- Descrição
-- Data e hora
-- Concluir
+- Conteúdo
+- Data e hora de criação
+- Conclusão
 - Fixar
 - Editar
 - Excluir
-- Pesquisa
-- Compartilhar
+- Pesquisa pelo título
+- Compartilhamento
 
-As metas concluídas alimentam automaticamente a tela de progresso.
+Os itens excluídos são enviados para a Lixeira.
 
 ---
 
-# 📋 Tarefas
+## Tarefas
 
 As tarefas possuem:
 
 - Título
-- Descrição
-- Data e hora
-- Concluir
+- Conteúdo
+- Data e hora de criação
+- Conclusão
 - Fixar
 - Editar
 - Excluir
-- Pesquisa
-- Compartilhar
+- Pesquisa pelo título
+- Compartilhamento
+
+Os itens excluídos são enviados para a Lixeira.
 
 ---
 
-# 👕 Roupas Sítio
+## Roupas Sítio
 
-A seção permite criar listas de roupas para o sítio.
+A seção Roupas Sítio permite criar conjuntos de roupas.
 
-Ao adicionar uma lista, os campos aparecem exatamente nesta ordem:
+Cada conjunto possui:
 
-1. Título
-2. Touca
-3. Camiseta
-4. Blusa
-5. Calça
-6. Adicionar extras
+- Título
+- Touca
+- Camiseta
+- Blusa
+- Calça
+- Extras
+- Data e hora de criação
 
 Exemplo:
 
-Título:
-
-`Final de semana`
-
-Touca:
-
-`1`
+**Roupas 1**
 
 Camiseta:
 
-`2`
+`2 camisetas`
 
-Blusa:
+Extras:
 
-`1`
+`meias, luvas`
 
-Calça:
+A lista principal mostra somente o título.
 
-`2`
+Ao tocar no título, uma tela separada apresenta todos os dados da roupa.
 
-Adicionar extras:
+As roupas podem ser:
 
-`meias, chinelo, toalha`
+- Fixadas
+- Editadas
+- Excluídas
 
-Cada lista possui:
-
-- Fixar
-- Editar
-- Excluir
+As roupas não utilizam a Lixeira.
 
 ---
 
-# ⏱️ Cronômetro
+## Lixeira
 
-Possui:
+A Lixeira fica disponível somente em:
+
+**Configurações → Lixeira**
+
+Ela recebe somente:
+
+- Metas
+- Tarefas
+- Notas
+
+Os itens permanecem na Lixeira por até 50 dias.
+
+Depois desse período, são apagados automaticamente.
+
+Também é possível:
+
+- Restaurar
+- Excluir definitivamente
+
+---
+
+## Cronômetro
+
+O cronômetro possui:
 
 - Iniciar
 - Pausar
 - Zerar
 
-O tempo utiliza:
-
-`HH:MM:SS`
-
-O valor também pode ser incluído no compartilhamento geral.
+O tempo fica salvo localmente.
 
 ---
 
-# 📊 Progresso
+## Progresso
 
-A tela mostra:
+A seção Progresso apresenta:
 
-- Metas totais
+- Total de metas
 - Metas concluídas
 - Metas em andamento
 - Percentual de conclusão
-- Gráfico de concluídas
-- Gráfico de andamento
+- Barra de progresso
 
-Os valores são atualizados automaticamente.
+O progresso é atualizado automaticamente conforme as metas são concluídas.
+
+Também é possível compartilhar o progresso.
 
 ---
 
-# ⚙️ Configurações
+## Configurações
 
 As configurações possuem:
 
 - Voltar para tela de senha
-- Lixeira
 - Apagar geral
 - Modo Visualizador
 - Tema
 - Alterar senha
 - Formato da hora
-- Sobre o projeto
+- Lixeira
 - Compartilhar geral
+- Sobre o projeto
+
+O botão de bloqueio não fica no dashboard.
+
+Ele existe somente dentro das Configurações.
 
 ---
 
-# 🔒 Bloqueio
+## Recarregamento
 
-O bloqueio do aplicativo fica somente dentro de:
+O estado de login fica salvo no navegador.
 
-`Configurações`
+Por isso, ao recarregar a página:
 
-Ao selecionar:
+- o usuário permanece conectado;
+- a aplicação continua aberta;
+- a tela em que estava aberta pode ser restaurada.
 
-`Voltar para tela de senha`
+Para voltar à tela de senha é necessário utilizar:
 
-o aplicativo retorna para a tela de acesso.
-
-Não existe botão de bloqueio no dashboard.
-
----
-
-# 🗑️ Lixeira
-
-A lixeira fica somente em:
-
-`Configurações → Lixeira`
-
-Ela recebe os itens excluídos de:
-
-- Metas
-- Tarefas
-- Notas
-
-Os itens permanecem na lixeira durante:
-
-`50 dias`
-
-Depois desse período são excluídos automaticamente.
-
-A lixeira permite:
-
-- Restaurar
-- Apagar definitivamente
-
-As roupas do sítio não utilizam a lixeira.
+**Configurações → Voltar para tela de senha**
 
 ---
 
-# 👁️ Modo Visualizador
+## Modo Visualizador
 
-O Modo Visualizador permite consultar os dados sem alterar os registros.
+O Modo Visualizador permite visualizar os dados sem permitir alterações.
 
-Enquanto ativo, ficam bloqueados:
+Quando ativado, recursos como:
 
-- Adicionar
-- Editar
-- Excluir
-- Fixar
-- Concluir
+- adicionar;
+- editar;
+- excluir;
+- fixar;
+- concluir;
 
-A visualização e a pesquisa continuam disponíveis.
+ficam bloqueados.
+
+A navegação, pesquisa e compartilhamento continuam disponíveis.
 
 ---
 
-# 🎨 Temas
+## Temas
 
-O projeto possui dois temas:
+Existem dois temas:
 
 ### Tema escuro
 
-Fundo preto com elementos vermelhos.
+- Fundo preto
+- Elementos escuros
+- Destaques vermelhos
 
 ### Tema claro
 
-Fundo branco com elementos vermelhos.
+- Fundo branco
+- Elementos claros
+- Destaques vermelhos
 
 ---
 
-# 🕐 Formato da hora
+## Formato da hora
 
-Disponível em:
+O projeto permite escolher entre:
 
 - 24 horas
 - 12 horas
 
-A configuração é salva localmente.
-
 ---
 
-# 📤 Compartilhamento
-
-O projeto utiliza a Web Share API quando disponível.
-
-Existem compartilhamentos para:
-
-- Metas
-- Tarefas
-- Notas
-- Progresso
-- Compartilhamento geral
-
-O compartilhamento geral reúne:
-
-- Metas
-- Tarefas
-- Notas
-- Roupas Sítio
-- Cronômetro
-- Progresso
-
----
-
-# 💾 Armazenamento
+## Armazenamento
 
 Os dados são armazenados utilizando:
 
 `localStorage`
 
-Não existe banco de dados externo.
+Isso significa que os dados ficam no navegador e no dispositivo em que foram criados.
 
-Os dados ficam vinculados ao navegador/dispositivo.
+Não existe sincronização automática entre aparelhos.
 
 ---
 
-# 📡 Funcionamento offline
+## Funcionamento offline
 
 O projeto utiliza:
 
 - Service Worker
 - Cache API
 
-Depois de carregado pelo menos uma vez online, o aplicativo pode continuar funcionando offline.
+O Service Worker utiliza uma estratégia de rede primeiro e cache como alternativa.
 
-A estratégia utilizada é:
-
-`Rede primeiro`
-
-e:
-
-`Cache como fallback`
-
-Isso permite receber atualizações quando houver internet e continuar utilizando a versão armazenada quando estiver offline.
+Assim, quando os arquivos já estiverem armazenados no cache, o projeto pode continuar funcionando sem conexão.
 
 ---
 
-# 🗑️ Apagar geral
+## Compartilhamento
 
-A função Apagar geral utiliza uma senha separada:
+O projeto utiliza a Web Share API quando disponível.
 
-`Hg88`
+O compartilhamento existe em:
 
-Ela apaga todos os dados do aplicativo e restaura as configurações padrão.
+- Metas
+- Tarefas
+- Notas
+- Progresso
+- Compartilhar geral
 
-Depois disso:
-
-Senha de acesso:
-
-`Hg99`
+O dashboard não possui botão de compartilhamento.
 
 ---
 
-# 🧪 Tecnologias
+## Tecnologias
 
 - HTML
 - CSS
 - JavaScript
-- LocalStorage
+- localStorage
 - Service Worker
 - Cache API
 - Web Share API
@@ -350,27 +323,20 @@ Senha de acesso:
 
 ---
 
-# 🆓 Hospedagem
+## Banco de dados
 
-O projeto foi desenvolvido para funcionar gratuitamente através do GitHub Pages.
-
-Não utiliza:
-
-- Banco de dados
-- Servidor próprio
-- Hospedagem paga
-- Serviço externo obrigatório
+Não utiliza banco de dados.
 
 ---
 
-# 📌 Projeto
+## Servidor próprio
 
-Projeto: #016
+Não utiliza servidor próprio.
 
-Nome: Secreto V3
+---
 
-Versão: V3
+## Projeto
 
-Plataforma: GitHub Pages
+**Projeto #016 — Secreto V3**
 
-Tipo: Aplicação web pessoal
+Desenvolvido como laboratório pessoal de tecnologias web utilizando GitHub Pages.
