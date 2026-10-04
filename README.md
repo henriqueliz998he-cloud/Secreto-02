@@ -1,64 +1,89 @@
-# 🎯 Minhas Metas — V3.0
+# 🎯 Meu Espaço — Projeto #016
 
-Sistema pessoal para organizar metas, tarefas, tempo e progresso.
+Projeto #016 do laboratório de testes e desenvolvimento com GitHub Pages.
 
-## 📱 Sobre
-
-O Minhas Metas é um projeto pessoal desenvolvido para organizar objetivos e tarefas diretamente pelo navegador.
-
-O projeto funciona no GitHub Pages e não utiliza banco de dados externo.
+O **Meu Espaço** é uma aplicação pessoal feita com HTML, CSS e JavaScript, funcionando diretamente no navegador e sem banco de dados.
 
 ---
 
-## 🔐 Acesso
+## 🚀 Funcionalidades
 
-O sistema possui uma senha de acesso.
+### 🔐 Tela de acesso
 
-Senha inicial:
+- Senha inicial: `Hg99`
+- Tela inicial limpa, mostrando apenas o acesso.
+- Possibilidade de alterar a senha posteriormente.
+- Botão para bloquear e voltar para a tela de senha.
 
-`Hg99`
+---
 
-A senha pode ser alterada posteriormente pelas Configurações.
+## 🏠 Dashboard
 
-Existe também uma senha separada para a função de **Apagar geral**:
+Depois do acesso, o usuário encontra:
 
-`Hg88`
-
-A proteção é local e não deve ser considerada uma solução de segurança forte.
+- Data atual
+- Hora atual
+- 🎯 Metas
+- 📋 Tarefas
+- 📝 Notas
+- ⏱️ Cronômetro
+- 📊 Progresso
+- ⚙️ Configurações
 
 ---
 
 ## 🎯 Metas
 
-É possível:
+Cada meta possui:
 
-- Criar metas
-- Editar metas
-- Excluir metas
-- Marcar metas como concluídas
-- Visualizar metas
-- Pesquisar pelo título
-- Compartilhar metas
-- Registrar data e hora de criação
+- Título
+- Descrição
+- Data e hora de criação
+- Marcação de concluída
+- Edição
+- Exclusão
+- Fixação
+- Pesquisa pelo título
+- Compartilhamento
 
-A lista mostra somente o título da meta.
+As metas são exibidas inicialmente apenas pelo título.
 
-Ao tocar no título, o sistema abre uma página própria com o conteúdo completo.
+Ao tocar em uma meta, uma tela separada mostra o conteúdo completo.
 
 ---
 
 ## 📋 Tarefas
 
-É possível:
+Cada tarefa possui:
 
-- Criar tarefas
-- Editar tarefas
-- Excluir tarefas
-- Marcar tarefas como concluídas
-- Visualizar tarefas
-- Pesquisar pelo título
-- Compartilhar tarefas
-- Registrar data e hora de criação
+- Título
+- Descrição
+- Data e hora de criação
+- Marcação de concluída
+- Edição
+- Exclusão
+- Fixação
+- Pesquisa pelo título
+- Compartilhamento
+
+Assim como nas metas, a lista mostra somente o título e informações pequenas de apoio.
+
+---
+
+## 📝 Notas
+
+As notas possuem:
+
+- Título
+- Conteúdo
+- Data e hora de criação
+- Edição
+- Exclusão
+- Fixação
+- Pesquisa pelo título
+- Compartilhamento
+
+Ao tocar no título, o conteúdo completo é aberto em uma tela separada.
 
 ---
 
@@ -69,121 +94,165 @@ Cronômetro independente com:
 - Iniciar
 - Pausar
 - Zerar
+- Contagem em horas, minutos e segundos
 
-O tempo atual também pode ser incluído no compartilhamento geral.
+O tempo também pode fazer parte do compartilhamento geral.
 
 ---
 
 ## 📊 Progresso
 
-O sistema calcula automaticamente:
+A tela de progresso apresenta:
 
-- Metas totais
+- Total de metas
 - Metas concluídas
 - Metas em andamento
+- Percentual de conclusão
+- Gráfico de metas concluídas
+- Gráfico de metas em andamento
+- Compartilhamento do progresso
 
-Também existe um gráfico que representa visualmente a proporção entre metas concluídas e metas em andamento.
-
-Os dados são atualizados automaticamente quando uma meta é criada, excluída ou concluída.
+Os números e gráficos são atualizados automaticamente conforme as metas são alteradas.
 
 ---
 
 ## ⚙️ Configurações
 
-As configurações incluem:
+O projeto possui:
 
-- Voltar para a tela de senha
-- Apagar geral
-- Modo Visualizador
-- Tema
-- Alterar senha de acesso
-- Formato da hora
-- Sobre o projeto
-- Compartilhar geral
+### 🔒 Voltar para tela de senha
 
----
+Bloqueia novamente o aplicativo.
 
-## 👁️ Modo Visualizador
+### 🗑️ Apagar geral
 
-O Modo Visualizador permite consultar o conteúdo sem permitir alterações.
+Apaga:
 
-Quando ativado:
+- Metas
+- Tarefas
+- Notas
+- Cronômetro
+- Configurações salvas
 
-- Não é possível criar metas
-- Não é possível criar tarefas
-- Não é possível editar
-- Não é possível excluir
-- Não é possível alterar o status
+A função possui uma senha de confirmação separada:
 
-A visualização e a pesquisa continuam disponíveis.
+`Hg88`
 
----
+Depois da confirmação, a senha de acesso volta para:
 
-## 🌓 Temas
+`Hg99`
 
-O sistema possui dois temas:
+### 👁️ Modo Visualizador
 
-- Preto + vermelho
-- Branco + vermelho
+Permite apenas visualizar as informações.
 
-A escolha fica armazenada no navegador.
+No modo visualizador, ficam bloqueadas ações como:
 
----
+- Criar
+- Editar
+- Excluir
+- Fixar
+- Concluir
 
-## ⏰ Formato da hora
+A pesquisa e a visualização continuam disponíveis.
 
-É possível utilizar:
+### 🎨 Tema
 
-- Formato de 24 horas
-- Formato de 12 horas
+Alternância entre:
+
+- Preto e vermelho
+- Branco e vermelho
+
+### 🔑 Alterar senha
+
+Permite trocar a senha utilizada para entrar no aplicativo.
+
+### 🕐 Formato da hora
+
+Permite escolher entre:
+
+- 24 horas
+- 12 horas
+
+### ℹ️ Sobre o projeto
+
+Exibe informações sobre o projeto.
+
+### 📤 Compartilhar geral
+
+Compartilha:
+
+- Metas
+- Tarefas
+- Notas
+- Progresso
+- Cronômetro
 
 ---
 
 ## 📤 Compartilhamento
 
-O sistema utiliza a capacidade de compartilhamento do navegador.
+O projeto utiliza a API de compartilhamento do navegador:
 
-Existem opções para compartilhar:
+`Web Share API`
 
-- Metas
-- Tarefas
-- Progresso
-- Uma meta ou tarefa específica
-- Todas as informações através do Compartilhar geral
+Em dispositivos compatíveis, o botão abre o menu nativo de compartilhamento do sistema.
 
-Quando o navegador não oferece o compartilhamento nativo, o sistema tenta copiar o conteúdo para a área de transferência.
+Caso o navegador não ofereça essa função, o projeto apresenta uma alternativa para copiar o conteúdo.
 
 ---
 
 ## 💾 Armazenamento
 
-Os dados utilizam:
+O projeto utiliza:
 
-`localStorage`
+- `localStorage`
 
-Portanto, as informações permanecem no navegador e dispositivo utilizados.
+As informações ficam armazenadas localmente no navegador.
 
-Não existe sincronização automática entre dispositivos.
+Não existe banco de dados externo.
+
+Isso significa que os dados não são sincronizados automaticamente entre aparelhos.
 
 ---
 
-## 📶 Funcionamento offline
+## 📡 Funcionamento offline
 
 O projeto utiliza:
 
 - Service Worker
 - Cache API
 
-Os principais arquivos são armazenados no cache para permitir funcionamento offline após o primeiro carregamento.
+Depois que o site é carregado pelo menos uma vez enquanto estiver online, os arquivos principais podem continuar disponíveis offline.
 
-O sistema também utiliza atualização automática do Service Worker para reduzir problemas com versões antigas armazenadas no cache.
+O Service Worker utiliza uma estratégia de:
+
+**Rede primeiro → cache como fallback**
+
+Assim, quando houver internet, o navegador tenta obter a versão mais atualizada do GitHub.
+
+Quando não houver internet, utiliza a versão armazenada no cache.
 
 ---
 
-## 🌐 Tecnologias
+## 🔐 Sobre segurança
 
-- HTML5
-- CSS3
+As senhas utilizadas neste projeto são armazenadas e verificadas no próprio navegador.
+
+Portanto, este projeto é uma aplicação pessoal e experimental.
+
+Ele não deve ser considerado um sistema profissional de segurança.
+
+---
+
+## 🧪 Projeto de laboratório
+
+Este projeto faz parte dos testes de tecnologias que podem ser reutilizadas em futuros projetos com GitHub Pages.
+
+Tecnologias utilizadas ou relacionadas:
+
+- HTML
+- CSS
 - JavaScript
 - LocalStorage
 - Service Worker
@@ -193,13 +262,31 @@ O sistema também utiliza atualização automática do Service Worker para reduz
 
 ---
 
-## 🗂️ Estrutura
+## 🆓 Hospedagem
 
-```text
-Secreto-02/
-│
-├── index.html
-├── style.css
-├── script.js
-├── sw.js
-└── README.md
+O projeto foi desenvolvido para funcionar utilizando:
+
+**GitHub Pages**
+
+Sem:
+
+- Banco de dados
+- Servidor próprio
+- Hospedagem paga
+- Serviços externos obrigatórios
+
+---
+
+## 📌 Projeto
+
+**Projeto:** #016  
+**Nome:** Meu Espaço  
+**Versão:** V3.0  
+**Plataforma:** GitHub Pages  
+**Tipo:** Aplicação web pessoal
+
+---
+
+## 👨‍💻 Desenvolvimento
+
+Projeto desenvolvido como parte de uma sequência de experimentos e descobertas sobre o que é possível fazer utilizando tecnologias web diretamente no navegador.
