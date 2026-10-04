@@ -2570,647 +2570,234 @@ function deleteNote(
    ROUPAS SÍTIO
 ========================================================= */
 
-function openClothingForm(
-  clothing = null
-) {
+function openClothingForm(clothing = null) {
 
-  const isEditing =
-    Boolean(clothing);
-
-  const body = `
-    <div class="form-group">
-      <label for="clothingTitle">
-        Título
-      </label>
-
-      <input
-        id="clothingTitle"
-        type="text"
-        value="${escapeHTML(
-          clothing?.title || ""
-        )}"
-        placeholder="Ex.: Roupas 1"
-        autocomplete="off"
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="clothingTouca">
-        Touca
-      </label>
-
-      <input
-        id="clothingTouca"
-        type="text"
-        value="${escapeHTML(
-          clothing?.touca || ""
-        )}"
-        placeholder="Ex.: 1 touca"
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="clothingCamiseta">
-        Camiseta
-      </label>
-
-      <input
-        id="clothingCamiseta"
-        type="text"
-        value="${escapeHTML(
-          clothing?.camiseta || ""
-        )}"
-        placeholder="Ex.: 2 camisetas"
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="clothingBlusa">
-        Blusa
-      </label>
-
-      <input
-        id="clothingBlusa"
-        type="text"
-        value="${escapeHTML(
-          clothing?.blusa || ""
-        )}"
-        placeholder="Ex.: 1 blusa"
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="clothingCalca">
-        Calça
-      </label>
-
-      <input
-        id="clothingCalca"
-        type="text"
-        value="${escapeHTML(
-          clothing?.calca || ""
-        )}"
-        placeholder="Ex.: 2 calças"
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="clothingExtras">
-        Adicionar extras
-      </label>
-
-      <textarea
-        id="clothingExtras"
-        placeholder="Ex.: meias, luvas, capa..."
-      >${escapeHTML(
-        clothing?.extras || ""
-      )}</textarea>
-    </div>
-  `;
+  const isEditing = !!clothing;
 
   openModal(
     isEditing
       ? "Editar roupa"
       : "Adicionar roupa",
-
-    body,
-
-    [
-      {
-        label:
-          isEditing
-            ? "Salvar alterações"
-            : "Adicionar",
-
-        className:
-          "primary-button",
-
-        onClick: () => {
-
-          const title =
-            $("clothingTitle")
-              .value
-              .trim();
-
-          const touca =
-            $("clothingTouca")
-              .value
-              .trim();
-
-          const camiseta =
-            $("clothingCamiseta")
-              .value
-              .trim();
-
-          const blusa =
-            $("clothingBlusa")
-              .value
-              .trim();
-
-          const calca =
-            $("clothingCalca")
-              .value
-              .trim();
-
-          const extras =
-            $("clothingExtras")
-              .value
-              .trim();
-
-          if (!title) {
-
-            showToast(
-              "Digite o título."
-            );
-
-            $("clothingTitle")
-              .focus();
-
-            return;
-
-          }
-
-          if (isEditing) {
-
-            clothing.title =
-              title;
-
-            clothing.touca =
-              touca;
-
-            clothing.camiseta =
-              camiseta;
-
-            clothing.blusa =
-              blusa;
-
-            clothing.calca =
-              calca;
-
-            clothing.extras =
-              extras;
-
-            writeStorage(
-              KEYS.clothes,
-              clothes
-            );
-
-            closeModal();
-
-            renderClothes();
-
-            showToast(
-              "Roupa atualizada."
-            );
-
-          } else {
-
-            clothes.push({
-
-              id:
-                generateId(),
-
-              title,
-
-              touca,
-
-              camiseta,
-
-              blusa,
-
-              calca,
-
-              extras,
-
-              pinned:
-                false,
-
-              createdAt:
-                new Date()
-                  .toISOString()
-
-            });
-
-            writeStorage(
-              KEYS.clothes,
-              clothes
-            );
-
-            closeModal();
-
-            renderClothes();
-
-            showToast(
-              "Roupa adicionada."
-            );
-
-          }
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
-  );
-
-}
-
-function renderClothes() {
-
-  const list =
-    $("clothesList");
-
-  const sorted =
-    sortItems(
-      clothes
-    );
-
-  if (
-    sorted.length === 0
-  ) {
-
-    list.innerHTML = `
-      <div class="empty-message">
-        Nenhuma roupa cadastrada.
-      </div>
-    `;
-
-    return;
-
-  }
-
-  list.innerHTML = "";
-
-  sorted.forEach(
-    (clothing) => {
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-      row.className =
-        "item-row";
-
-      if (
-        clothing.pinned
-      ) {
-
-        row.classList
-          .add(
-            "item-pinned"
-          );
-
-      }
-
-      const main =
-        document.createElement(
-          "button"
-        );
-
-      main.className =
-        "item-main";
-
-      main.innerHTML = `
-        <span class="item-title">
-          ${
-            clothing.pinned
-              ? "📌 "
-              : ""
-          }
-          ${escapeHTML(
-            clothing.title
-          )}
-        </span>
-      `;
-
-      main.addEventListener(
-        "click",
-        () =>
-          openClothingDetail(
-            clothing
-          )
-      );
-
-      const actions =
-        document.createElement(
-          "div"
-        );
-
-      actions.className =
-        "item-actions";
-
-      const pin =
-        document.createElement(
-          "button"
-        );
-
-      pin.className =
-        "item-action pin pin-only";
-
-      pin.textContent =
-        clothing.pinned
-          ? "📌"
-          : "☆";
-
-      pin.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          clothing.pinned =
-            !clothing.pinned;
-
-          writeStorage(
-            KEYS.clothes,
-            clothes
-          );
-
-          renderClothes();
-
-        }
-      );
-
-      const edit =
-        document.createElement(
-          "button"
-        );
-
-      edit.className =
-        "item-action edit-only";
-
-      edit.textContent =
-        "✎";
-
-      edit.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          openClothingForm(
-            clothing
-          );
-
-        }
-      );
-
-      const deleteButton =
-        document.createElement(
-          "button"
-        );
-
-      deleteButton.className =
-        "item-action delete delete-only";
-
-      deleteButton.textContent =
-        "🗑";
-
-      deleteButton.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          deleteClothing(
-            clothing
-          );
-
-        }
-      );
-
-      actions.appendChild(
-        pin
-      );
-
-      actions.appendChild(
-        edit
-      );
-
-      actions.appendChild(
-        deleteButton
-      );
-
-      row.appendChild(
-        main
-      );
-
-      row.appendChild(
-        actions
-      );
-
-      list.appendChild(
-        row
-      );
-
-    }
-  );
-
-}
-
-function openClothingDetail(
-  clothing
-) {
-
-  detailReturnScreen =
-    "clothesScreen";
-
-  $("detailTitle")
-    .textContent =
-    clothing.title;
-
-  $("detailMeta")
-    .textContent =
-    "";
-
-  $("detailContent")
-    .innerHTML = `
-
-      <div class="detail-field">
-
-        <div class="detail-field-label">
-          Touca
-        </div>
-
-        <div class="detail-field-value">
-          ${escapeHTML(
-            clothing.touca ||
-            "Não informado"
-          )}
-        </div>
-
-      </div>
-
-
-      <div class="detail-field">
-
-        <div class="detail-field-label">
-          Camiseta
-        </div>
-
-        <div class="detail-field-value">
-          ${escapeHTML(
-            clothing.camiseta ||
-            "Não informado"
-          )}
-        </div>
-
-      </div>
-
-
-      <div class="detail-field">
-
-        <div class="detail-field-label">
-          Blusa
-        </div>
-
-        <div class="detail-field-value">
-          ${escapeHTML(
-            clothing.blusa ||
-            "Não informado"
-          )}
-        </div>
-
-      </div>
-
-
-      <div class="detail-field">
-
-        <div class="detail-field-label">
-          Calça
-        </div>
-
-        <div class="detail-field-value">
-          ${escapeHTML(
-            clothing.calca ||
-            "Não informado"
-          )}
-        </div>
-
-      </div>
-
-
-      <div class="detail-field">
-
-        <div class="detail-field-label">
-          Extras
-        </div>
-
-        <div class="detail-field-value">
-          ${escapeHTML(
-            clothing.extras ||
-            "Nenhum extra"
-          )}
-        </div>
-
-      </div>
-
-
-      <div class="detail-created">
-        Criado em ${
-          formatDateTime(
-            clothing.createdAt
-          )
-        }
-      </div>
-
-    `;
-
-  showScreen(
-    "detailScreen"
-  );
-
-}
-
-function deleteClothing(
-  clothing
-) {
-
-  openModal(
-    "Excluir roupa",
-
     `
-      <p>
-        Deseja excluir
-        <strong>
-          ${escapeHTML(
-            clothing.title
-          )}
-        </strong>
-        definitivamente?
-      </p>
+      <label>Título</label>
+      <input
+        id="clothingTitle"
+        type="text"
+        value="${escapeHtml(clothing?.title || "")}"
+        placeholder="Ex.: Roupa para o sítio"
+      >
 
-      <p>
-        Roupas não utilizam a lixeira.
-      </p>
-    `,
+      <label>Na cabeça</label>
+      <input
+        id="clothingNaCabeca"
+        type="text"
+        value="${escapeHtml(
+          clothing?.naCabeca ??
+          clothing?.touca ??
+          ""
+        )}"
+      >
 
-    [
+      <label>No corpo 1</label>
+      <input
+        id="clothingCorpo1"
+        type="text"
+        value="${escapeHtml(
+          clothing?.corpo1 ??
+          clothing?.camiseta ??
+          ""
+        )}"
+      >
 
-      {
-        label:
-          "Excluir definitivamente",
+      <label>No corpo 2</label>
+      <input
+        id="clothingCorpo2"
+        type="text"
+        value="${escapeHtml(
+          clothing?.corpo2 ??
+          clothing?.blusa ??
+          ""
+        )}"
+      >
 
-        className:
-          "danger-button",
+      <label>Calça</label>
+      <input
+        id="clothingCalca"
+        type="text"
+        value="${escapeHtml(
+          clothing?.calca || ""
+        )}"
+      >
 
-        onClick: () => {
+      <label>Meia</label>
+      <input
+        id="clothingMeia"
+        type="text"
+        value="${escapeHtml(
+          clothing?.meia || ""
+        )}"
+      >
 
-          clothes =
-            clothes.filter(
-              (item) =>
-                item.id !==
-                clothing.id
-            );
+      <label>Sapato</label>
+      <input
+        id="clothingSapato"
+        type="text"
+        value="${escapeHtml(
+          clothing?.sapato || ""
+        )}"
+      >
 
-          writeStorage(
-            KEYS.clothes,
-            clothes
-          );
+      <label>Adicionar extras</label>
+      <textarea
+        id="clothingExtras"
+      >${escapeHtml(
+        clothing?.extras || ""
+      )}</textarea>
+
+      <button
+        id="saveClothingButton"
+        class="primary-button"
+      >
+        ${isEditing
+          ? "Salvar alterações"
+          : "Adicionar roupa"}
+      </button>
+    `
+  );
+
+  $("saveClothingButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        if (
+          isViewerMode()
+        ) {
 
           closeModal();
 
-          renderClothes();
-
-          showToast(
-            "Roupa excluída."
-          );
+          return;
 
         }
 
-      },
+        const title =
+          $("clothingTitle")
+            .value
+            .trim();
 
-      addModalCancelButton()
+        const naCabeca =
+          $("clothingNaCabeca")
+            .value
+            .trim();
 
-    ]
-  );
+        const corpo1 =
+          $("clothingCorpo1")
+            .value
+            .trim();
+
+        const corpo2 =
+          $("clothingCorpo2")
+            .value
+            .trim();
+
+        const calca =
+          $("clothingCalca")
+            .value
+            .trim();
+
+        const meia =
+          $("clothingMeia")
+            .value
+            .trim();
+
+        const sapato =
+          $("clothingSapato")
+            .value
+            .trim();
+
+        const extras =
+          $("clothingExtras")
+            .value
+            .trim();
+
+        if (!title) {
+
+          showToast(
+            "Digite um título."
+          );
+
+          return;
+
+        }
+
+        if (isEditing) {
+
+          clothing.title =
+            title;
+
+          clothing.naCabeca =
+            naCabeca;
+
+          clothing.corpo1 =
+            corpo1;
+
+          clothing.corpo2 =
+            corpo2;
+
+          clothing.calca =
+            calca;
+
+          clothing.meia =
+            meia;
+
+          clothing.sapato =
+            sapato;
+
+          clothing.extras =
+            extras;
+
+        } else {
+
+          clothes.unshift({
+
+            id:
+              Date.now(),
+
+            title,
+
+            naCabeca,
+
+            corpo1,
+
+            corpo2,
+
+            calca,
+
+            meia,
+
+            sapato,
+
+            extras,
+
+            pinned:
+              false,
+
+            createdAt:
+              new Date()
+                .toISOString()
+
+          });
+
+        }
+
+        saveData();
+
+        renderClothes();
+
+        closeModal();
+
+      }
+    );
 
 }
 
