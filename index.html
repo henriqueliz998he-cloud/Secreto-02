@@ -17,10 +17,10 @@
 
     <meta
         name="description"
-        content="Sistema pessoal de metas, tarefas e progresso."
+        content="Sistema pessoal de metas, tarefas e notas"
     >
 
-    <title> </title>
+    <title>Meu Espaço</title>
 
     <link
         rel="stylesheet"
@@ -31,7 +31,6 @@
 
 
 <body>
-
 
     <!-- =====================================================
          TELA DE LOGIN
@@ -47,10 +46,6 @@
             <div class="logo">
                 🔐
             </div>
-
-            <p class="login-label">
-                Digite sua senha para entrar.
-            </p>
 
             <input
                 type="password"
@@ -73,7 +68,6 @@
     </section>
 
 
-
     <!-- =====================================================
          TELA PRINCIPAL
     ====================================================== -->
@@ -85,19 +79,11 @@
 
         <header class="top-bar">
 
-            <div>
-
-                <h1>
-                    Meu Espaço
-                </h1>
+            <div class="top-info">
 
                 <p id="currentDate">
                     00/00/0000
                 </p>
-
-            </div>
-
-            <div class="clock-box">
 
                 <span id="currentTime">
                     00:00:00
@@ -105,18 +91,20 @@
 
             </div>
 
+            <button
+                id="homeLockButton"
+                class="top-icon-button"
+                aria-label="Voltar para tela de senha"
+            >
+                🔒
+            </button>
+
         </header>
 
 
         <main class="home-content">
 
-            <h2>
-                O que você quer fazer?
-            </h2>
-
-
             <div class="menu-grid">
-
 
                 <button
                     class="menu-card"
@@ -136,7 +124,6 @@
                     </small>
 
                 </button>
-
 
 
                 <button
@@ -159,6 +146,25 @@
                 </button>
 
 
+                <button
+                    class="menu-card"
+                    data-screen="notesScreen"
+                >
+
+                    <span class="menu-icon">
+                        📝
+                    </span>
+
+                    <strong>
+                        Notas
+                    </strong>
+
+                    <small>
+                        Guarde suas anotações
+                    </small>
+
+                </button>
+
 
                 <button
                     class="menu-card"
@@ -178,7 +184,6 @@
                     </small>
 
                 </button>
-
 
 
                 <button
@@ -201,7 +206,6 @@
                 </button>
 
 
-
                 <button
                     class="menu-card"
                     data-screen="settingsScreen"
@@ -221,7 +225,6 @@
 
                 </button>
 
-
             </div>
 
         </main>
@@ -229,9 +232,8 @@
     </section>
 
 
-
     <!-- =====================================================
-         TELA DE METAS
+         METAS
     ====================================================== -->
 
     <section
@@ -248,14 +250,14 @@
                 ←
             </button>
 
-            <div class="page-header-title">
+            <div class="page-header-info">
 
                 <h1>
                     🎯 Metas
                 </h1>
 
                 <p>
-                    Seus objetivos.
+                    Seus objetivos
                 </p>
 
             </div>
@@ -273,13 +275,13 @@
 
         <main class="page-content">
 
-
-            <div class="search-box">
+            <div class="search-row">
 
                 <input
                     type="search"
                     id="goalSearchInput"
-                    placeholder="Pesquisar pelo título..."
+                    class="search-input"
+                    placeholder="Pesquisar por título..."
                     autocomplete="off"
                 >
 
@@ -299,15 +301,13 @@
                 class="items-list"
             ></div>
 
-
         </main>
 
     </section>
 
 
-
     <!-- =====================================================
-         TELA DE TAREFAS
+         TAREFAS
     ====================================================== -->
 
     <section
@@ -324,14 +324,14 @@
                 ←
             </button>
 
-            <div class="page-header-title">
+            <div class="page-header-info">
 
                 <h1>
                     📋 Tarefas
                 </h1>
 
                 <p>
-                    O que precisa ser feito.
+                    O que precisa ser feito
                 </p>
 
             </div>
@@ -349,13 +349,13 @@
 
         <main class="page-content">
 
-
-            <div class="search-box">
+            <div class="search-row">
 
                 <input
                     type="search"
                     id="taskSearchInput"
-                    placeholder="Pesquisar pelo título..."
+                    class="search-input"
+                    placeholder="Pesquisar por título..."
                     autocomplete="off"
                 >
 
@@ -375,47 +375,45 @@
                 class="items-list"
             ></div>
 
-
         </main>
 
     </section>
 
 
-
     <!-- =====================================================
-         TELA DO DETALHE
+         NOTAS
     ====================================================== -->
 
     <section
-        id="detailScreen"
+        id="notesScreen"
         class="screen hidden"
     >
 
         <header class="page-header">
 
             <button
-                id="detailBackButton"
                 class="back-button"
+                data-back="homeScreen"
             >
                 ←
             </button>
 
-            <div class="page-header-title">
+            <div class="page-header-info">
 
-                <h1 id="detailHeaderTitle">
-                    Detalhes
+                <h1>
+                    📝 Notas
                 </h1>
 
-                <p id="detailHeaderType">
-                    Conteúdo
+                <p>
+                    Suas anotações
                 </p>
 
             </div>
 
             <button
-                id="shareDetailButton"
+                id="shareNotesButton"
                 class="header-action-button"
-                aria-label="Compartilhar"
+                aria-label="Compartilhar notas"
             >
                 📤
             </button>
@@ -423,64 +421,41 @@
         </header>
 
 
-        <main class="page-content detail-content">
+        <main class="page-content">
+
+            <div class="search-row">
+
+                <input
+                    type="search"
+                    id="noteSearchInput"
+                    class="search-input"
+                    placeholder="Pesquisar por título..."
+                    autocomplete="off"
+                >
+
+            </div>
 
 
-            <article class="detail-card">
-
-                <h2 id="detailTitle">
-                    Título
-                </h2>
-
-
-                <div
-                    id="detailDescription"
-                    class="detail-description"
-                ></div>
+            <button
+                id="addNoteButton"
+                class="primary-button"
+            >
+                ＋ Nova nota
+            </button>
 
 
-                <div
-                    id="detailDate"
-                    class="detail-date"
-                ></div>
-
-
-                <div class="detail-actions">
-
-                    <button
-                        id="detailCompleteButton"
-                        class="secondary-button"
-                    >
-                        ✅ Concluir
-                    </button>
-
-                    <button
-                        id="detailEditButton"
-                        class="secondary-button"
-                    >
-                        ✏️ Editar
-                    </button>
-
-                    <button
-                        id="detailDeleteButton"
-                        class="secondary-button danger-button"
-                    >
-                        🗑️ Excluir
-                    </button>
-
-                </div>
-
-            </article>
-
+            <div
+                id="notesList"
+                class="items-list"
+            ></div>
 
         </main>
 
     </section>
 
 
-
     <!-- =====================================================
-         TELA DE CRONÔMETRO
+         CRONÔMETRO
     ====================================================== -->
 
     <section
@@ -497,14 +472,14 @@
                 ←
             </button>
 
-            <div class="page-header-title">
+            <div class="page-header-info">
 
                 <h1>
                     ⏱️ Cronômetro
                 </h1>
 
                 <p>
-                    Controle seu tempo.
+                    Controle seu tempo
                 </p>
 
             </div>
@@ -515,8 +490,8 @@
         <main class="page-content timer-content">
 
             <div
-                class="timer-display"
                 id="timerDisplay"
+                class="timer-display"
             >
                 00:00:00
             </div>
@@ -531,12 +506,14 @@
                     ▶️ Iniciar
                 </button>
 
+
                 <button
                     id="pauseTimerButton"
                     class="secondary-button"
                 >
                     ⏸️ Pausar
                 </button>
+
 
                 <button
                     id="resetTimerButton"
@@ -552,9 +529,8 @@
     </section>
 
 
-
     <!-- =====================================================
-         TELA DE PROGRESSO
+         PROGRESSO
     ====================================================== -->
 
     <section
@@ -571,14 +547,14 @@
                 ←
             </button>
 
-            <div class="page-header-title">
+            <div class="page-header-info">
 
                 <h1>
                     📊 Progresso
                 </h1>
 
                 <p>
-                    Acompanhe suas metas.
+                    Acompanhe suas metas
                 </p>
 
             </div>
@@ -596,9 +572,7 @@
 
         <main class="page-content">
 
-
             <div class="stats-grid">
-
 
                 <div class="stat-card">
 
@@ -615,7 +589,6 @@
                     </small>
 
                 </div>
-
 
 
                 <div class="stat-card">
@@ -635,7 +608,6 @@
                 </div>
 
 
-
                 <div class="stat-card">
 
                     <span>
@@ -652,9 +624,7 @@
 
                 </div>
 
-
             </div>
-
 
 
             <div class="chart-section">
@@ -663,46 +633,54 @@
                     Gráfico de metas
                 </h2>
 
-                <p class="chart-explanation">
-                    O tamanho das barras representa a quantidade
-                    de metas concluídas e em andamento.
-                </p>
-
-
                 <div class="chart-container">
 
-                    <div
-                        id="chartCompleted"
-                        class="chart-bar completed"
-                    >
+                    <div class="chart-row">
+
                         <span>
                             Concluídas
                         </span>
+
+                        <div class="chart-track">
+
+                            <div
+                                id="chartCompleted"
+                                class="chart-fill completed"
+                            ></div>
+
+                        </div>
+
                     </div>
 
 
-                    <div
-                        id="chartActive"
-                        class="chart-bar active"
-                    >
+                    <div class="chart-row">
+
                         <span>
                             Em andamento
                         </span>
+
+                        <div class="chart-track">
+
+                            <div
+                                id="chartActive"
+                                class="chart-fill active"
+                            ></div>
+
+                        </div>
+
                     </div>
 
                 </div>
 
             </div>
 
-
         </main>
 
     </section>
 
 
-
     <!-- =====================================================
-         TELA DE CONFIGURAÇÕES
+         CONFIGURAÇÕES
     ====================================================== -->
 
     <section
@@ -719,14 +697,14 @@
                 ←
             </button>
 
-            <div class="page-header-title">
+            <div class="page-header-info">
 
                 <h1>
                     ⚙️ Configurações
                 </h1>
 
                 <p>
-                    Configure seu espaço.
+                    Configure seu espaço
                 </p>
 
             </div>
@@ -734,124 +712,79 @@
         </header>
 
 
-        <main class="page-content">
+        <main class="page-content settings-content">
 
 
-            <div class="settings-card">
-
-                <h2>
-                    🔐 Segurança
-                </h2>
-
-
-                <button
-                    id="settingsLockButton"
-                    class="secondary-button"
-                >
-                    🔒 Voltar para tela de senha
-                </button>
+            <button
+                id="settingsLockButton"
+                class="settings-button"
+            >
+                🔒 Voltar para tela de senha
+            </button>
 
 
-                <button
-                    id="changePasswordButton"
-                    class="secondary-button"
-                >
-                    🔑 Alterar senha de acesso
-                </button>
+            <button
+                id="deleteAllButton"
+                class="settings-button danger-button"
+            >
+                🗑️ Apagar geral
+            </button>
 
 
-                <button
-                    id="visualizerButton"
-                    class="secondary-button"
-                >
-                    👁️ Modo Visualizador
-                </button>
+            <button
+                id="viewerModeButton"
+                class="settings-button"
+            >
+                👁️ Modo Visualizador
+            </button>
 
 
-            </div>
+            <button
+                id="themeButton"
+                class="settings-button"
+            >
+                🌓 Tema
+            </button>
 
 
-
-            <div class="settings-card">
-
-                <h2>
-                    🎨 Aparência
-                </h2>
-
-
-                <button
-                    id="themeButton"
-                    class="secondary-button"
-                >
-                    🌓 Tema
-                </button>
+            <button
+                id="changePasswordButton"
+                class="settings-button"
+            >
+                🔐 Alterar senha de acesso
+            </button>
 
 
-                <button
-                    id="timeFormatButton"
-                    class="secondary-button"
-                >
-                    ⏰ Formato da hora
-                </button>
+            <button
+                id="timeFormatButton"
+                class="settings-button"
+            >
+                🕐 Formato da hora
+            </button>
 
 
-            </div>
+            <button
+                id="aboutButton"
+                class="settings-button"
+            >
+                ℹ️ Sobre o projeto
+            </button>
 
 
-
-            <div class="settings-card">
-
-                <h2>
-                    ⚠️ Dados
-                </h2>
-
-
-                <button
-                    id="deleteAllButton"
-                    class="danger-button settings-danger-button"
-                >
-                    🗑️ Apagar geral
-                </button>
-
-
-                <button
-                    id="generalShareButton"
-                    class="secondary-button"
-                >
-                    📤 Compartilhar geral
-                </button>
-
-
-            </div>
-
-
-
-            <div class="settings-card">
-
-                <h2>
-                    ℹ️ Informações
-                </h2>
-
-
-                <button
-                    id="aboutButton"
-                    class="secondary-button"
-                >
-                    ℹ️ Sobre o projeto
-                </button>
-
-
-            </div>
-
+            <button
+                id="shareAllButton"
+                class="settings-button"
+            >
+                📤 Compartilhar geral
+            </button>
 
         </main>
 
     </section>
 
 
-
     <!-- =====================================================
-         TELA SOBRE
+         SOBRE O PROJETO
     ====================================================== -->
 
     <section
@@ -868,14 +801,14 @@
                 ←
             </button>
 
-            <div class="page-header-title">
+            <div class="page-header-info">
 
                 <h1>
                     ℹ️ Sobre o projeto
                 </h1>
 
                 <p>
-                    Informações do sistema.
+                    Informações
                 </p>
 
             </div>
@@ -885,113 +818,75 @@
 
         <main class="page-content">
 
-            <article class="about-card">
+            <div class="about-card">
 
                 <h2>
-                    🎯 Minhas Metas V3.0
+                    🎯 Meu Espaço
                 </h2>
 
                 <p>
                     Sistema pessoal para organizar metas,
-                    tarefas e acompanhar o progresso.
+                    tarefas e anotações.
                 </p>
 
 
-                <div class="about-item">
+                <h3>
+                    Recursos
+                </h3>
 
-                    <strong>
-                        📦 Versão
-                    </strong>
-
-                    <span>
-                        V3.0
-                    </span>
-
-                </div>
-
-
-                <div class="about-item">
-
-                    <strong>
-                        💾 Armazenamento
-                    </strong>
-
-                    <span>
-                        LocalStorage
-                    </span>
-
-                </div>
-
-
-                <div class="about-item">
-
-                    <strong>
-                        📶 Funcionamento
-                    </strong>
-
-                    <span>
-                        Online e offline
-                    </span>
-
-                </div>
-
-
-                <div class="about-item">
-
-                    <strong>
-                        🌐 Plataforma
-                    </strong>
-
-                    <span>
-                        GitHub Pages
-                    </span>
-
-                </div>
-
-
-                <div class="about-item">
-
-                    <strong>
-                        🧪 Projeto
-                    </strong>
-
-                    <span>
-                        Laboratório de tecnologias web
-                    </span>
-
-                </div>
-
-
-                <div class="about-item">
-
-                    <strong>
-                        🔒 Segurança
-                    </strong>
-
-                    <span>
-                        Proteção local por senha
-                    </span>
-
-                </div>
-
-
-                <p class="about-warning">
-                    Os dados permanecem armazenados localmente
-                    no navegador e não são sincronizados
-                    automaticamente entre dispositivos.
+                <p>
+                    Metas, tarefas, notas, cronômetro,
+                    progresso, pesquisa, fixação,
+                    compartilhamento, temas e modo
+                    visualizador.
                 </p>
 
-            </article>
+
+                <h3>
+                    Tecnologias
+                </h3>
+
+                <p>
+                    HTML, CSS, JavaScript, LocalStorage,
+                    Service Worker, Cache API e GitHub Pages.
+                </p>
+
+
+                <h3>
+                    Armazenamento
+                </h3>
+
+                <p>
+                    Os dados ficam armazenados localmente
+                    no navegador.
+                </p>
+
+
+                <h3>
+                    Projeto
+                </h3>
+
+                <p>
+                    Projeto #016.
+                </p>
+
+            </div>
 
         </main>
 
     </section>
 
 
-
     <!-- =====================================================
-         MODAIS SERÃO CRIADOS PELO JAVASCRIPT
+         ARQUIVO DE IMPORTAÇÃO
     ====================================================== -->
+
+    <input
+        type="file"
+        id="importFile"
+        accept=".json"
+        hidden
+    >
 
 
     <script src="script.js"></script>
