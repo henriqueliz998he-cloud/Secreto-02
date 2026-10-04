@@ -1,24 +1,28 @@
-/* =========================
-   BASE
-========================= */
+/* =========================================================
+   RESET
+========================================================= */
 
 * {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html,
-body {
   margin: 0;
   padding: 0;
+}
+
+html {
   min-height: 100%;
 }
 
 body {
+  min-height: 100vh;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
   background: #000;
   color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
 button,
@@ -36,707 +40,936 @@ button {
 }
 
 
-/* =========================
-   TEMA CLARO
-========================= */
-
-body.light-theme {
-  background: #fff;
-  color: #111;
-}
-
-body.light-theme .login-card,
-body.light-theme .dashboard-card,
-body.light-theme .detail-card,
-body.light-theme .stat-card,
-body.light-theme .progress-card,
-body.light-theme .modal-card,
-body.light-theme .item-row,
-body.light-theme .settings-button {
-  background: #fff;
-  color: #111;
-}
-
-body.light-theme .search-input,
-body.light-theme input,
-body.light-theme textarea,
-body.light-theme select {
-  background: #f4f4f4;
-  color: #111;
-  border-color: #bbb;
-}
-
-body.light-theme .page-header,
-body.light-theme .dashboard-header {
-  border-color: #ccc;
-}
-
-body.light-theme .secondary-button {
-  background: #eee;
-  color: #111;
-}
-
-body.light-theme .icon-button {
-  background: #eee;
-  color: #111;
-}
-
-
-/* =========================
-   TELAS
-========================= */
+/* =========================================================
+   TELA
+========================================================= */
 
 .screen {
   width: 100%;
   min-height: 100vh;
+  padding: 20px;
 }
-
-.sub-screen {
-  padding-bottom: 40px;
-}
-
-
-/* =========================
-   LOGIN
-========================= */
 
 .login-screen {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  min-height: 100vh;
 }
 
-.login-card {
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+.login-box {
   width: 100%;
   max-width: 420px;
-  padding: 32px 24px;
-  border: 1px solid #444;
-  border-radius: 18px;
-  background: #080808;
   text-align: center;
 }
 
-.login-icon {
-  font-size: 54px;
-  margin-bottom: 25px;
+.login-box h1 {
+  font-size: 34px;
+  margin-bottom: 10px;
 }
 
-.login-card input {
-  width: 100%;
-  margin-bottom: 14px;
+.login-box p {
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+.password-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.password-wrapper input {
+  flex: 1;
+}
+
+.password-wrapper .small-button {
+  width: 52px;
+  flex-shrink: 0;
 }
 
 
-/* =========================
-   INPUTS
-========================= */
+/* =========================================================
+   CAMPOS
+========================================================= */
 
 input,
-textarea,
-select {
+textarea {
   width: 100%;
-  border: 1px solid #555;
-  border-radius: 12px;
-  padding: 14px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 13px;
   background: #111;
   color: #fff;
   outline: none;
 }
 
+input:focus,
+textarea:focus {
+  border-color: #f00;
+}
+
 textarea {
-  min-height: 140px;
+  min-height: 120px;
   resize: vertical;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #e00000;
+input::placeholder,
+textarea::placeholder {
+  color: #777;
 }
 
 
-/* =========================
+/* =========================================================
    BOTÕES
-========================= */
+========================================================= */
 
-.primary-button,
-.secondary-button,
-.danger-button,
-.settings-button {
-  border: 1px solid #555;
-  border-radius: 12px;
-  padding: 14px 18px;
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
   color: #fff;
-  background: #d00000;
-  font-weight: bold;
-  transition: transform 0.15s ease;
+  background: #222;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    background 0.15s ease;
 }
 
-.primary-button:active,
-.secondary-button:active,
-.danger-button:active,
-.settings-button:active,
-.dashboard-card:active,
-.icon-button:active {
-  transform: scale(0.98);
+button:active {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.primary-button {
+  width: 100%;
+  background: #e00000;
+  color: #fff;
+}
+
+.primary-button:hover {
+  background: #ff0000;
 }
 
 .secondary-button {
-  background: #222;
+  width: 100%;
+  background: #333;
+  color: #fff;
 }
 
 .danger-button {
-  background: #900;
-}
-
-.full-button {
-  width: 100%;
-  margin-bottom: 12px;
-}
-
-
-/* =========================
-   CABEÇALHOS
-========================= */
-
-.dashboard-header {
-  padding: 22px 20px 16px;
-  border-bottom: 1px solid #222;
-}
-
-.dashboard-date {
-  margin: 0;
-  font-size: 14px;
-  opacity: 0.75;
-}
-
-.dashboard-time {
-  margin: 4px 0 0;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.page-header {
-  min-height: 72px;
-  padding: 12px 16px;
-  display: grid;
-  grid-template-columns: 48px 1fr 48px;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid #222;
-}
-
-.page-heading {
-  min-width: 0;
-}
-
-.page-heading h1 {
-  margin: 0;
-  font-size: 22px;
-  overflow-wrap: anywhere;
-}
-
-.page-heading p {
-  margin: 3px 0 0;
-  font-size: 11px;
-  opacity: 0.55;
-}
-
-.icon-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid #555;
-  background: #111;
+  background: #8b0000;
   color: #fff;
-  font-size: 24px;
+}
+
+.small-button {
+  background: #222;
+  color: #fff;
 }
 
 
-/* =========================
-   DASHBOARD
-========================= */
+/* =========================================================
+   CABEÇALHO
+========================================================= */
 
-.dashboard-content {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 20px;
+.app-header {
+  max-width: 900px;
+  margin: 0 auto 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-header h1 {
+  font-size: 30px;
+}
+
+.app-header p {
+  margin-top: 5px;
+  opacity: 0.65;
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+.dashboard-grid {
+  width: 100%;
   max-width: 900px;
   margin: 0 auto;
-}
-
-.dashboard-card {
-  width: 100%;
-  min-height: 92px;
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 22px;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dashboard-button {
+  min-height: 115px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 14px;
-  border: 1px solid #333;
-  border-radius: 16px;
-  background: #090909;
+  justify-content: center;
+  gap: 10px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 14px;
   color: #fff;
-  text-align: left;
 }
 
-.card-icon {
+.dashboard-button:hover {
+  border-color: #e00000;
+}
+
+.dashboard-button:first-child {
+  border-color: #e00000;
+}
+
+.dashboard-button span {
+  font-size: 16px;
+}
+
+.dashboard-button::first-line {
+  font-size: 28px;
+}
+
+
+/* =========================================================
+   CABEÇALHOS DAS TELAS
+========================================================= */
+
+.screen-header {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.screen-header h2 {
+  font-size: 26px;
+}
+
+.back-button {
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  flex-shrink: 0;
   font-size: 25px;
-  text-align: center;
+  background: #222;
 }
 
-.card-title {
+
+/* =========================================================
+   AÇÕES
+========================================================= */
+
+.screen-actions {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.screen-actions button {
+  flex: 1;
+}
+
+
+/* =========================================================
+   PESQUISA
+========================================================= */
+
+.search-input {
+  display: block;
+  max-width: 900px;
+  margin: 0 auto 15px;
+}
+
+
+/* =========================================================
+   FILTROS
+========================================================= */
+
+.filter-buttons {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 15px;
+  display: flex;
+  gap: 8px;
+}
+
+.filter-button {
+  flex: 1;
+  background: #222;
+}
+
+.filter-button.active {
+  background: #e00000;
+}
+
+
+/* =========================================================
+   LISTAS
+========================================================= */
+
+.items-list {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.empty-message {
+  padding: 30px 20px;
+  text-align: center;
+  opacity: 0.6;
+  border: 1px dashed #333;
+  border-radius: 12px;
+}
+
+
+/* =========================================================
+   ITEM
+========================================================= */
+
+.item-card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.item-card.pinned {
+  border-color: #e00000;
+}
+
+.item-card.completed {
+  opacity: 0.65;
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.item-title {
+  flex: 1;
+  min-width: 0;
   font-size: 17px;
   font-weight: bold;
   overflow-wrap: anywhere;
 }
 
-.card-arrow {
-  font-size: 26px;
-  text-align: right;
-  color: #e00000;
-}
-
-
-/* =========================
-   CONTEÚDO
-========================= */
-
-.page-content {
-  padding: 18px;
-  max-width: 760px;
-  margin: 0 auto;
-}
-
-.search-input {
-  margin-bottom: 18px;
-}
-
-.items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.item-row {
+.item-title-button {
   width: 100%;
-  min-height: 65px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  align-items: center;
-  border: 1px solid #333;
-  border-radius: 14px;
-  background: #090909;
-  overflow: hidden;
-}
-
-.item-main {
-  min-width: 0;
-  padding: 16px;
+  padding: 0;
   text-align: left;
-  border: 0;
   background: transparent;
-  color: inherit;
+  color: #fff;
 }
 
-.item-title {
-  display: block;
-  font-size: 18px;
-  font-weight: bold;
-  overflow-wrap: anywhere;
+.item-meta {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.55;
 }
 
 .item-actions {
   display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.icon-button {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
   align-items: center;
-  gap: 5px;
-  padding-right: 8px;
+  justify-content: center;
+  background: #222;
 }
 
-.item-action {
-  width: 34px;
-  height: 34px;
-  border: 1px solid #444;
-  border-radius: 9px;
-  background: #151515;
-  color: #fff;
-  font-size: 16px;
+.icon-button.danger {
+  background: #5d0000;
 }
 
-.item-action.delete {
-  color: #ff5555;
-}
 
-.item-action.pin {
-  color: #ffd000;
-}
+/* =========================================================
+   ITEM CONCLUÍDO
+========================================================= */
 
-.item-action.complete {
-  color: #54e36b;
-}
-
-.item-pinned {
-  border-color: #900;
-}
-
-.item-completed .item-title {
+.item-card.completed .item-title {
   text-decoration: line-through;
-  opacity: 0.55;
-}
-
-.empty-message {
-  padding: 30px 10px;
-  text-align: center;
-  opacity: 0.6;
 }
 
 
-/* =========================
+/* =========================================================
    DETALHES
-========================= */
+========================================================= */
 
-.detail-card {
-  border: 1px solid #444;
-  border-radius: 18px;
-  background: #090909;
-  padding: 26px 20px;
+.detail-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.detail-card h2 {
-  margin-top: 0;
+.detail-title {
+  font-size: 28px;
+  margin-bottom: 18px;
+  overflow-wrap: anywhere;
 }
 
 .detail-content {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 16px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  line-height: 1.6;
-  font-size: 18px;
 }
 
-.detail-created {
-  margin-top: 28px;
-  padding-top: 16px;
-  border-top: 1px solid #444;
-  font-size: 12px;
-  opacity: 0.5;
+.detail-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #222;
 }
 
-.detail-field {
-  margin-bottom: 20px;
+.detail-item:first-child {
+  padding-top: 0;
 }
 
-.detail-field:last-child {
-  margin-bottom: 0;
+.detail-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
-.detail-field-label {
-  margin-bottom: 7px;
-  font-size: 13px;
-  font-weight: bold;
-  color: #e00000;
-}
-
-.detail-field-value {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  line-height: 1.5;
-}
-
-
-/* =========================
-   FORMULÁRIOS
-========================= */
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
+.detail-item strong {
   display: block;
-  margin-bottom: 7px;
-  font-size: 14px;
-  font-weight: bold;
+  margin-bottom: 5px;
 }
 
-.form-checkbox {
+.detail-item span {
+  display: block;
+  opacity: 0.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.detail-date {
+  margin-top: 15px;
+  font-size: 13px;
+  opacity: 0.55;
+}
+
+
+/* =========================================================
+   FORMULÁRIO DO MODAL
+========================================================= */
+
+.modal-form {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
 }
 
-.form-checkbox input {
-  width: auto;
+.modal-form label {
+  margin-top: 4px;
+  font-weight: bold;
+}
+
+.modal-form button {
+  margin-top: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-row > * {
+  flex: 1;
 }
 
 
-/* =========================
+/* =========================================================
+   CRONÔMETRO
+========================================================= */
+
+.timer-box {
+  width: 100%;
+  max-width: 700px;
+  margin: 50px auto;
+  text-align: center;
+}
+
+.timer-display {
+  font-size: 58px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 30px;
+}
+
+.timer-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.timer-buttons button {
+  flex: 1;
+}
+
+
+/* =========================================================
+   PROGRESSO
+========================================================= */
+
+.progress-content {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 20px;
+}
+
+.progress-card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 12px;
+}
+
+.progress-card h3 {
+  margin-bottom: 10px;
+}
+
+.progress-number {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 14px;
+  overflow: hidden;
+  background: #222;
+  border-radius: 999px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #e00000;
+  transition: width 0.25s ease;
+}
+
+
+/* =========================================================
    CONFIGURAÇÕES
-========================= */
+========================================================= */
 
 .settings-list {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 10px;
 }
 
 .settings-button {
   width: 100%;
   text-align: left;
+  padding: 16px;
   background: #111;
+  border: 1px solid #222;
 }
 
-.danger-setting {
-  border-color: #800;
-  color: #ff6666;
-}
-
-
-/* =========================
-   CRONÔMETRO
-========================= */
-
-.timer-content {
-  text-align: center;
-}
-
-.timer-display {
-  margin: 35px 0;
-  font-size: clamp(46px, 15vw, 80px);
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-
-.timer-buttons {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+.settings-button:hover {
+  border-color: #e00000;
 }
 
 
-/* =========================
-   PROGRESSO
-========================= */
+/* =========================================================
+   SOBRE
+========================================================= */
 
-.progress-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 18px;
+.about-box {
+  width: 100%;
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
 }
 
-.stat-card {
-  padding: 18px 10px;
-  border: 1px solid #333;
-  border-radius: 14px;
-  background: #090909;
-  text-align: center;
+.about-box h3 {
+  margin-bottom: 15px;
+  font-size: 24px;
 }
 
-.stat-card strong {
-  display: block;
-  font-size: 28px;
-  margin-bottom: 7px;
+.about-box p {
+  margin-bottom: 12px;
+  line-height: 1.5;
+  opacity: 0.8;
 }
 
-.stat-card span {
-  font-size: 11px;
+
+/* =========================================================
+   LIXEIRA
+========================================================= */
+
+.screen-description {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto 15px;
   opacity: 0.65;
 }
 
-.progress-card {
-  padding: 20px;
+.trash-card {
+  background: #111;
   border: 1px solid #333;
-  border-radius: 16px;
-  background: #090909;
+  border-radius: 12px;
+  padding: 14px;
 }
 
-.progress-label {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 10px;
-}
-
-.progress-bar {
-  height: 16px;
-  border-radius: 20px;
-  background: #222;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  background: #d00000;
-  transition: width 0.25s ease;
-}
-
-
-/* =========================
-   LIXEIRA
-========================= */
-
-.small-info {
-  margin-top: 0;
-  margin-bottom: 16px;
+.trash-type {
   font-size: 12px;
-  opacity: 0.6;
+  color: #e00000;
+  margin-bottom: 5px;
+  text-transform: uppercase;
 }
 
-.trash-meta {
-  font-size: 11px;
+.trash-date {
+  margin-top: 7px;
+  font-size: 12px;
   opacity: 0.55;
-  margin-top: 5px;
 }
 
 
-/* =========================
+/* =========================================================
    MODAL
-========================= */
+========================================================= */
 
-.modal-overlay {
+.modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px;
+  padding: 20px;
   background: rgba(0, 0, 0, 0.78);
 }
 
-.modal-card {
+.modal-content {
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 22px;
-  border: 1px solid #555;
-  border-radius: 18px;
-  background: #111;
+  padding: 20px;
+  border-radius: 14px;
+  background: #151515;
+  border: 1px solid #333;
 }
 
-.modal-card h2 {
-  margin-top: 0;
+.modal-content h3 {
+  margin-bottom: 15px;
 }
 
-.modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  margin-top: 18px;
+.modal-content p {
+  line-height: 1.5;
+  margin-bottom: 12px;
+  opacity: 0.8;
 }
 
-.modal-actions button {
-  width: 100%;
+.modal-content label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.modal-content input,
+.modal-content textarea {
+  margin-bottom: 5px;
+}
+
+.modal-content button {
+  margin-top: 10px;
 }
 
 
-/* =========================
+/* =========================================================
    TOAST
-========================= */
+========================================================= */
 
 .toast {
   position: fixed;
-  z-index: 2000;
   left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  width: calc(100% - 40px);
-  max-width: 500px;
-  padding: 14px 18px;
-  border: 1px solid #555;
-  border-radius: 12px;
-  background: #171717;
+  bottom: 20px;
+  z-index: 2000;
+  transform:
+    translateX(-50%)
+    translateY(20px);
+  max-width: calc(100% - 40px);
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #e00000;
   color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   text-align: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.toast.show {
+  opacity: 1;
+  transform:
+    translateX(-50%)
+    translateY(0);
 }
 
 
-/* =========================
+/* =========================================================
+   MENSAGENS
+========================================================= */
+
+.message {
+  min-height: 20px;
+  margin-top: 10px;
+  color: #ff4b4b;
+}
+
+
+/* =========================================================
    MODO VISUALIZADOR
-========================= */
+========================================================= */
 
-body.viewer-mode .edit-only,
-body.viewer-mode .delete-only,
-body.viewer-mode .pin-only,
-body.viewer-mode .complete-only,
-body.viewer-mode .create-only {
-  display: none !important;
+.viewer-mode .primary-button {
+  opacity: 0.45;
+}
+
+.viewer-mode .danger-button {
+  opacity: 0.45;
 }
 
 
-/* =========================
+/* =========================================================
+   TEMA CLARO
+========================================================= */
+
+body.light-theme {
+  background: #fff;
+  color: #000;
+}
+
+body.light-theme input,
+body.light-theme textarea {
+  background: #fff;
+  color: #000;
+  border-color: #ccc;
+}
+
+body.light-theme input::placeholder,
+body.light-theme textarea::placeholder {
+  color: #888;
+}
+
+body.light-theme button {
+  color: #fff;
+}
+
+body.light-theme .secondary-button,
+body.light-theme .small-button,
+body.light-theme .back-button,
+body.light-theme .filter-button {
+  background: #111;
+}
+
+body.light-theme .dashboard-button,
+body.light-theme .item-card,
+body.light-theme .detail-content,
+body.light-theme .progress-card,
+body.light-theme .settings-button,
+body.light-theme .about-box,
+body.light-theme .trash-card,
+body.light-theme .modal-content {
+  background: #fff;
+  color: #000;
+  border-color: #ddd;
+}
+
+body.light-theme .dashboard-button {
+  color: #000;
+}
+
+body.light-theme .item-title-button {
+  color: #000;
+}
+
+body.light-theme .detail-item {
+  border-color: #ddd;
+}
+
+body.light-theme .progress-bar {
+  background: #ddd;
+}
+
+body.light-theme .item-actions .icon-button {
+  background: #111;
+  color: #fff;
+}
+
+body.light-theme .item-actions .icon-button.danger {
+  background: #700000;
+  color: #fff;
+}
+
+
+/* =========================================================
    RESPONSIVO
-========================= */
-
-@media (max-width: 430px) {
-
-  .page-content {
-    padding: 15px;
-  }
-
-  .dashboard-content {
-    padding: 15px;
-    gap: 10px;
-  }
-
-  .dashboard-card {
-    min-height: 86px;
-    padding: 12px;
-    grid-template-columns: 34px minmax(0, 1fr) 18px;
-    gap: 6px;
-  }
-
-  .card-icon {
-    font-size: 22px;
-  }
-
-  .card-title {
-    font-size: 15px;
-  }
-
-  .card-arrow {
-    font-size: 23px;
-  }
-
-  .progress-stats {
-    gap: 6px;
-  }
-
-  .stat-card {
-    padding: 15px 6px;
-  }
-
-  .stat-card strong {
-    font-size: 24px;
-  }
-
-  .stat-card span {
-    font-size: 10px;
-  }
-
-}
-
+========================================================= */
 
 @media (min-width: 700px) {
 
-  .dashboard-content {
-    max-width: 900px;
-    margin: 0 auto;
-    gap: 14px;
-  }
-
-  .dashboard-card {
-    min-height: 100px;
-  }
-
-  .timer-buttons {
-    grid-template-columns: repeat(3, 1fr);
+  .dashboard-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
   }
 
 }
+
+
+@media (max-width: 520px) {
+
+  .screen {
+    padding: 15px;
+  }
+
+  .login-box h1 {
+    font-size: 30px;
+  }
+
+  .app-header h1 {
+    font-size: 26px;
+  }
+
+  .screen-header h2 {
+    font-size: 23px;
+  }
+
+  .screen-actions {
+    flex-direction: column;
+  }
+
+  .filter-buttons {
+    gap: 5px;
+  }
+
+  .filter-button {
+    padding: 10px 5px;
+    font-size: 13px;
+  }
+
+  .item-main {
+    align-items: flex-start;
+  }
+
+  .item-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .timer-display {
+    font-size: 42px;
+  }
+
+  .timer-buttons {
+    flex-direction: column;
+  }
+
+  .modal {
+    padding: 12px;
+  }
+
+  .modal-content {
+    padding: 16px;
+  }
+
+}
+
+
+@media (max-width: 360px) {
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-button {
+    min-height: 90px;
+  }
+
+  .item-actions {
+    gap: 4px;
+  }
+
+  .icon-button {
+    width: 34px;
+    height: 34px;
+  }
+
+}
+
+
+/* =========================================================
+   ACESSIBILIDADE
+========================================================= */
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #e00000;
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   ANIMAÇÕES
+========================================================= */
+
+@keyframes fadeIn {
+
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+
+.screen:not(.hidden) {
+  animation:
+    fadeIn 0.18s ease;
+           }
