@@ -1,363 +1,491 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#000000">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#000000"
+  >
+
+  <meta
+    name="description"
+    content="Secreto V3"
+  >
+
   <title>Secreto V3</title>
-  <link rel="stylesheet" href="style.css">
+
+  <link
+    rel="stylesheet"
+    href="./style.css"
+  >
+
 </head>
+
 
 <body>
 
-  <!-- =========================
-       TELA DE SENHA
-  ========================== -->
-  <section id="loginScreen" class="screen login-screen hidden">
+  <!-- =====================================================
+       TELA DE LOGIN
+  ====================================================== -->
 
-    <div class="login-card">
+  <section
+    id="loginScreen"
+    class="screen login-screen"
+  >
 
-      <div class="login-icon">🔒</div>
+    <div class="login-box">
 
-      <input
-        id="accessPassword"
-        type="password"
-        placeholder="Senha"
-        autocomplete="off"
+      <h1>Secreto V3</h1>
+
+      <p>Digite a senha para entrar.</p>
+
+      <div class="password-wrapper">
+
+        <input
+          id="accessPassword"
+          type="password"
+          placeholder="Senha"
+          autocomplete="current-password"
+        >
+
+        <button
+          id="togglePasswordButton"
+          type="button"
+          class="small-button"
+        >
+          👁️
+        </button>
+
+      </div>
+
+      <button
+        id="loginButton"
+        class="primary-button"
       >
-
-      <button id="loginButton" class="primary-button">
         Entrar
       </button>
 
-      <p id="loginMessage" class="message"></p>
+      <p
+        id="loginMessage"
+        class="message"
+      ></p>
 
     </div>
 
   </section>
 
 
-  <!-- =========================
-       APLICAÇÃO
-  ========================== -->
-  <section id="appScreen" class="hidden">
+  <!-- =====================================================
+       APLICATIVO
+  ====================================================== -->
 
-    <!-- =========================
+  <main
+    id="appScreen"
+    class="hidden"
+  >
+
+    <!-- ===================================================
          DASHBOARD
-    ========================== -->
-    <section id="dashboardScreen" class="screen">
+    ==================================================== -->
 
-      <header class="dashboard-header">
+    <section
+      id="dashboardScreen"
+      class="screen"
+    >
+
+      <header class="app-header">
 
         <div>
-          <p id="clockDate" class="dashboard-date"></p>
-          <p id="clockTime" class="dashboard-time"></p>
+
+          <h1>Secreto V3</h1>
+
+          <p id="dashboardClock">
+            00:00:00
+          </p>
+
         </div>
 
       </header>
 
-      <main class="dashboard-content">
 
-        <!-- 1 -->
+      <div class="dashboard-grid">
+
         <button
           id="openNotesButton"
-          class="dashboard-card"
-          data-screen="notesScreen"
+          class="dashboard-button"
         >
-          <span class="card-icon">📝</span>
-          <span class="card-title">Notas</span>
-          <span class="card-arrow">›</span>
+          📝
+          <span>Notas</span>
         </button>
 
-        <!-- 2 -->
+
         <button
           id="openGoalsButton"
-          class="dashboard-card"
-          data-screen="goalsScreen"
+          class="dashboard-button"
         >
-          <span class="card-icon">🎯</span>
-          <span class="card-title">Metas</span>
-          <span class="card-arrow">›</span>
+          🎯
+          <span>Metas</span>
         </button>
 
-        <!-- 3 -->
+
         <button
           id="openTasksButton"
-          class="dashboard-card"
-          data-screen="tasksScreen"
+          class="dashboard-button"
         >
-          <span class="card-icon">✅</span>
-          <span class="card-title">Tarefas</span>
-          <span class="card-arrow">›</span>
+          ✅
+          <span>Tarefas</span>
         </button>
 
-        <!-- 4 -->
+
         <button
           id="openClothesButton"
-          class="dashboard-card"
-          data-screen="clothesScreen"
+          class="dashboard-button"
         >
-          <span class="card-icon">👕</span>
-          <span class="card-title">Roupas Sítio</span>
-          <span class="card-arrow">›</span>
+          👕
+          <span>Roupas Sítio</span>
         </button>
 
-        <!-- 5 -->
+
         <button
           id="openTimerButton"
-          class="dashboard-card"
-          data-screen="timerScreen"
+          class="dashboard-button"
         >
-          <span class="card-icon">⏱️</span>
-          <span class="card-title">Cronômetro</span>
-          <span class="card-arrow">›</span>
+          ⏱️
+          <span>Cronômetro</span>
         </button>
 
-        <!-- 6 -->
+
         <button
           id="openProgressButton"
-          class="dashboard-card"
-          data-screen="progressScreen"
+          class="dashboard-button"
         >
-          <span class="card-icon">📊</span>
-          <span class="card-title">Progresso</span>
-          <span class="card-arrow">›</span>
+          📊
+          <span>Progresso</span>
         </button>
 
-        <!-- 7 -->
+
         <button
           id="openSettingsButton"
-          class="dashboard-card"
-          data-screen="settingsScreen"
+          class="dashboard-button"
         >
-          <span class="card-icon">⚙️</span>
-          <span class="card-title">Configurações</span>
-          <span class="card-arrow">›</span>
+          ⚙️
+          <span>Configurações</span>
         </button>
 
-      </main>
+      </div>
 
     </section>
 
 
-    <!-- =========================
-         METAS
-    ========================== -->
-    <section id="goalsScreen" class="screen sub-screen hidden">
-
-      <header class="page-header">
-
-        <button
-          id="goalsBackButton"
-          class="icon-button"
-        >
-          ←
-        </button>
-
-        <div class="page-heading">
-          <h1>Metas</h1>
-        </div>
-
-        <button
-          id="shareGoalsButton"
-          class="icon-button"
-        >
-          ↗
-        </button>
-
-      </header>
-
-      <main class="page-content">
-
-        <button
-          id="addGoalButton"
-          class="primary-button full-button"
-        >
-          ＋ Adicionar meta
-        </button>
-
-        <input
-          id="goalSearch"
-          class="search-input"
-          type="search"
-          placeholder="Pesquisar pelo título..."
-          autocomplete="off"
-        >
-
-        <div id="goalsList" class="items-list"></div>
-
-      </main>
-
-    </section>
-
-
-    <!-- =========================
-         TAREFAS
-    ========================== -->
-    <section id="tasksScreen" class="screen sub-screen hidden">
-
-      <header class="page-header">
-
-        <button
-          id="tasksBackButton"
-          class="icon-button"
-        >
-          ←
-        </button>
-
-        <div class="page-heading">
-          <h1>Tarefas</h1>
-        </div>
-
-        <button
-          id="shareTasksButton"
-          class="icon-button"
-        >
-          ↗
-        </button>
-
-      </header>
-
-      <main class="page-content">
-
-        <button
-          id="addTaskButton"
-          class="primary-button full-button"
-        >
-          ＋ Adicionar tarefa
-        </button>
-
-        <input
-          id="taskSearch"
-          class="search-input"
-          type="search"
-          placeholder="Pesquisar pelo título..."
-          autocomplete="off"
-        >
-
-        <div id="tasksList" class="items-list"></div>
-
-      </main>
-
-    </section>
-
-
-    <!-- =========================
+    <!-- ===================================================
          NOTAS
-    ========================== -->
-    <section id="notesScreen" class="screen sub-screen hidden">
+    ==================================================== -->
 
-      <header class="page-header">
+    <section
+      id="notesScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
 
         <button
           id="notesBackButton"
-          class="icon-button"
+          class="back-button"
         >
           ←
         </button>
 
-        <div class="page-heading">
-          <h1>Notas</h1>
-        </div>
-
-        <button
-          id="shareNotesButton"
-          class="icon-button"
-        >
-          ↗
-        </button>
+        <h2>Notas</h2>
 
       </header>
 
-      <main class="page-content">
+
+      <div class="screen-actions">
 
         <button
           id="addNoteButton"
-          class="primary-button full-button"
+          class="primary-button"
         >
-          ＋ Adicionar nota
+          + Adicionar nota
         </button>
 
-        <input
-          id="noteSearch"
-          class="search-input"
-          type="search"
-          placeholder="Pesquisar pelo título..."
-          autocomplete="off"
+        <button
+          id="shareNotesButton"
+          class="secondary-button"
         >
+          📤 Compartilhar
+        </button>
 
-        <div id="notesList" class="items-list"></div>
+      </div>
 
-      </main>
+
+      <input
+        id="noteSearch"
+        class="search-input"
+        type="search"
+        placeholder="Pesquisar por título..."
+      >
+
+
+      <div
+        id="notesList"
+        class="items-list"
+      ></div>
 
     </section>
 
 
-    <!-- =========================
-         ROUPAS SÍTIO
-    ========================== -->
-    <section id="clothesScreen" class="screen sub-screen hidden">
+    <!-- ===================================================
+         METAS
+    ==================================================== -->
 
-      <header class="page-header">
+    <section
+      id="goalsScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
+
+        <button
+          id="goalsBackButton"
+          class="back-button"
+        >
+          ←
+        </button>
+
+        <h2>Metas</h2>
+
+      </header>
+
+
+      <div class="screen-actions">
+
+        <button
+          id="addGoalButton"
+          class="primary-button"
+        >
+          + Adicionar meta
+        </button>
+
+        <button
+          id="shareGoalsButton"
+          class="secondary-button"
+        >
+          📤 Compartilhar
+        </button>
+
+      </div>
+
+
+      <input
+        id="goalSearch"
+        class="search-input"
+        type="search"
+        placeholder="Pesquisar..."
+      >
+
+
+      <div class="filter-buttons">
+
+        <button
+          id="goalFilterAll"
+          class="filter-button active"
+        >
+          Todos
+        </button>
+
+        <button
+          id="goalFilterPending"
+          class="filter-button"
+        >
+          Pendentes
+        </button>
+
+        <button
+          id="goalFilterCompleted"
+          class="filter-button"
+        >
+          Concluídos
+        </button>
+
+      </div>
+
+
+      <div
+        id="goalsList"
+        class="items-list"
+      ></div>
+
+    </section>
+
+
+    <!-- ===================================================
+         TAREFAS
+    ==================================================== -->
+
+    <section
+      id="tasksScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
+
+        <button
+          id="tasksBackButton"
+          class="back-button"
+        >
+          ←
+        </button>
+
+        <h2>Tarefas</h2>
+
+      </header>
+
+
+      <div class="screen-actions">
+
+        <button
+          id="addTaskButton"
+          class="primary-button"
+        >
+          + Adicionar tarefa
+        </button>
+
+        <button
+          id="shareTasksButton"
+          class="secondary-button"
+        >
+          📤 Compartilhar
+        </button>
+
+      </div>
+
+
+      <input
+        id="taskSearch"
+        class="search-input"
+        type="search"
+        placeholder="Pesquisar..."
+      >
+
+
+      <div class="filter-buttons">
+
+        <button
+          id="taskFilterAll"
+          class="filter-button active"
+        >
+          Todos
+        </button>
+
+        <button
+          id="taskFilterPending"
+          class="filter-button"
+        >
+          Pendentes
+        </button>
+
+        <button
+          id="taskFilterCompleted"
+          class="filter-button"
+        >
+          Concluídos
+        </button>
+
+      </div>
+
+
+      <div
+        id="tasksList"
+        class="items-list"
+      ></div>
+
+    </section>
+
+
+    <!-- ===================================================
+         ROUPAS SÍTIO
+    ==================================================== -->
+
+    <section
+      id="clothesScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
 
         <button
           id="clothesBackButton"
-          class="icon-button"
+          class="back-button"
         >
           ←
         </button>
 
-        <div class="page-heading">
-          <h1>Roupas Sítio</h1>
-        </div>
-
-        <div></div>
+        <h2>Roupas Sítio</h2>
 
       </header>
 
-      <main class="page-content">
+
+      <div class="screen-actions">
 
         <button
           id="addClothingButton"
-          class="primary-button full-button"
+          class="primary-button"
         >
-          ＋ Adicionar roupa
+          + Adicionar roupa
         </button>
 
-        <div id="clothesList" class="items-list"></div>
+      </div>
 
-      </main>
+
+      <div
+        id="clothesList"
+        class="items-list"
+      ></div>
 
     </section>
 
 
-    <!-- =========================
+    <!-- ===================================================
          CRONÔMETRO
-    ========================== -->
-    <section id="timerScreen" class="screen sub-screen hidden">
+    ==================================================== -->
 
-      <header class="page-header">
+    <section
+      id="timerScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
 
         <button
           id="timerBackButton"
-          class="icon-button"
+          class="back-button"
         >
           ←
         </button>
 
-        <div class="page-heading">
-          <h1>Cronômetro</h1>
-        </div>
-
-        <div></div>
+        <h2>Cronômetro</h2>
 
       </header>
 
-      <main class="page-content timer-content">
 
-        <div id="timerDisplay" class="timer-display">
+      <div class="timer-box">
+
+        <div
+          id="timerDisplay"
+          class="timer-display"
+        >
           00:00:00
         </div>
+
 
         <div class="timer-buttons">
 
@@ -384,117 +512,83 @@
 
         </div>
 
-      </main>
+      </div>
 
     </section>
 
 
-    <!-- =========================
+    <!-- ===================================================
          PROGRESSO
-    ========================== -->
-    <section id="progressScreen" class="screen sub-screen hidden">
+    ==================================================== -->
 
-      <header class="page-header">
+    <section
+      id="progressScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
 
         <button
           id="progressBackButton"
-          class="icon-button"
+          class="back-button"
         >
           ←
         </button>
 
-        <div class="page-heading">
-          <h1>Progresso</h1>
-        </div>
-
-        <button
-          id="shareProgressButton"
-          class="icon-button"
-        >
-          ↗
-        </button>
+        <h2>Progresso</h2>
 
       </header>
 
-      <main class="page-content">
 
-        <div class="progress-stats">
+      <div
+        id="progressContent"
+        class="progress-content"
+      ></div>
 
-          <div class="stat-card">
-            <strong id="totalGoalsStat">0</strong>
-            <span>Total de metas</span>
-          </div>
 
-          <div class="stat-card">
-            <strong id="completedGoalsStat">0</strong>
-            <span>Concluídas</span>
-          </div>
-
-          <div class="stat-card">
-            <strong id="pendingGoalsStat">0</strong>
-            <span>Em andamento</span>
-          </div>
-
-        </div>
-
-        <div class="progress-card">
-
-          <div class="progress-label">
-            <span>Progresso das metas</span>
-            <strong id="goalPercentage">0%</strong>
-          </div>
-
-          <div class="progress-bar">
-            <div
-              id="goalProgressBar"
-              class="progress-fill"
-            ></div>
-          </div>
-
-        </div>
-
-      </main>
+      <button
+        id="shareProgressButton"
+        class="secondary-button"
+      >
+        📤 Compartilhar progresso
+      </button>
 
     </section>
 
 
-    <!-- =========================
+    <!-- ===================================================
          CONFIGURAÇÕES
-    ========================== -->
-    <section id="settingsScreen" class="screen sub-screen hidden">
+    ==================================================== -->
 
-      <header class="page-header">
+    <section
+      id="settingsScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
 
         <button
           id="settingsBackButton"
-          class="icon-button"
+          class="back-button"
         >
           ←
         </button>
 
-        <div class="page-heading">
-          <h1>Configurações</h1>
-        </div>
-
-        <div></div>
+        <h2>Configurações</h2>
 
       </header>
 
-      <main class="page-content settings-list">
+
+      <div class="settings-list">
+
 
         <button
           id="lockSiteButton"
           class="settings-button"
         >
-          🔒 Voltar para tela de senha
+          🔒 Bloquear aplicativo
         </button>
 
-        <button
-          id="deleteAllButton"
-          class="settings-button danger-setting"
-        >
-          🗑️ Apagar geral
-        </button>
 
         <button
           id="viewerToggleButton"
@@ -503,26 +597,30 @@
           👁️ Modo Visualizador
         </button>
 
+
         <button
           id="themeButton"
           class="settings-button"
         >
-          🎨 Tema
+          🌙 Alterar tema
         </button>
+
 
         <button
           id="changePasswordButton"
           class="settings-button"
         >
-          🔑 Alterar senha de acesso
+          🔑 Alterar senha
         </button>
+
 
         <button
           id="timeFormatButton"
           class="settings-button"
         >
-          🕐 Formato da hora
+          🕐 Formato de horário
         </button>
+
 
         <button
           id="trashButton"
@@ -531,190 +629,149 @@
           🗑️ Lixeira
         </button>
 
+
         <button
           id="shareAllButton"
           class="settings-button"
         >
-          ↗ Compartilhar geral
+          📤 Compartilhar geral
         </button>
+
 
         <button
           id="aboutButton"
           class="settings-button"
         >
-          ℹ️ Sobre o projeto
+          ℹ️ Sobre
         </button>
 
-      </main>
-
-    </section>
-
-
-    <!-- =========================
-         SOBRE
-    ========================== -->
-    <section id="aboutScreen" class="screen sub-screen hidden">
-
-      <header class="page-header">
 
         <button
-          id="aboutBackButton"
-          class="icon-button"
+          id="deleteAllButton"
+          class="danger-button settings-button"
         >
-          ←
+          ⚠️ Apagar geral
         </button>
 
-        <div class="page-heading">
-          <h1>Sobre</h1>
-        </div>
-
-        <div></div>
-
-      </header>
-
-      <main class="page-content">
-
-        <article class="detail-card">
-
-          <h2>Secreto V3</h2>
-
-          <p>
-            Projeto pessoal desenvolvido como aplicação estática
-            para GitHub Pages.
-          </p>
-
-          <p>
-            Os dados ficam armazenados localmente no navegador
-            através do localStorage.
-          </p>
-
-          <p>
-            O projeto também possui funcionamento offline através
-            de Service Worker e Cache API.
-          </p>
-
-          <p>
-            Não utiliza banco de dados nem servidor próprio.
-          </p>
-
-        </article>
-
-      </main>
+      </div>
 
     </section>
 
 
-    <!-- =========================
+    <!-- ===================================================
          LIXEIRA
-    ========================== -->
-    <section id="trashScreen" class="screen sub-screen hidden">
+    ==================================================== -->
 
-      <header class="page-header">
+    <section
+      id="trashScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
 
         <button
           id="trashBackButton"
-          class="icon-button"
+          class="back-button"
         >
           ←
         </button>
 
-        <div class="page-heading">
-          <h1>Lixeira</h1>
-        </div>
-
-        <div></div>
+        <h2>Lixeira</h2>
 
       </header>
 
-      <main class="page-content">
 
-        <p class="small-info">
-          Itens apagados permanecem por até 50 dias.
-        </p>
+      <p class="screen-description">
+        Itens excluídos permanecem por 50 dias.
+      </p>
 
-        <div id="trashList" class="items-list"></div>
-
-      </main>
-
-    </section>
-
-
-    <!-- =========================
-         TELA DE DETALHES
-    ========================== -->
-    <section id="detailScreen" class="screen sub-screen hidden">
-
-      <header class="page-header">
-
-        <button
-          id="detailBackButton"
-          class="icon-button"
-        >
-          ←
-        </button>
-
-        <div class="page-heading">
-
-          <h1 id="detailTitle"></h1>
-
-          <p id="detailMeta"></p>
-
-        </div>
-
-        <div></div>
-
-      </header>
-
-      <main class="page-content">
-
-        <article class="detail-card">
-
-          <div id="detailContent"></div>
-
-        </article>
-
-      </main>
-
-    </section>
-
-
-  </section>
-
-
-  <!-- =========================
-       MODAL
-  ========================== -->
-  <div
-    id="appModal"
-    class="modal-overlay hidden"
-  >
-
-    <div class="modal-card">
-
-      <h2 id="modalTitle"></h2>
-
-      <div id="modalBody"></div>
 
       <div
-        id="modalActions"
-        class="modal-actions"
+        id="trashList"
+        class="items-list"
       ></div>
 
-    </div>
+    </section>
+
+
+    <!-- ===================================================
+         SOBRE
+    ==================================================== -->
+
+    <section
+      id="aboutScreen"
+      class="screen hidden"
+    >
+
+      <header class="screen-header">
+
+        <button
+          id="aboutBackButton"
+          class="back-button"
+        >
+          ←
+        </button>
+
+        <h2>Sobre</h2>
+
+      </header>
+
+
+      <div class="about-box">
+
+        <h3>Secreto V3</h3>
+
+        <p>
+          Um espaço pessoal para organizar
+          notas, metas, tarefas, roupas e muito mais.
+        </p>
+
+        <p>
+          Os dados são armazenados localmente
+          neste dispositivo.
+        </p>
+
+        <p>
+          Funciona sem banco de dados e pode
+          continuar funcionando offline.
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       MODAL
+  ====================================================== -->
+
+  <div
+    id="appModal"
+    class="modal hidden"
+  >
+
+    <div
+      id="modalContent"
+      class="modal-content"
+    ></div>
 
   </div>
 
 
-  <!-- =========================
+  <!-- =====================================================
        TOAST
-  ========================== -->
+  ====================================================== -->
+
   <div
     id="toast"
-    class="toast hidden"
+    class="toast"
   ></div>
 
 
-  <script src="script.js"></script>
+  <script src="./script.js"></script>
 
 </body>
-        </html>
+
+  </html>
