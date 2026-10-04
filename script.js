@@ -4219,7 +4219,7 @@ function buildGeneralShareText() {
     buildNotesShareText();
 
   text +=
-    "\n=== ROUPAS SÍTIO ===\n";
+     "\n=== ROUPAS SÍTIO ===\n";
 
   if (
     clothes.length === 0
@@ -4237,26 +4237,41 @@ function buildGeneralShareText() {
           `${index + 1}. ${clothing.title}\n`;
 
         text +=
-          `Touca: ${
-            clothing.touca ||
+          `Na cabeça: ${
+            clothing.naCabeca ??
+            clothing.touca ??
             "Não informado"
           }\n`;
 
         text +=
-          `Camiseta: ${
-            clothing.camiseta ||
+          `No corpo 1: ${
+            clothing.corpo1 ??
+            clothing.camiseta ??
             "Não informado"
           }\n`;
 
         text +=
-          `Blusa: ${
-            clothing.blusa ||
+          `No corpo 2: ${
+            clothing.corpo2 ??
+            clothing.blusa ??
             "Não informado"
           }\n`;
 
         text +=
           `Calça: ${
             clothing.calca ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `Meia: ${
+            clothing.meia ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `Sapato: ${
+            clothing.sapato ||
             "Não informado"
           }\n`;
 
