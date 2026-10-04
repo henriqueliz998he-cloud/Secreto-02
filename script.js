@@ -1,480 +1,919 @@
 const DEFAULT_ACCESS_PASSWORD = "Hg99";
 const MASTER_DELETE_PASSWORD = "Hg88";
+const TRASH_DAYS = 50;
+const TRASH_TIME = TRASH_DAYS * 24 * 60 * 60 * 1000;
 
-const STORAGE_KEYS = {
-    accessPassword: "metas016_access_password",
-    goals: "metas016_goals",
-    tasks: "metas016_tasks",
-    notes: "metas016_notes",
-    theme: "metas016_theme",
-    viewer: "metas016_viewer_mode",
-    timeFormat: "metas016_time_format",
-    timerSeconds: "metas016_timer_seconds"
+const KEYS = {
+    password: "secreto_v3_password",
+    goals: "secreto_v3_goals",
+    tasks: "secreto_v3_tasks",
+    notes: "secreto_v3_notes",
+    clothes: "secreto_v3_clothes",
+    trash: "secreto_v3_trash",
+    theme: "secreto_v3_theme",
+    viewer: "secreto_v3_viewer",
+    timeFormat: "secreto_v3_time_format",
+    timer: "secreto_v3_timer"
 };
 
 const state = {
-    accessPassword: localStorage.getItem(STORAGE_KEYS.accessPassword) || DEFAULT_ACCESS_PASSWORD,
-    goals: loadJSON(STORAGE_KEYS.goals, []),
-    tasks: loadJSON(STORAGE_KEYS.tasks, []),
-    notes: loadJSON(STORAGE_KEYS.notes, []),
-    theme: localStorage.getItem(STORAGE_KEYS.theme) || "dark",
-    viewer: localStorage.getItem(STORAGE_KEYS.viewer) === "true",
-    timeFormat: localStorage.getItem(STORAGE_KEYS.timeFormat) || "24",
-    timerSeconds: Number(localStorage.getItem(STORAGE_KEYS.timerSeconds) || 0),
+    password:
+        localStorage.getItem(KEYS.password) ||
+        DEFAULT_ACCESS_PASSWORD,
+
+    goals: loadArray(KEYS.goals),
+    tasks: loadArray(KEYS.tasks),
+    notes: loadArray(KEYS.notes),
+    clothes: loadArray(KEYS.clothes),
+    trash: loadArray(KEYS.trash),
+
+    theme:
+        localStorage.getItem(KEYS.theme) ||
+        "dark",
+
+    viewer:
+        localStorage.getItem(KEYS.viewer) === "true",
+
+    timeFormat:
+        localStorage.getItem(KEYS.timeFormat) ||
+        "24",
+
+    timerSeconds:
+        Number(
+            localStorage.getItem(KEYS.timer) || 0
+        ),
+
     timerRunning: false,
     timerInterval: null,
-    detailOrigin: "home",
+
     detailType: null,
-    detailId: null
+    detailId: null,
+    detailOrigin: "home"
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-    setupApp();
-});
 
-function loadJSON(key, fallback) {
-    try {
-        const value = localStorage.getItem(key);
-        return value ? JSON.parse(value) : fallback;
-    } catch {
-        return fallback;
-    }
-}
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
 
-function saveJSON(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-}
+document.addEventListener(
+    "DOMContentLoaded",
+    init
+);
 
-function setupApp() {
+function init() {
+
+    cleanTrash();
+
     applyTheme();
-    applyViewerMode();
+    applyViewer();
+
     setupNavigation();
     setupLogin();
+
     setupGoals();
     setupTasks();
     setupNotes();
+    setupClothes();
+
     setupTimer();
     setupProgress();
+
     setupSettings();
-    setupAbout();
+
     updateClock();
-    setInterval(updateClock, 1000);
+
+    setInterval(
+        updateClock,
+        1000
+    );
+
     updateAll();
+
     registerServiceWorker();
 }
 
-function $(id) {
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+function loadArray(key) {
+
+    try {
+
+        const value =
+            localStorage.getItem(key);
+
+        if (!value) {
+            return [];
+        }
+
+        const parsed =
+            JSON.parse(value);
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    } catch {
+
+        return [];
+    }
+}
+
+function saveArray(key, value) {
+
+    localStorage.setItem(
+        key,
+        JSON.stringify(value)
+    );
+}
+
+function get(id) {
     return document.getElementById(id);
 }
 
-/* =========================
-   NAVEGAÇÃO
-========================= */
+function generateId() {
 
-const screenIds = [
+    return (
+        Date.now().toString(36) +
+        "-" +
+        Math.random()
+            .toString(36)
+            .substring(2, 10)
+    );
+}
+
+function normalizeText(text) {
+
+    return String(text || "")
+        .normalize("NFD")
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        )
+        .toLowerCase()
+        .trim();
+}
+
+function escapeHTML(text) {
+
+    return String(text || "")
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+function escapeAttribute(text) {
+    return escapeHTML(text);
+}
+
+function sortItems(a, b) {
+
+    if (
+        Boolean(a.pinned) !==
+        Boolean(b.pinned)
+    ) {
+        return a.pinned
+            ? -1
+            : 1;
+    }
+
+    return (
+        new Date(b.createdAt) -
+        new Date(a.createdAt)
+    );
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+
+const screens = [
     "loginScreen",
     "homeScreen",
     "goalsScreen",
     "tasksScreen",
     "notesScreen",
+    "clothesScreen",
     "timerScreen",
     "progressScreen",
     "settingsScreen",
+    "trashScreen",
     "aboutScreen",
     "detailScreen"
 ];
 
-function showScreen(screenId) {
-    screenIds.forEach(id => {
-        const element = $(id);
-        if (element) {
-            element.classList.add("hidden");
+function showScreen(id) {
+
+    screens.forEach(screenId => {
+
+        const screen =
+            get(screenId);
+
+        if (screen) {
+            screen.classList.add(
+                "hidden"
+            );
         }
+
     });
 
-    const target = $(screenId);
+    const target =
+        get(id);
 
     if (target) {
-        target.classList.remove("hidden");
+        target.classList.remove(
+            "hidden"
+        );
     }
 
-    window.scrollTo({
-        top: 0,
-        behavior: "instant"
-    });
+    window.scrollTo(
+        0,
+        0
+    );
 
-    if (screenId === "progressScreen") {
+    if (
+        id ===
+        "progressScreen"
+    ) {
         renderProgress();
     }
 
-    if (screenId === "settingsScreen") {
+    if (
+        id ===
+        "trashScreen"
+    ) {
+        renderTrash();
+    }
+
+    if (
+        id ===
+        "settingsScreen"
+    ) {
         updateSettingsButtons();
     }
 }
 
 function setupNavigation() {
-    const menuMap = {
-        goalsCard: "goalsScreen",
-        tasksCard: "tasksScreen",
-        notesCard: "notesScreen",
-        timerCard: "timerScreen",
-        progressCard: "progressScreen",
-        settingsCard: "settingsScreen"
+
+    const map = {
+
+        goalsCard:
+            "goalsScreen",
+
+        tasksCard:
+            "tasksScreen",
+
+        notesCard:
+            "notesScreen",
+
+        clothesCard:
+            "clothesScreen",
+
+        timerCard:
+            "timerScreen",
+
+        progressCard:
+            "progressScreen",
+
+        settingsCard:
+            "settingsScreen"
     };
 
-    Object.entries(menuMap).forEach(([buttonId, screenId]) => {
-        const button = $(buttonId);
+    Object.entries(map)
+        .forEach(
+            ([buttonId, screenId]) => {
 
-        if (button) {
-            button.addEventListener("click", () => {
-                showScreen(screenId);
-            });
-        }
-    });
+                const button =
+                    get(buttonId);
 
-    document.querySelectorAll("[data-back]").forEach(button => {
-        button.addEventListener("click", () => {
-            showScreen(button.dataset.back);
+                if (!button) {
+                    return;
+                }
+
+                button.addEventListener(
+                    "click",
+                    () => {
+                        showScreen(
+                            screenId
+                        );
+                    }
+                );
+
+            }
+        );
+
+    document
+        .querySelectorAll(
+            "[data-back]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    showScreen(
+                        button.dataset.back
+                    );
+
+                }
+            );
+
         });
-    });
-
-    const homeBackButtons = document.querySelectorAll(".back-home");
-
-    homeBackButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            showScreen("homeScreen");
-        });
-    });
 }
 
-/* =========================
+
+/* =========================================================
    LOGIN
-========================= */
+========================================================= */
 
 function setupLogin() {
-    const loginButton = $("loginButton");
-    const passwordInput = $("passwordInput");
 
-    if (loginButton) {
-        loginButton.addEventListener("click", login);
+    const button =
+        get("loginButton");
+
+    const input =
+        get("passwordInput");
+
+    if (button) {
+
+        button.addEventListener(
+            "click",
+            login
+        );
+
     }
 
-    if (passwordInput) {
-        passwordInput.addEventListener("keydown", event => {
-            if (event.key === "Enter") {
-                login();
+    if (input) {
+
+        input.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key ===
+                    "Enter"
+                ) {
+                    login();
+                }
+
             }
-        });
+        );
+
     }
 }
 
 function login() {
-    const passwordInput = $("passwordInput");
-    const loginMessage = $("loginMessage");
 
-    if (!passwordInput) return;
+    const input =
+        get("passwordInput");
 
-    const password = passwordInput.value;
+    const message =
+        get("loginMessage");
 
-    if (password === state.accessPassword) {
-        passwordInput.value = "";
-
-        if (loginMessage) {
-            loginMessage.textContent = "";
-        }
-
-        showScreen("homeScreen");
+    if (!input) {
         return;
     }
 
-    if (loginMessage) {
-        loginMessage.textContent = "Senha incorreta.";
+    if (
+        input.value ===
+        state.password
+    ) {
+
+        input.value = "";
+
+        if (message) {
+            message.textContent = "";
+        }
+
+        showScreen(
+            "homeScreen"
+        );
+
+        return;
+    }
+
+    if (message) {
+        message.textContent =
+            "Senha incorreta.";
     }
 }
 
 function lockSite() {
-    if (state.timerRunning) {
-        pauseTimer();
+
+    closeModals();
+
+    const input =
+        get("passwordInput");
+
+    const message =
+        get("loginMessage");
+
+    if (input) {
+        input.value = "";
     }
 
-    closeAllModals();
-
-    const passwordInput = $("passwordInput");
-    const loginMessage = $("loginMessage");
-
-    if (passwordInput) {
-        passwordInput.value = "";
+    if (message) {
+        message.textContent = "";
     }
 
-    if (loginMessage) {
-        loginMessage.textContent = "";
-    }
-
-    showScreen("loginScreen");
+    showScreen(
+        "loginScreen"
+    );
 }
 
-/* =========================
-   RELÓGIO
-========================= */
+
+/* =========================================================
+   DATA E HORA
+========================================================= */
 
 function updateClock() {
-    const now = new Date();
 
-    const dateElement = $("currentDate");
-    const timeElement = $("currentTime");
+    const now =
+        new Date();
 
-    if (dateElement) {
-        dateElement.textContent = formatDate(now);
+    const date =
+        get("currentDate");
+
+    const time =
+        get("currentTime");
+
+    if (date) {
+        date.textContent =
+            formatDate(now);
     }
 
-    if (timeElement) {
-        timeElement.textContent = formatTime(now);
+    if (time) {
+        time.textContent =
+            formatTime(now);
     }
-
-    updateItemDates();
 }
 
 function formatDate(date) {
-    return new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-    }).format(date);
+
+    return new Intl.DateTimeFormat(
+        "pt-BR",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    ).format(date);
 }
 
 function formatTime(date) {
-    return new Intl.DateTimeFormat("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: state.timeFormat === "12"
-    }).format(date);
+
+    return new Intl.DateTimeFormat(
+        "pt-BR",
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12:
+                state.timeFormat ===
+                "12"
+        }
+    ).format(date);
 }
 
 function formatDateTime(iso) {
-    const date = new Date(iso);
 
-    return `${formatDate(date)} • ${formatTime(date)}`;
+    return formatDate(
+        new Date(iso)
+    ) +
+        " • " +
+        formatTime(
+            new Date(iso)
+        );
 }
 
-function updateItemDates() {
-    document.querySelectorAll("[data-created-at]").forEach(element => {
-        const date = element.dataset.createdAt;
 
-        if (date) {
-            element.textContent = formatDateTime(date);
-        }
-    });
-}
-
-/* =========================
+/* =========================================================
    METAS
-========================= */
+========================================================= */
 
 function setupGoals() {
-    const addButton = $("addGoalButton");
-    const shareButton = $("shareGoalsButton");
-    const searchInput = $("goalSearch");
 
-    if (addButton) {
-        addButton.addEventListener("click", () => {
-            if (state.viewer) return;
+    const add =
+        get("addGoalButton");
 
-            openGoalEditor();
-        });
+    const share =
+        get("shareGoalsButton");
+
+    const search =
+        get("goalSearch");
+
+    if (add) {
+
+        add.addEventListener(
+            "click",
+            () => {
+
+                if (state.viewer) {
+                    return;
+                }
+
+                openGoalForm();
+
+            }
+        );
+
     }
 
-    if (shareButton) {
-        shareButton.addEventListener("click", shareGoals);
+    if (share) {
+
+        share.addEventListener(
+            "click",
+            shareGoals
+        );
+
     }
 
-    if (searchInput) {
-        searchInput.addEventListener("input", renderGoals);
+    if (search) {
+
+        search.addEventListener(
+            "input",
+            renderGoals
+        );
+
     }
 
     renderGoals();
 }
 
 function renderGoals() {
-    const container = $("goalsList");
 
-    if (!container) return;
+    const container =
+        get("goalsList");
 
-    const searchInput = $("goalSearch");
-    const search = normalizeText(searchInput ? searchInput.value : "");
-
-    let goals = state.goals.filter(goal => {
-        return normalizeText(goal.title).includes(search);
-    });
-
-    goals.sort(sortItems);
-
-    container.innerHTML = "";
-
-    if (goals.length === 0) {
-        container.innerHTML = `
-            <div class="empty-message">
-                Nenhuma meta encontrada.
-            </div>
-        `;
+    if (!container) {
         return;
     }
 
-    goals.forEach(goal => {
-        const card = document.createElement("div");
-        card.className = "item-card";
+    const search =
+        normalizeText(
+            get("goalSearch")?.value
+        );
+
+    let list =
+        state.goals.filter(
+            goal =>
+                normalizeText(
+                    goal.title
+                ).includes(search)
+        );
+
+    list.sort(sortItems);
+
+    container.innerHTML = "";
+
+    if (!list.length) {
+
+        container.innerHTML =
+            `<div class="empty-message">
+                Nenhuma meta encontrada.
+            </div>`;
+
+        return;
+    }
+
+    list.forEach(goal => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "item-card";
+
+        if (goal.pinned) {
+            card.classList.add(
+                "pinned"
+            );
+        }
 
         if (goal.completed) {
-            card.classList.add("completed");
+            card.classList.add(
+                "completed"
+            );
         }
 
-        if (goal.pinned) {
-            card.classList.add("pinned");
-        }
+        const checkbox =
+            document.createElement(
+                "input"
+            );
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "item-checkbox";
-        checkbox.checked = Boolean(goal.completed);
-        checkbox.title = goal.completed ? "Meta concluída" : "Marcar como concluída";
-        checkbox.disabled = state.viewer;
+        checkbox.type =
+            "checkbox";
 
-        checkbox.addEventListener("change", () => {
-            if (state.viewer) return;
+        checkbox.className =
+            "item-checkbox";
 
-            goal.completed = checkbox.checked;
-            saveJSON(STORAGE_KEYS.goals, state.goals);
+        checkbox.checked =
+            Boolean(
+                goal.completed
+            );
 
-            renderGoals();
-            renderProgress();
-        });
+        checkbox.disabled =
+            state.viewer;
 
-        const content = document.createElement("div");
-        content.className = "item-main";
+        checkbox.addEventListener(
+            "change",
+            () => {
 
-        const title = document.createElement("button");
-        title.className = "item-title";
-        title.textContent = goal.title || "Meta sem título";
+                if (state.viewer) {
+                    return;
+                }
 
-        title.addEventListener("click", () => {
-            openDetail("goal", goal.id, "goalsScreen");
-        });
+                goal.completed =
+                    checkbox.checked;
 
-        const meta = document.createElement("div");
-        meta.className = "item-date";
-        meta.dataset.createdAt = goal.createdAt;
-        meta.textContent = formatDateTime(goal.createdAt);
+                saveArray(
+                    KEYS.goals,
+                    state.goals
+                );
 
-        content.appendChild(title);
-        content.appendChild(meta);
+                renderGoals();
+                renderProgress();
 
-        const actions = document.createElement("div");
-        actions.className = "item-actions";
+            }
+        );
 
-        if (goal.pinned) {
-            const pinLabel = document.createElement("span");
-            pinLabel.className = "pin-indicator";
-            pinLabel.textContent = "📌";
-            pinLabel.title = "Fixada";
-            actions.appendChild(pinLabel);
+        const main =
+            document.createElement(
+                "div"
+            );
+
+        main.className =
+            "item-main";
+
+        const title =
+            document.createElement(
+                "button"
+            );
+
+        title.className =
+            "item-title";
+
+        title.textContent =
+            goal.title;
+
+        title.addEventListener(
+            "click",
+            () => {
+
+                openDetail(
+                    "goal",
+                    goal.id,
+                    "goalsScreen"
+                );
+
+            }
+        );
+
+        const date =
+            document.createElement(
+                "div"
+            );
+
+        date.className =
+            "item-date";
+
+        date.textContent =
+            formatDateTime(
+                goal.createdAt
+            );
+
+        main.appendChild(title);
+        main.appendChild(date);
+
+        const actions =
+            document.createElement(
+                "div"
+            );
+
+        actions.className =
+            "item-actions";
+
+        if (
+            goal.pinned &&
+            !state.viewer
+        ) {
+
+            const pin =
+                document.createElement(
+                    "span"
+                );
+
+            pin.className =
+                "pin-indicator";
+
+            pin.textContent =
+                "📌";
+
+            actions.appendChild(pin);
         }
 
         if (!state.viewer) {
-            const pinButton = createSmallButton(
-                "📌",
-                "Fixar/desafixar",
-                "pin-button",
-                () => togglePin("goal", goal.id)
+
+            actions.appendChild(
+                createActionButton(
+                    "📌",
+                    "Fixar",
+                    () =>
+                        togglePin(
+                            "goal",
+                            goal.id
+                        )
+                )
             );
 
-            const editButton = createSmallButton(
-                "✏️",
-                "Editar",
-                "edit-button",
-                () => openGoalEditor(goal)
+            actions.appendChild(
+                createActionButton(
+                    "✏️",
+                    "Editar",
+                    () =>
+                        openGoalForm(
+                            goal
+                        )
+                )
             );
 
-            const deleteButton = createSmallButton(
-                "🗑️",
-                "Excluir",
-                "delete-button",
-                () => deleteItem("goal", goal.id)
+            actions.appendChild(
+                createActionButton(
+                    "🗑️",
+                    "Excluir",
+                    () =>
+                        moveToTrash(
+                            "goal",
+                            goal.id
+                        )
+                )
             );
-
-            actions.appendChild(pinButton);
-            actions.appendChild(editButton);
-            actions.appendChild(deleteButton);
         }
 
-        card.appendChild(checkbox);
-        card.appendChild(content);
-        card.appendChild(actions);
+        card.appendChild(
+            checkbox
+        );
 
-        container.appendChild(card);
+        card.appendChild(
+            main
+        );
+
+        card.appendChild(
+            actions
+        );
+
+        container.appendChild(
+            card
+        );
+
     });
 }
 
-function openGoalEditor(goal = null) {
-    const editing = Boolean(goal);
+function openGoalForm(goal = null) {
 
-    const html = `
-        <div class="form-group">
-            <label for="modalTitle">Título</label>
-            <input id="modalTitle" type="text" maxlength="120"
-                value="${escapeAttribute(goal?.title || "")}"
-                placeholder="Título da meta">
-        </div>
-
-        <div class="form-group">
-            <label for="modalContent">Descrição</label>
-            <textarea id="modalContent" rows="6"
-                placeholder="Descreva sua meta">${escapeHTML(goal?.content || "")}</textarea>
-        </div>
-    `;
+    const editing =
+        Boolean(goal);
 
     showModal({
-        title: editing ? "Editar meta" : "Nova meta",
-        content: html,
+
+        title:
+            editing
+                ? "Editar meta"
+                : "Adicionar meta",
+
+        content: `
+            <div class="form-group">
+                <label>Título</label>
+
+                <input
+                    id="modalTitle"
+                    type="text"
+                    maxlength="120"
+                    value="${escapeAttribute(
+                        goal?.title || ""
+                    )}"
+                    placeholder="Título da meta"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Descrição</label>
+
+                <textarea
+                    id="modalContent"
+                    rows="7"
+                    placeholder="Descrição da meta"
+                >${escapeHTML(
+                    goal?.content || ""
+                )}</textarea>
+            </div>
+        `,
+
         buttons: [
+
             {
                 text: "Cancelar",
-                className: "secondary-button",
-                action: closeAllModals
+                className:
+                    "secondary-button",
+                action:
+                    closeModals
             },
-            {
-                text: editing ? "Salvar" : "Adicionar",
-                className: "primary-button",
-                action: () => {
-                    const titleInput = $("modalTitle");
-                    const contentInput = $("modalContent");
 
-                    const title = titleInput ? titleInput.value.trim() : "";
-                    const content = contentInput ? contentInput.value.trim() : "";
+            {
+                text:
+                    editing
+                        ? "Salvar"
+                        : "Adicionar",
+
+                className:
+                    "primary-button",
+
+                action: () => {
+
+                    const title =
+                        get("modalTitle")
+                            ?.value.trim();
+
+                    const content =
+                        get("modalContent")
+                            ?.value.trim();
 
                     if (!title) {
-                        showModalMessage("Digite um título para a meta.");
+
+                        modalMessage(
+                            "Digite o título."
+                        );
+
                         return;
                     }
 
                     if (editing) {
-                        goal.title = title;
-                        goal.content = content;
+
+                        goal.title =
+                            title;
+
+                        goal.content =
+                            content;
+
                     } else {
+
                         state.goals.push({
-                            id: generateId(),
+
+                            id:
+                                generateId(),
+
                             title,
+
                             content,
-                            completed: false,
-                            pinned: false,
-                            createdAt: new Date().toISOString()
+
+                            completed:
+                                false,
+
+                            pinned:
+                                false,
+
+                            createdAt:
+                                new Date()
+                                    .toISOString()
+
                         });
+
                     }
 
-                    saveJSON(STORAGE_KEYS.goals, state.goals);
+                    saveArray(
+                        KEYS.goals,
+                        state.goals
+                    );
 
-                    closeAllModals();
+                    closeModals();
+
                     renderGoals();
                     renderProgress();
+
                 }
             }
         ]
@@ -482,233 +921,430 @@ function openGoalEditor(goal = null) {
 }
 
 async function shareGoals() {
-    if (state.goals.length === 0) {
-        showToast("Não há metas para compartilhar.");
+
+    if (!state.goals.length) {
+
+        toast(
+            "Não há metas para compartilhar."
+        );
+
         return;
     }
 
-    const text = state.goals
-        .slice()
-        .sort(sortItems)
-        .map((goal, index) => {
-            return `${index + 1}. ${goal.title}
-Status: ${goal.completed ? "Concluída" : "Em andamento"}
-Criada: ${formatDateTime(goal.createdAt)}
-${goal.content || ""}`;
-        })
-        .join("\n\n");
+    const text =
+        state.goals
+            .slice()
+            .sort(sortItems)
+            .map(
+                (goal, index) =>
+                    `${index + 1}. ${goal.title}
+Status: ${
+    goal.completed
+        ? "Concluída"
+        : "Em andamento"
+}
+Criada: ${formatDateTime(
+    goal.createdAt
+)}
 
-    await shareContent("Minhas metas", `🎯 METAS\n\n${text}`);
+${goal.content || ""}`
+            )
+            .join(
+                "\n\n"
+            );
+
+    share(
+        "Metas",
+        "🎯 METAS\n\n" +
+            text
+    );
 }
 
-/* =========================
+
+/* =========================================================
    TAREFAS
-========================= */
+========================================================= */
 
 function setupTasks() {
-    const addButton = $("addTaskButton");
-    const shareButton = $("shareTasksButton");
-    const searchInput = $("taskSearch");
 
-    if (addButton) {
-        addButton.addEventListener("click", () => {
-            if (state.viewer) return;
+    const add =
+        get("addTaskButton");
 
-            openTaskEditor();
-        });
+    const shareButton =
+        get("shareTasksButton");
+
+    const search =
+        get("taskSearch");
+
+    if (add) {
+
+        add.addEventListener(
+            "click",
+            () => {
+
+                if (state.viewer) {
+                    return;
+                }
+
+                openTaskForm();
+
+            }
+        );
+
     }
 
     if (shareButton) {
-        shareButton.addEventListener("click", shareTasks);
+
+        shareButton.addEventListener(
+            "click",
+            shareTasks
+        );
+
     }
 
-    if (searchInput) {
-        searchInput.addEventListener("input", renderTasks);
+    if (search) {
+
+        search.addEventListener(
+            "input",
+            renderTasks
+        );
+
     }
 
     renderTasks();
 }
 
 function renderTasks() {
-    const container = $("tasksList");
 
-    if (!container) return;
+    const container =
+        get("tasksList");
 
-    const searchInput = $("taskSearch");
-    const search = normalizeText(searchInput ? searchInput.value : "");
-
-    let tasks = state.tasks.filter(task => {
-        return normalizeText(task.title).includes(search);
-    });
-
-    tasks.sort(sortItems);
-
-    container.innerHTML = "";
-
-    if (tasks.length === 0) {
-        container.innerHTML = `
-            <div class="empty-message">
-                Nenhuma tarefa encontrada.
-            </div>
-        `;
+    if (!container) {
         return;
     }
 
-    tasks.forEach(task => {
-        const card = document.createElement("div");
-        card.className = "item-card";
+    const search =
+        normalizeText(
+            get("taskSearch")?.value
+        );
+
+    let list =
+        state.tasks.filter(
+            task =>
+                normalizeText(
+                    task.title
+                ).includes(search)
+        );
+
+    list.sort(sortItems);
+
+    container.innerHTML = "";
+
+    if (!list.length) {
+
+        container.innerHTML =
+            `<div class="empty-message">
+                Nenhuma tarefa encontrada.
+            </div>`;
+
+        return;
+    }
+
+    list.forEach(task => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "item-card";
+
+        if (task.pinned) {
+            card.classList.add(
+                "pinned"
+            );
+        }
 
         if (task.completed) {
-            card.classList.add("completed");
+            card.classList.add(
+                "completed"
+            );
         }
 
-        if (task.pinned) {
-            card.classList.add("pinned");
-        }
+        const checkbox =
+            document.createElement(
+                "input"
+            );
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "item-checkbox";
-        checkbox.checked = Boolean(task.completed);
-        checkbox.title = task.completed ? "Tarefa concluída" : "Marcar como concluída";
-        checkbox.disabled = state.viewer;
+        checkbox.type =
+            "checkbox";
 
-        checkbox.addEventListener("change", () => {
-            if (state.viewer) return;
+        checkbox.className =
+            "item-checkbox";
 
-            task.completed = checkbox.checked;
-            saveJSON(STORAGE_KEYS.tasks, state.tasks);
+        checkbox.checked =
+            Boolean(
+                task.completed
+            );
 
-            renderTasks();
-        });
+        checkbox.disabled =
+            state.viewer;
 
-        const content = document.createElement("div");
-        content.className = "item-main";
+        checkbox.addEventListener(
+            "change",
+            () => {
 
-        const title = document.createElement("button");
-        title.className = "item-title";
-        title.textContent = task.title || "Tarefa sem título";
+                if (state.viewer) {
+                    return;
+                }
 
-        title.addEventListener("click", () => {
-            openDetail("task", task.id, "tasksScreen");
-        });
+                task.completed =
+                    checkbox.checked;
 
-        const meta = document.createElement("div");
-        meta.className = "item-date";
-        meta.dataset.createdAt = task.createdAt;
-        meta.textContent = formatDateTime(task.createdAt);
+                saveArray(
+                    KEYS.tasks,
+                    state.tasks
+                );
 
-        content.appendChild(title);
-        content.appendChild(meta);
+                renderTasks();
 
-        const actions = document.createElement("div");
-        actions.className = "item-actions";
+            }
+        );
 
-        if (task.pinned) {
-            const pinLabel = document.createElement("span");
-            pinLabel.className = "pin-indicator";
-            pinLabel.textContent = "📌";
-            pinLabel.title = "Fixada";
-            actions.appendChild(pinLabel);
-        }
+        const main =
+            document.createElement(
+                "div"
+            );
+
+        main.className =
+            "item-main";
+
+        const title =
+            document.createElement(
+                "button"
+            );
+
+        title.className =
+            "item-title";
+
+        title.textContent =
+            task.title;
+
+        title.addEventListener(
+            "click",
+            () => {
+
+                openDetail(
+                    "task",
+                    task.id,
+                    "tasksScreen"
+                );
+
+            }
+        );
+
+        const date =
+            document.createElement(
+                "div"
+            );
+
+        date.className =
+            "item-date";
+
+        date.textContent =
+            formatDateTime(
+                task.createdAt
+            );
+
+        main.appendChild(title);
+        main.appendChild(date);
+
+        const actions =
+            document.createElement(
+                "div"
+            );
+
+        actions.className =
+            "item-actions";
 
         if (!state.viewer) {
+
             actions.appendChild(
-                createSmallButton(
+                createActionButton(
                     "📌",
-                    "Fixar/desafixar",
-                    "pin-button",
-                    () => togglePin("task", task.id)
+                    "Fixar",
+                    () =>
+                        togglePin(
+                            "task",
+                            task.id
+                        )
                 )
             );
 
             actions.appendChild(
-                createSmallButton(
+                createActionButton(
                     "✏️",
                     "Editar",
-                    "edit-button",
-                    () => openTaskEditor(task)
+                    () =>
+                        openTaskForm(
+                            task
+                        )
                 )
             );
 
             actions.appendChild(
-                createSmallButton(
+                createActionButton(
                     "🗑️",
                     "Excluir",
-                    "delete-button",
-                    () => deleteItem("task", task.id)
+                    () =>
+                        moveToTrash(
+                            "task",
+                            task.id
+                        )
                 )
             );
         }
 
-        card.appendChild(checkbox);
-        card.appendChild(content);
-        card.appendChild(actions);
+        card.appendChild(
+            checkbox
+        );
 
-        container.appendChild(card);
+        card.appendChild(
+            main
+        );
+
+        card.appendChild(
+            actions
+        );
+
+        container.appendChild(
+            card
+        );
+
     });
 }
 
-function openTaskEditor(task = null) {
-    const editing = Boolean(task);
+function openTaskForm(task = null) {
 
-    const html = `
-        <div class="form-group">
-            <label for="modalTitle">Título</label>
-            <input id="modalTitle" type="text" maxlength="120"
-                value="${escapeAttribute(task?.title || "")}"
-                placeholder="Título da tarefa">
-        </div>
-
-        <div class="form-group">
-            <label for="modalContent">Descrição</label>
-            <textarea id="modalContent" rows="6"
-                placeholder="Descreva a tarefa">${escapeHTML(task?.content || "")}</textarea>
-        </div>
-    `;
+    const editing =
+        Boolean(task);
 
     showModal({
-        title: editing ? "Editar tarefa" : "Nova tarefa",
-        content: html,
+
+        title:
+            editing
+                ? "Editar tarefa"
+                : "Adicionar tarefa",
+
+        content: `
+            <div class="form-group">
+                <label>Título</label>
+
+                <input
+                    id="modalTitle"
+                    type="text"
+                    maxlength="120"
+                    value="${escapeAttribute(
+                        task?.title || ""
+                    )}"
+                    placeholder="Título da tarefa"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Descrição</label>
+
+                <textarea
+                    id="modalContent"
+                    rows="7"
+                    placeholder="Descrição da tarefa"
+                >${escapeHTML(
+                    task?.content || ""
+                )}</textarea>
+            </div>
+        `,
+
         buttons: [
+
             {
                 text: "Cancelar",
-                className: "secondary-button",
-                action: closeAllModals
+                className:
+                    "secondary-button",
+                action:
+                    closeModals
             },
-            {
-                text: editing ? "Salvar" : "Adicionar",
-                className: "primary-button",
-                action: () => {
-                    const titleInput = $("modalTitle");
-                    const contentInput = $("modalContent");
 
-                    const title = titleInput ? titleInput.value.trim() : "";
-                    const content = contentInput ? contentInput.value.trim() : "";
+            {
+                text:
+                    editing
+                        ? "Salvar"
+                        : "Adicionar",
+
+                className:
+                    "primary-button",
+
+                action: () => {
+
+                    const title =
+                        get("modalTitle")
+                            ?.value.trim();
+
+                    const content =
+                        get("modalContent")
+                            ?.value.trim();
 
                     if (!title) {
-                        showModalMessage("Digite um título para a tarefa.");
+
+                        modalMessage(
+                            "Digite o título."
+                        );
+
                         return;
                     }
 
                     if (editing) {
-                        task.title = title;
-                        task.content = content;
+
+                        task.title =
+                            title;
+
+                        task.content =
+                            content;
+
                     } else {
+
                         state.tasks.push({
-                            id: generateId(),
+
+                            id:
+                                generateId(),
+
                             title,
+
                             content,
-                            completed: false,
-                            pinned: false,
-                            createdAt: new Date().toISOString()
+
+                            completed:
+                                false,
+
+                            pinned:
+                                false,
+
+                            createdAt:
+                                new Date()
+                                    .toISOString()
+
                         });
+
                     }
 
-                    saveJSON(STORAGE_KEYS.tasks, state.tasks);
+                    saveArray(
+                        KEYS.tasks,
+                        state.tasks
+                    );
 
-                    closeAllModals();
+                    closeModals();
+
                     renderTasks();
+
                 }
             }
         ]
@@ -716,211 +1352,377 @@ function openTaskEditor(task = null) {
 }
 
 async function shareTasks() {
-    if (state.tasks.length === 0) {
-        showToast("Não há tarefas para compartilhar.");
+
+    if (!state.tasks.length) {
+
+        toast(
+            "Não há tarefas para compartilhar."
+        );
+
         return;
     }
 
-    const text = state.tasks
-        .slice()
-        .sort(sortItems)
-        .map((task, index) => {
-            return `${index + 1}. ${task.title}
-Status: ${task.completed ? "Concluída" : "Em andamento"}
-Criada: ${formatDateTime(task.createdAt)}
-${task.content || ""}`;
-        })
-        .join("\n\n");
+    const text =
+        state.tasks
+            .slice()
+            .sort(sortItems)
+            .map(
+                (task, index) =>
+                    `${index + 1}. ${task.title}
+Status: ${
+    task.completed
+        ? "Concluída"
+        : "Em andamento"
+}
+Criada: ${formatDateTime(
+    task.createdAt
+)}
 
-    await shareContent("Minhas tarefas", `📋 TAREFAS\n\n${text}`);
+${task.content || ""}`
+            )
+            .join(
+                "\n\n"
+            );
+
+    share(
+        "Tarefas",
+        "📋 TAREFAS\n\n" +
+            text
+    );
 }
 
-/* =========================
+
+/* =========================================================
    NOTAS
-========================= */
+========================================================= */
 
 function setupNotes() {
-    const addButton = $("addNoteButton");
-    const shareButton = $("shareNotesButton");
-    const searchInput = $("noteSearch");
 
-    if (addButton) {
-        addButton.addEventListener("click", () => {
-            if (state.viewer) return;
+    const add =
+        get("addNoteButton");
 
-            openNoteEditor();
-        });
+    const shareButton =
+        get("shareNotesButton");
+
+    const search =
+        get("noteSearch");
+
+    if (add) {
+
+        add.addEventListener(
+            "click",
+            () => {
+
+                if (state.viewer) {
+                    return;
+                }
+
+                openNoteForm();
+
+            }
+        );
+
     }
 
     if (shareButton) {
-        shareButton.addEventListener("click", shareNotes);
+
+        shareButton.addEventListener(
+            "click",
+            shareNotes
+        );
+
     }
 
-    if (searchInput) {
-        searchInput.addEventListener("input", renderNotes);
+    if (search) {
+
+        search.addEventListener(
+            "input",
+            renderNotes
+        );
+
     }
 
     renderNotes();
 }
 
 function renderNotes() {
-    const container = $("notesList");
 
-    if (!container) return;
+    const container =
+        get("notesList");
 
-    const searchInput = $("noteSearch");
-    const search = normalizeText(searchInput ? searchInput.value : "");
-
-    let notes = state.notes.filter(note => {
-        return normalizeText(note.title).includes(search);
-    });
-
-    notes.sort(sortItems);
-
-    container.innerHTML = "";
-
-    if (notes.length === 0) {
-        container.innerHTML = `
-            <div class="empty-message">
-                Nenhuma nota encontrada.
-            </div>
-        `;
+    if (!container) {
         return;
     }
 
-    notes.forEach(note => {
-        const card = document.createElement("div");
-        card.className = "item-card";
+    const search =
+        normalizeText(
+            get("noteSearch")?.value
+        );
+
+    let list =
+        state.notes.filter(
+            note =>
+                normalizeText(
+                    note.title
+                ).includes(search)
+        );
+
+    list.sort(sortItems);
+
+    container.innerHTML = "";
+
+    if (!list.length) {
+
+        container.innerHTML =
+            `<div class="empty-message">
+                Nenhuma nota encontrada.
+            </div>`;
+
+        return;
+    }
+
+    list.forEach(note => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "item-card";
 
         if (note.pinned) {
-            card.classList.add("pinned");
+            card.classList.add(
+                "pinned"
+            );
         }
 
-        const content = document.createElement("div");
-        content.className = "item-main";
+        const main =
+            document.createElement(
+                "div"
+            );
 
-        const title = document.createElement("button");
-        title.className = "item-title";
-        title.textContent = note.title || "Nota sem título";
+        main.className =
+            "item-main";
 
-        title.addEventListener("click", () => {
-            openDetail("note", note.id, "notesScreen");
-        });
+        const title =
+            document.createElement(
+                "button"
+            );
 
-        const meta = document.createElement("div");
-        meta.className = "item-date";
-        meta.dataset.createdAt = note.createdAt;
-        meta.textContent = formatDateTime(note.createdAt);
+        title.className =
+            "item-title";
 
-        content.appendChild(title);
-        content.appendChild(meta);
+        title.textContent =
+            note.title;
 
-        const actions = document.createElement("div");
-        actions.className = "item-actions";
+        title.addEventListener(
+            "click",
+            () => {
 
-        if (note.pinned) {
-            const pinLabel = document.createElement("span");
-            pinLabel.className = "pin-indicator";
-            pinLabel.textContent = "📌";
-            pinLabel.title = "Fixada";
-            actions.appendChild(pinLabel);
-        }
+                openDetail(
+                    "note",
+                    note.id,
+                    "notesScreen"
+                );
+
+            }
+        );
+
+        const date =
+            document.createElement(
+                "div"
+            );
+
+        date.className =
+            "item-date";
+
+        date.textContent =
+            formatDateTime(
+                note.createdAt
+            );
+
+        main.appendChild(title);
+        main.appendChild(date);
+
+        const actions =
+            document.createElement(
+                "div"
+            );
+
+        actions.className =
+            "item-actions";
 
         if (!state.viewer) {
+
             actions.appendChild(
-                createSmallButton(
+                createActionButton(
                     "📌",
-                    "Fixar/desafixar",
-                    "pin-button",
-                    () => togglePin("note", note.id)
+                    "Fixar",
+                    () =>
+                        togglePin(
+                            "note",
+                            note.id
+                        )
                 )
             );
 
             actions.appendChild(
-                createSmallButton(
+                createActionButton(
                     "✏️",
                     "Editar",
-                    "edit-button",
-                    () => openNoteEditor(note)
+                    () =>
+                        openNoteForm(
+                            note
+                        )
                 )
             );
 
             actions.appendChild(
-                createSmallButton(
+                createActionButton(
                     "🗑️",
                     "Excluir",
-                    "delete-button",
-                    () => deleteItem("note", note.id)
+                    () =>
+                        moveToTrash(
+                            "note",
+                            note.id
+                        )
                 )
             );
         }
 
-        card.appendChild(content);
-        card.appendChild(actions);
+        card.appendChild(
+            main
+        );
 
-        container.appendChild(card);
+        card.appendChild(
+            actions
+        );
+
+        container.appendChild(
+            card
+        );
+
     });
 }
 
-function openNoteEditor(note = null) {
-    const editing = Boolean(note);
+function openNoteForm(note = null) {
 
-    const html = `
-        <div class="form-group">
-            <label for="modalTitle">Título</label>
-            <input id="modalTitle" type="text" maxlength="120"
-                value="${escapeAttribute(note?.title || "")}"
-                placeholder="Título da nota">
-        </div>
-
-        <div class="form-group">
-            <label for="modalContent">Conteúdo</label>
-            <textarea id="modalContent" rows="8"
-                placeholder="Escreva sua nota">${escapeHTML(note?.content || "")}</textarea>
-        </div>
-    `;
+    const editing =
+        Boolean(note);
 
     showModal({
-        title: editing ? "Editar nota" : "Nova nota",
-        content: html,
+
+        title:
+            editing
+                ? "Editar nota"
+                : "Adicionar nota",
+
+        content: `
+            <div class="form-group">
+                <label>Título</label>
+
+                <input
+                    id="modalTitle"
+                    type="text"
+                    maxlength="120"
+                    value="${escapeAttribute(
+                        note?.title || ""
+                    )}"
+                    placeholder="Título da nota"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Conteúdo</label>
+
+                <textarea
+                    id="modalContent"
+                    rows="9"
+                    placeholder="Conteúdo da nota"
+                >${escapeHTML(
+                    note?.content || ""
+                )}</textarea>
+            </div>
+        `,
+
         buttons: [
+
             {
                 text: "Cancelar",
-                className: "secondary-button",
-                action: closeAllModals
+                className:
+                    "secondary-button",
+                action:
+                    closeModals
             },
-            {
-                text: editing ? "Salvar" : "Adicionar",
-                className: "primary-button",
-                action: () => {
-                    const titleInput = $("modalTitle");
-                    const contentInput = $("modalContent");
 
-                    const title = titleInput ? titleInput.value.trim() : "";
-                    const content = contentInput ? contentInput.value.trim() : "";
+            {
+                text:
+                    editing
+                        ? "Salvar"
+                        : "Adicionar",
+
+                className:
+                    "primary-button",
+
+                action: () => {
+
+                    const title =
+                        get("modalTitle")
+                            ?.value.trim();
+
+                    const content =
+                        get("modalContent")
+                            ?.value.trim();
 
                     if (!title) {
-                        showModalMessage("Digite um título para a nota.");
+
+                        modalMessage(
+                            "Digite o título."
+                        );
+
                         return;
                     }
 
                     if (editing) {
-                        note.title = title;
-                        note.content = content;
+
+                        note.title =
+                            title;
+
+                        note.content =
+                            content;
+
                     } else {
+
                         state.notes.push({
-                            id: generateId(),
+
+                            id:
+                                generateId(),
+
                             title,
+
                             content,
-                            pinned: false,
-                            createdAt: new Date().toISOString()
+
+                            pinned:
+                                false,
+
+                            createdAt:
+                                new Date()
+                                    .toISOString()
+
                         });
+
                     }
 
-                    saveJSON(STORAGE_KEYS.notes, state.notes);
+                    saveArray(
+                        KEYS.notes,
+                        state.notes
+                    );
 
-                    closeAllModals();
+                    closeModals();
+
                     renderNotes();
+
                 }
             }
         ]
@@ -928,333 +1730,1578 @@ function openNoteEditor(note = null) {
 }
 
 async function shareNotes() {
-    if (state.notes.length === 0) {
-        showToast("Não há notas para compartilhar.");
+
+    if (!state.notes.length) {
+
+        toast(
+            "Não há notas para compartilhar."
+        );
+
         return;
     }
 
-    const text = state.notes
-        .slice()
-        .sort(sortItems)
-        .map((note, index) => {
-            return `${index + 1}. ${note.title}
-Criada: ${formatDateTime(note.createdAt)}
+    const text =
+        state.notes
+            .slice()
+            .sort(sortItems)
+            .map(
+                (note, index) =>
+                    `${index + 1}. ${note.title}
+Criada: ${formatDateTime(
+    note.createdAt
+)}
 
-${note.content || ""}`;
-        })
-        .join("\n\n--------------------\n\n");
+${note.content || ""}`
+            )
+            .join(
+                "\n\n----------------\n\n"
+            );
 
-    await shareContent("Minhas notas", `📝 NOTAS\n\n${text}`);
+    share(
+        "Notas",
+        "📝 NOTAS\n\n" +
+            text
+    );
 }
 
-/* =========================
-   DETALHES
-========================= */
 
-function ensureDetailScreen() {
-    if ($("detailScreen")) return;
+/* =========================================================
+   ROUPAS SÍTIO
+========================================================= */
 
-    const section = document.createElement("section");
-    section.id = "detailScreen";
-    section.className = "screen hidden";
+function setupClothes() {
 
-    section.innerHTML = `
-        <header class="page-header">
-            <button id="detailBackButton" class="back-button">←</button>
+    const button =
+        get("addClothesButton");
 
-            <div class="page-header-info">
-                <h1 id="detailTitle">Detalhes</h1>
-                <p id="detailMeta"></p>
-            </div>
-        </header>
+    if (button) {
 
-        <main class="page-content">
-            <div class="about-card detail-card">
-                <div id="detailContent"></div>
-            </div>
-        </main>
-    `;
+        button.addEventListener(
+            "click",
+            () => {
 
-    document.body.appendChild(section);
+                if (state.viewer) {
+                    return;
+                }
 
-    $("detailBackButton").addEventListener("click", () => {
-        showScreen(state.detailOrigin);
+                openClothesForm();
+
+            }
+        );
+
+    }
+
+    renderClothes();
+}
+
+function renderClothes() {
+
+    const container =
+        get("clothesList");
+
+    if (!container) {
+        return;
+    }
+
+    const list =
+        state.clothes
+            .slice()
+            .sort(sortItems);
+
+    container.innerHTML = "";
+
+    if (!list.length) {
+
+        container.innerHTML =
+            `<div class="empty-message">
+                Nenhuma lista de roupas cadastrada.
+            </div>`;
+
+        return;
+    }
+
+    list.forEach(item => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "clothes-card";
+
+        const main =
+            document.createElement(
+                "div"
+            );
+
+        main.className =
+            "clothes-main";
+
+        const title =
+            document.createElement(
+                "button"
+            );
+
+        title.className =
+            "clothes-title";
+
+        title.textContent =
+            item.title;
+
+        title.addEventListener(
+            "click",
+            () => {
+
+                openClothesDetail(
+                    item
+                );
+
+            }
+        );
+
+        const date =
+            document.createElement(
+                "div"
+            );
+
+        date.className =
+            "clothes-date";
+
+        date.textContent =
+            formatDateTime(
+                item.createdAt
+            );
+
+        main.appendChild(title);
+        main.appendChild(date);
+
+        const actions =
+            document.createElement(
+                "div"
+            );
+
+        actions.className =
+            "clothes-actions";
+
+        if (
+            item.pinned &&
+            !state.viewer
+        ) {
+
+            const pin =
+                document.createElement(
+                    "span"
+                );
+
+            pin.className =
+                "pin-indicator";
+
+            pin.textContent =
+                "📌";
+
+            actions.appendChild(pin);
+        }
+
+        if (!state.viewer) {
+
+            actions.appendChild(
+                createClothesAction(
+                    "📌",
+                    "Fixar",
+                    () =>
+                        toggleClothesPin(
+                            item.id
+                        )
+                )
+            );
+
+            actions.appendChild(
+                createClothesAction(
+                    "✏️",
+                    "Editar",
+                    () =>
+                        openClothesForm(
+                            item
+                        )
+                )
+            );
+
+            actions.appendChild(
+                createClothesAction(
+                    "🗑️",
+                    "Excluir",
+                    () =>
+                        deleteClothes(
+                            item.id
+                        )
+                )
+            );
+        }
+
+        card.appendChild(main);
+        card.appendChild(actions);
+
+        container.appendChild(card);
+
     });
 }
 
-function openDetail(type, id, origin) {
-    ensureDetailScreen();
+function openClothesForm(item = null) {
+
+    const editing =
+        Boolean(item);
+
+    showModal({
+
+        title:
+            editing
+                ? "Editar roupa"
+                : "Adicionar roupa",
+
+        content: `
+
+            <div class="form-group">
+
+                <label>Título</label>
+
+                <input
+                    id="clothesTitle"
+                    type="text"
+                    maxlength="120"
+                    value="${escapeAttribute(
+                        item?.title || ""
+                    )}"
+                    placeholder="Título"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Touca</label>
+
+                <input
+                    id="clothesTouca"
+                    type="text"
+                    value="${escapeAttribute(
+                        item?.touca || ""
+                    )}"
+                    placeholder="Touca"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Camiseta</label>
+
+                <input
+                    id="clothesCamiseta"
+                    type="text"
+                    value="${escapeAttribute(
+                        item?.camiseta || ""
+                    )}"
+                    placeholder="Camiseta"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Blusa</label>
+
+                <input
+                    id="clothesBlusa"
+                    type="text"
+                    value="${escapeAttribute(
+                        item?.blusa || ""
+                    )}"
+                    placeholder="Blusa"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Calça</label>
+
+                <input
+                    id="clothesCalca"
+                    type="text"
+                    value="${escapeAttribute(
+                        item?.calca || ""
+                    )}"
+                    placeholder="Calça"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Adicionar extras</label>
+
+                <textarea
+                    id="clothesExtras"
+                    rows="5"
+                    placeholder="Ex.: toalha, meia, chinelo..."
+                >${escapeHTML(
+                    item?.extras || ""
+                )}</textarea>
+
+            </div>
+        `,
+
+        buttons: [
+
+            {
+                text: "Cancelar",
+                className:
+                    "secondary-button",
+                action:
+                    closeModals
+            },
+
+            {
+                text:
+                    editing
+                        ? "Salvar"
+                        : "Adicionar",
+
+                className:
+                    "primary-button",
+
+                action: () => {
+
+                    const title =
+                        get(
+                            "clothesTitle"
+                        )?.value.trim();
+
+                    const touca =
+                        get(
+                            "clothesTouca"
+                        )?.value.trim();
+
+                    const camiseta =
+                        get(
+                            "clothesCamiseta"
+                        )?.value.trim();
+
+                    const blusa =
+                        get(
+                            "clothesBlusa"
+                        )?.value.trim();
+
+                    const calca =
+                        get(
+                            "clothesCalca"
+                        )?.value.trim();
+
+                    const extras =
+                        get(
+                            "clothesExtras"
+                        )?.value.trim();
+
+                    if (!title) {
+
+                        modalMessage(
+                            "Digite o título."
+                        );
+
+                        return;
+                    }
+
+                    if (editing) {
+
+                        item.title =
+                            title;
+
+                        item.touca =
+                            touca;
+
+                        item.camiseta =
+                            camiseta;
+
+                        item.blusa =
+                            blusa;
+
+                        item.calca =
+                            calca;
+
+                        item.extras =
+                            extras;
+
+                    } else {
+
+                        state.clothes.push({
+
+                            id:
+                                generateId(),
+
+                            title,
+
+                            touca,
+
+                            camiseta,
+
+                            blusa,
+
+                            calca,
+
+                            extras,
+
+                            pinned:
+                                false,
+
+                            createdAt:
+                                new Date()
+                                    .toISOString()
+
+                        });
+
+                    }
+
+                    saveArray(
+                        KEYS.clothes,
+                        state.clothes
+                    );
+
+                    closeModals();
+
+                    renderClothes();
+
+                }
+            }
+        ]
+    });
+}
+
+function openClothesDetail(item) {
+
+    showModal({
+
+        title:
+            item.title,
+
+        content: `
+
+            <div class="about-card">
+
+                <p>
+                    <strong>Touca:</strong><br>
+                    ${escapeHTML(
+                        item.touca ||
+                        "Não informado"
+                    )}
+                </p>
+
+                <p>
+                    <strong>Camiseta:</strong><br>
+                    ${escapeHTML(
+                        item.camiseta ||
+                        "Não informado"
+                    )}
+                </p>
+
+                <p>
+                    <strong>Blusa:</strong><br>
+                    ${escapeHTML(
+                        item.blusa ||
+                        "Não informado"
+                    )}
+                </p>
+
+                <p>
+                    <strong>Calça:</strong><br>
+                    ${escapeHTML(
+                        item.calca ||
+                        "Não informado"
+                    )}
+                </p>
+
+                <p>
+                    <strong>Adicionar extras:</strong><br>
+                    ${escapeHTML(
+                        item.extras ||
+                        "Nenhum extra"
+                    )}
+                </p>
+
+                <p>
+                    <strong>Criado:</strong><br>
+                    ${formatDateTime(
+                        item.createdAt
+                    )}
+                </p>
+
+            </div>
+
+        `,
+
+        buttons: [
+
+            {
+                text: "Fechar",
+                className:
+                    "secondary-button",
+                action:
+                    closeModals
+            }
+
+        ]
+    });
+}
+
+function toggleClothesPin(id) {
+
+    if (state.viewer) {
+        return;
+    }
+
+    const item =
+        state.clothes.find(
+            clothes =>
+                clothes.id === id
+        );
+
+    if (!item) {
+        return;
+    }
+
+    item.pinned =
+        !item.pinned;
+
+    saveArray(
+        KEYS.clothes,
+        state.clothes
+    );
+
+    renderClothes();
+}
+
+function deleteClothes(id) {
+
+    if (state.viewer) {
+        return;
+    }
+
+    const item =
+        state.clothes.find(
+            clothes =>
+                clothes.id === id
+        );
+
+    if (!item) {
+        return;
+    }
+
+    confirmModal(
+        "Excluir roupa?",
+        `Excluir "${item.title}"?`,
+        "Excluir",
+        () => {
+
+            state.clothes =
+                state.clothes.filter(
+                    clothes =>
+                        clothes.id !== id
+                );
+
+            saveArray(
+                KEYS.clothes,
+                state.clothes
+            );
+
+            renderClothes();
+
+            toast(
+                "Roupa excluída."
+            );
+
+        }
+    );
+}
+
+
+/* =========================================================
+   DETALHES DE METAS / TAREFAS / NOTAS
+========================================================= */
+
+function openDetail(
+    type,
+    id,
+    origin
+) {
 
     let item = null;
 
     if (type === "goal") {
-        item = state.goals.find(goal => goal.id === id);
+
+        item =
+            state.goals.find(
+                element =>
+                    element.id === id
+            );
+
     }
 
     if (type === "task") {
-        item = state.tasks.find(task => task.id === id);
+
+        item =
+            state.tasks.find(
+                element =>
+                    element.id === id
+            );
+
     }
 
     if (type === "note") {
-        item = state.notes.find(note => note.id === id);
+
+        item =
+            state.notes.find(
+                element =>
+                    element.id === id
+            );
+
     }
 
-    if (!item) return;
-
-    state.detailOrigin = origin;
-    state.detailType = type;
-    state.detailId = id;
-
-    const title = $("detailTitle");
-    const meta = $("detailMeta");
-    const content = $("detailContent");
-
-    if (title) {
-        title.textContent = item.title || "Sem título";
+    if (!item) {
+        return;
     }
 
-    if (meta) {
-        let typeName = "Nota";
+    const title =
+        type === "goal"
+            ? "Meta"
+            : type === "task"
+                ? "Tarefa"
+                : "Nota";
 
-        if (type === "goal") typeName = item.completed ? "Meta concluída" : "Meta em andamento";
-        if (type === "task") typeName = item.completed ? "Tarefa concluída" : "Tarefa em andamento";
+    const status =
+        type === "goal" ||
+        type === "task"
+            ? item.completed
+                ? "Concluída"
+                : "Em andamento"
+            : "";
 
-        meta.textContent = `${typeName} • ${formatDateTime(item.createdAt)}`;
-    }
+    const content =
+        item.content ||
+        "Sem conteúdo.";
 
-    if (content) {
-        content.textContent = item.content || "Sem conteúdo.";
-    }
+    showModal({
 
-    showScreen("detailScreen");
+        title:
+            item.title,
+
+        content: `
+
+            <div class="detail-content">
+
+                <p>
+                    <strong>${title}</strong>
+                    ${status
+                        ? " • " + status
+                        : ""}
+                </p>
+
+                <p>
+                    <strong>Criado:</strong>
+                    ${formatDateTime(
+                        item.createdAt
+                    )}
+                </p>
+
+                <hr>
+
+                <div>
+                    ${escapeHTML(
+                        content
+                    )}
+                </div>
+
+            </div>
+
+        `,
+
+        buttons: [
+
+            {
+                text: "Fechar",
+                className:
+                    "secondary-button",
+                action:
+                    closeModals
+            }
+
+        ]
+    });
 }
 
-/* =========================
-   PIN
-========================= */
 
-function togglePin(type, id) {
-    if (state.viewer) return;
+/* =========================================================
+   FIXAR
+========================================================= */
 
-    let collection = null;
-    let storageKey = "";
+function togglePin(
+    type,
+    id
+) {
+
+    if (state.viewer) {
+        return;
+    }
+
+    let list;
+    let key;
 
     if (type === "goal") {
-        collection = state.goals;
-        storageKey = STORAGE_KEYS.goals;
+
+        list =
+            state.goals;
+
+        key =
+            KEYS.goals;
     }
 
     if (type === "task") {
-        collection = state.tasks;
-        storageKey = STORAGE_KEYS.tasks;
+
+        list =
+            state.tasks;
+
+        key =
+            KEYS.tasks;
     }
 
     if (type === "note") {
-        collection = state.notes;
-        storageKey = STORAGE_KEYS.notes;
+
+        list =
+            state.notes;
+
+        key =
+            KEYS.notes;
     }
 
-    if (!collection) return;
+    if (!list) {
+        return;
+    }
 
-    const item = collection.find(element => element.id === id);
+    const item =
+        list.find(
+            element =>
+                element.id === id
+        );
 
-    if (!item) return;
+    if (!item) {
+        return;
+    }
 
-    item.pinned = !item.pinned;
+    item.pinned =
+        !item.pinned;
 
-    saveJSON(storageKey, collection);
+    saveArray(
+        key,
+        list
+    );
 
     renderGoals();
     renderTasks();
     renderNotes();
 }
 
-/* =========================
-   EXCLUSÃO
-========================= */
 
-function deleteItem(type, id) {
-    if (state.viewer) return;
+/* =========================================================
+   LIXEIRA
+========================================================= */
 
-    let item = null;
+function moveToTrash(
+    type,
+    id
+) {
+
+    if (state.viewer) {
+        return;
+    }
+
+    let list;
+    let key;
+    let item;
 
     if (type === "goal") {
-        item = state.goals.find(element => element.id === id);
+
+        list =
+            state.goals;
+
+        key =
+            KEYS.goals;
     }
 
     if (type === "task") {
-        item = state.tasks.find(element => element.id === id);
+
+        list =
+            state.tasks;
+
+        key =
+            KEYS.tasks;
     }
 
     if (type === "note") {
-        item = state.notes.find(element => element.id === id);
+
+        list =
+            state.notes;
+
+        key =
+            KEYS.notes;
     }
 
-    if (!item) return;
+    if (!list) {
+        return;
+    }
 
-    const names = {
-        goal: "meta",
-        task: "tarefa",
-        note: "nota"
-    };
+    item =
+        list.find(
+            element =>
+                element.id === id
+        );
 
-    showConfirmModal(
-        `Excluir ${names[type]}?`,
-        `Você realmente deseja excluir "${item.title}"?`,
-        "Excluir",
+    if (!item) {
+        return;
+    }
+
+    const typeName =
+        type === "goal"
+            ? "meta"
+            : type === "task"
+                ? "tarefa"
+                : "nota";
+
+    confirmModal(
+        `Excluir ${typeName}?`,
+        `O item será enviado para a lixeira e ficará lá por 50 dias.`,
+        "Enviar para lixeira",
         () => {
+
+            const trashItem = {
+
+                trashId:
+                    generateId(),
+
+                originalId:
+                    item.id,
+
+                type,
+
+                title:
+                    item.title,
+
+                content:
+                    item.content || "",
+
+                completed:
+                    Boolean(
+                        item.completed
+                    ),
+
+                pinned:
+                    Boolean(
+                        item.pinned
+                    ),
+
+                createdAt:
+                    item.createdAt,
+
+                deletedAt:
+                    new Date()
+                        .toISOString()
+
+            };
+
+            state.trash.push(
+                trashItem
+            );
+
+            list =
+                list.filter(
+                    element =>
+                        element.id !== id
+                );
+
             if (type === "goal") {
-                state.goals = state.goals.filter(element => element.id !== id);
-                saveJSON(STORAGE_KEYS.goals, state.goals);
-                renderGoals();
-                renderProgress();
+                state.goals = list;
             }
 
             if (type === "task") {
-                state.tasks = state.tasks.filter(element => element.id !== id);
-                saveJSON(STORAGE_KEYS.tasks, state.tasks);
-                renderTasks();
+                state.tasks = list;
             }
 
             if (type === "note") {
-                state.notes = state.notes.filter(element => element.id !== id);
-                saveJSON(STORAGE_KEYS.notes, state.notes);
-                renderNotes();
+                state.notes = list;
             }
 
-            showToast("Excluído.");
+            saveArray(
+                KEYS.trash,
+                state.trash
+            );
+
+            saveArray(
+                key,
+                list
+            );
+
+            renderGoals();
+            renderTasks();
+            renderNotes();
+            renderProgress();
+
+            toast(
+                "Enviado para a lixeira."
+            );
         }
     );
 }
 
-/* =========================
+function cleanTrash() {
+
+    const now =
+        Date.now();
+
+    const valid =
+        state.trash.filter(
+            item => {
+
+                const deleted =
+                    new Date(
+                        item.deletedAt
+                    ).getTime();
+
+                return (
+                    now - deleted
+                    <
+                    TRASH_TIME
+                );
+
+            }
+        );
+
+    if (
+        valid.length !==
+        state.trash.length
+    ) {
+
+        state.trash =
+            valid;
+
+        saveArray(
+            KEYS.trash,
+            state.trash
+        );
+    }
+}
+
+function setupTrash() {
+
+    const button =
+        get("trashButton");
+
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            if (state.viewer) {
+
+                toast(
+                    "Desative o Modo Visualizador primeiro."
+                );
+
+                return;
+            }
+
+            cleanTrash();
+
+            showScreen(
+                "trashScreen"
+            );
+
+        }
+    );
+}
+
+function renderTrash() {
+
+    cleanTrash();
+
+    const container =
+        get("trashList");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    if (!state.trash.length) {
+
+        container.innerHTML =
+            `<div class="empty-message">
+                A lixeira está vazia.
+            </div>`;
+
+        return;
+    }
+
+    const list =
+        state.trash
+            .slice()
+            .sort(
+                (a, b) =>
+                    new Date(
+                        b.deletedAt
+                    ) -
+                    new Date(
+                        a.deletedAt
+                    )
+            );
+
+    list.forEach(item => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "trash-card";
+
+        const typeName =
+            item.type === "goal"
+                ? "Meta"
+                : item.type === "task"
+                    ? "Tarefa"
+                    : "Nota";
+
+        const deleted =
+            new Date(
+                item.deletedAt
+            );
+
+        const expires =
+            new Date(
+                deleted.getTime() +
+                TRASH_TIME
+            );
+
+        const title =
+            document.createElement(
+                "div"
+            );
+
+        title.className =
+            "trash-title";
+
+        title.textContent =
+            item.title;
+
+        const info =
+            document.createElement(
+                "div"
+            );
+
+        info.className =
+            "trash-info";
+
+        info.textContent =
+            `${typeName} • Excluído em ${formatDateTime(
+                item.deletedAt
+            )} • Expira em ${formatDateTime(
+                expires.toISOString()
+            )}`;
+
+        const actions =
+            document.createElement(
+                "div"
+            );
+
+        actions.className =
+            "trash-actions";
+
+        const restore =
+            document.createElement(
+                "button"
+            );
+
+        restore.className =
+            "primary-button";
+
+        restore.textContent =
+            "♻️ Restaurar";
+
+        restore.addEventListener(
+            "click",
+            () => restoreTrash(
+                item.trashId
+            )
+        );
+
+        const permanent =
+            document.createElement(
+                "button"
+            );
+
+        permanent.className =
+            "danger-button";
+
+        permanent.textContent =
+            "🗑️ Apagar";
+
+        permanent.addEventListener(
+            "click",
+            () =>
+                permanentlyDeleteTrash(
+                    item.trashId
+                )
+        );
+
+        actions.appendChild(
+            restore
+        );
+
+        actions.appendChild(
+            permanent
+        );
+
+        card.appendChild(
+            title
+        );
+
+        card.appendChild(
+            info
+        );
+
+        card.appendChild(
+            actions
+        );
+
+        container.appendChild(
+            card
+        );
+
+    });
+}
+
+function restoreTrash(
+    trashId
+) {
+
+    const item =
+        state.trash.find(
+            element =>
+                element.trashId ===
+                trashId
+        );
+
+    if (!item) {
+        return;
+    }
+
+    confirmModal(
+        "Restaurar item?",
+        `Restaurar "${item.title}"?`,
+        "Restaurar",
+        () => {
+
+            const restored = {
+
+                id:
+                    item.originalId ||
+                    generateId(),
+
+                title:
+                    item.title,
+
+                content:
+                    item.content || "",
+
+                pinned:
+                    Boolean(
+                        item.pinned
+                    ),
+
+                createdAt:
+                    item.createdAt
+
+            };
+
+            if (
+                item.type ===
+                "goal"
+            ) {
+
+                restored.completed =
+                    Boolean(
+                        item.completed
+                    );
+
+                state.goals.push(
+                    restored
+                );
+
+                saveArray(
+                    KEYS.goals,
+                    state.goals
+                );
+
+                renderGoals();
+                renderProgress();
+
+            }
+
+            if (
+                item.type ===
+                "task"
+            ) {
+
+                restored.completed =
+                    Boolean(
+                        item.completed
+                    );
+
+                state.tasks.push(
+                    restored
+                );
+
+                saveArray(
+                    KEYS.tasks,
+                    state.tasks
+                );
+
+                renderTasks();
+
+            }
+
+            if (
+                item.type ===
+                "note"
+            ) {
+
+                state.notes.push(
+                    restored
+                );
+
+                saveArray(
+                    KEYS.notes,
+                    state.notes
+                );
+
+                renderNotes();
+
+            }
+
+            state.trash =
+                state.trash.filter(
+                    element =>
+                        element.trashId !==
+                        trashId
+                );
+
+            saveArray(
+                KEYS.trash,
+                state.trash
+            );
+
+            renderTrash();
+
+            toast(
+                "Item restaurado."
+            );
+
+        }
+    );
+}
+
+function permanentlyDeleteTrash(
+    trashId
+) {
+
+    const item =
+        state.trash.find(
+            element =>
+                element.trashId ===
+                trashId
+        );
+
+    if (!item) {
+        return;
+    }
+
+    confirmModal(
+        "Apagar definitivamente?",
+        `"${item.title}" será apagado definitivamente.`,
+        "Apagar",
+        () => {
+
+            state.trash =
+                state.trash.filter(
+                    element =>
+                        element.trashId !==
+                        trashId
+                );
+
+            saveArray(
+                KEYS.trash,
+                state.trash
+            );
+
+            renderTrash();
+
+            toast(
+                "Apagado definitivamente."
+            );
+
+        }
+    );
+}
+
+
+/* =========================================================
    CRONÔMETRO
-========================= */
+========================================================= */
 
 function setupTimer() {
-    const startButton = $("startTimerButton");
-    const pauseButton = $("pauseTimerButton");
-    const resetButton = $("resetTimerButton");
 
-    if (startButton) {
-        startButton.addEventListener("click", startTimer);
+    const start =
+        get("startTimerButton");
+
+    const pause =
+        get("pauseTimerButton");
+
+    const reset =
+        get("resetTimerButton");
+
+    if (start) {
+
+        start.addEventListener(
+            "click",
+            startTimer
+        );
+
     }
 
-    if (pauseButton) {
-        pauseButton.addEventListener("click", pauseTimer);
+    if (pause) {
+
+        pause.addEventListener(
+            "click",
+            pauseTimer
+        );
+
     }
 
-    if (resetButton) {
-        resetButton.addEventListener("click", resetTimer);
+    if (reset) {
+
+        reset.addEventListener(
+            "click",
+            resetTimer
+        );
+
     }
 
-    updateTimerDisplay();
+    updateTimer();
 }
 
 function startTimer() {
-    if (state.timerRunning) return;
 
-    state.timerRunning = true;
+    if (state.timerRunning) {
+        return;
+    }
 
-    state.timerInterval = setInterval(() => {
-        state.timerSeconds++;
+    state.timerRunning =
+        true;
 
-        localStorage.setItem(
-            STORAGE_KEYS.timerSeconds,
-            String(state.timerSeconds)
+    state.timerInterval =
+        setInterval(
+            () => {
+
+                state.timerSeconds++;
+
+                localStorage.setItem(
+                    KEYS.timer,
+                    String(
+                        state.timerSeconds
+                    )
+                );
+
+                updateTimer();
+
+            },
+            1000
         );
-
-        updateTimerDisplay();
-    }, 1000);
 
     updateTimerButtons();
 }
 
 function pauseTimer() {
-    if (!state.timerRunning) return;
 
-    state.timerRunning = false;
+    state.timerRunning =
+        false;
 
-    if (state.timerInterval) {
-        clearInterval(state.timerInterval);
-        state.timerInterval = null;
+    if (
+        state.timerInterval
+    ) {
+
+        clearInterval(
+            state.timerInterval
+        );
+
+        state.timerInterval =
+            null;
     }
 
     updateTimerButtons();
 }
 
 function resetTimer() {
+
     pauseTimer();
 
-    state.timerSeconds = 0;
+    state.timerSeconds =
+        0;
 
     localStorage.setItem(
-        STORAGE_KEYS.timerSeconds,
+        KEYS.timer,
         "0"
     );
 
-    updateTimerDisplay();
+    updateTimer();
 }
 
-function updateTimerDisplay() {
-    const timerDisplay = $("timerDisplay");
+function updateTimer() {
 
-    if (!timerDisplay) return;
+    const display =
+        get("timerDisplay");
 
-    timerDisplay.textContent = formatStopwatch(state.timerSeconds);
+    if (display) {
+
+        display.textContent =
+            formatStopwatch(
+                state.timerSeconds
+            );
+
+    }
+
+    updateTimerButtons();
 }
 
 function updateTimerButtons() {
-    const startButton = $("startTimerButton");
-    const pauseButton = $("pauseTimerButton");
 
-    if (startButton) {
-        startButton.disabled = state.timerRunning;
+    const start =
+        get("startTimerButton");
+
+    const pause =
+        get("pauseTimerButton");
+
+    if (start) {
+        start.disabled =
+            state.timerRunning;
     }
 
-    if (pauseButton) {
-        pauseButton.disabled = !state.timerRunning;
+    if (pause) {
+        pause.disabled =
+            !state.timerRunning;
     }
 }
 
-function formatStopwatch(totalSeconds) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+function formatStopwatch(
+    seconds
+) {
 
-    return [
-        String(hours).padStart(2, "0"),
-        String(minutes).padStart(2, "0"),
-        String(seconds).padStart(2, "0")
-    ].join(":");
+    const hours =
+        Math.floor(
+            seconds / 3600
+        );
+
+    const minutes =
+        Math.floor(
+            (seconds % 3600) / 60
+        );
+
+    const secs =
+        seconds % 60;
+
+    return (
+        String(hours)
+            .padStart(2, "0") +
+        ":" +
+        String(minutes)
+            .padStart(2, "0") +
+        ":" +
+        String(secs)
+            .padStart(2, "0")
+    );
 }
 
-/* =========================
+
+/* =========================================================
    PROGRESSO
-========================= */
+========================================================= */
 
 function setupProgress() {
-    const shareButton = $("shareProgressButton");
 
-    if (shareButton) {
-        shareButton.addEventListener("click", shareProgress);
+    const button =
+        get(
+            "shareProgressButton"
+        );
+
+    if (button) {
+
+        button.addEventListener(
+            "click",
+            shareProgress
+        );
+
     }
 
     renderProgress();
 }
 
-function getGoalStats() {
-    const total = state.goals.length;
+function getStats() {
 
-    const completed = state.goals.filter(goal => goal.completed).length;
+    const total =
+        state.goals.length;
 
-    const inProgress = total - completed;
+    const completed =
+        state.goals.filter(
+            goal =>
+                goal.completed
+        ).length;
+
+    const inProgress =
+        total - completed;
 
     const completedPercent =
-        total === 0 ? 0 : Math.round((completed / total) * 100);
+        total
+            ? Math.round(
+                completed /
+                total *
+                100
+            )
+            : 0;
 
     const inProgressPercent =
-        total === 0 ? 0 : Math.round((inProgress / total) * 100);
+        total
+            ? Math.round(
+                inProgress /
+                total *
+                100
+            )
+            : 0;
 
     return {
         total,
@@ -1266,59 +3313,82 @@ function getGoalStats() {
 }
 
 function renderProgress() {
-    const stats = getGoalStats();
 
-    const totalElement = $("totalGoals");
-    const completedElement = $("completedGoals");
-    const inProgressElement = $("inProgressGoals");
+    const stats =
+        getStats();
 
-    if (totalElement) {
-        totalElement.textContent = stats.total;
+    const total =
+        get("totalGoals");
+
+    const completed =
+        get("completedGoals");
+
+    const inProgress =
+        get("inProgressGoals");
+
+    if (total) {
+        total.textContent =
+            stats.total;
     }
 
-    if (completedElement) {
-        completedElement.textContent = stats.completed;
+    if (completed) {
+        completed.textContent =
+            stats.completed;
     }
 
-    if (inProgressElement) {
-        inProgressElement.textContent = stats.inProgress;
+    if (inProgress) {
+        inProgress.textContent =
+            stats.inProgress;
     }
 
-    const completedBar = $("completedBar");
-    const inProgressBar = $("inProgressBar");
+    const completedBar =
+        get("completedBar");
+
+    const inProgressBar =
+        get("inProgressBar");
 
     if (completedBar) {
-        completedBar.style.width = `${stats.completedPercent}%`;
-        completedBar.setAttribute(
-            "aria-label",
-            `${stats.completedPercent}% concluídas`
-        );
+
+        completedBar.style.width =
+            stats.completedPercent +
+            "%";
     }
 
     if (inProgressBar) {
-        inProgressBar.style.width = `${stats.inProgressPercent}%`;
-        inProgressBar.setAttribute(
-            "aria-label",
-            `${stats.inProgressPercent}% em andamento`
-        );
+
+        inProgressBar.style.width =
+            stats.inProgressPercent +
+            "%";
     }
 
-    const completedPercent = $("completedPercent");
-    const inProgressPercent = $("inProgressPercent");
+    const completedPercent =
+        get("completedPercent");
+
+    const inProgressPercent =
+        get("inProgressPercent");
 
     if (completedPercent) {
-        completedPercent.textContent = `${stats.completedPercent}%`;
+
+        completedPercent.textContent =
+            stats.completedPercent +
+            "%";
     }
 
     if (inProgressPercent) {
-        inProgressPercent.textContent = `${stats.inProgressPercent}%`;
+
+        inProgressPercent.textContent =
+            stats.inProgressPercent +
+            "%";
     }
 }
 
-async function shareProgress() {
-    const stats = getGoalStats();
+function shareProgress() {
 
-    const text = `📊 PROGRESSO
+    const stats =
+        getStats();
+
+    const text =
+        `📊 PROGRESSO
 
 Metas totais: ${stats.total}
 Metas concluídas: ${stats.completed}
@@ -1327,102 +3397,196 @@ Em andamento: ${stats.inProgress}
 Concluídas: ${stats.completedPercent}%
 Em andamento: ${stats.inProgressPercent}%`;
 
-    await shareContent("Progresso das metas", text);
+    share(
+        "Progresso",
+        text
+    );
 }
 
-/* =========================
+
+/* =========================================================
    CONFIGURAÇÕES
-========================= */
+========================================================= */
 
 function setupSettings() {
-    const lockButton = $("settingsLockButton");
-    const deleteAllButton = $("deleteAllButton");
-    const viewerButton = $("viewerModeButton");
-    const themeButton = $("themeButton");
-    const changePasswordButton = $("changePasswordButton");
-    const timeFormatButton = $("timeFormatButton");
-    const generalShareButton = $("generalShareButton");
 
-    if (lockButton) {
-        lockButton.addEventListener("click", lockSite);
+    setupTrash();
+
+    const lock =
+        get("settingsLockButton");
+
+    const deleteAll =
+        get("deleteAllButton");
+
+    const viewer =
+        get("viewerModeButton");
+
+    const theme =
+        get("themeButton");
+
+    const password =
+        get(
+            "changePasswordButton"
+        );
+
+    const time =
+        get("timeFormatButton");
+
+    const about =
+        get("aboutProjectButton");
+
+    const generalShare =
+        get("generalShareButton");
+
+    if (lock) {
+
+        lock.addEventListener(
+            "click",
+            lockSite
+        );
+
     }
 
-    if (deleteAllButton) {
-        deleteAllButton.addEventListener("click", deleteEverything);
+    if (deleteAll) {
+
+        deleteAll.addEventListener(
+            "click",
+            deleteEverything
+        );
+
     }
 
-    if (viewerButton) {
-        viewerButton.addEventListener("click", toggleViewerMode);
+    if (viewer) {
+
+        viewer.addEventListener(
+            "click",
+            toggleViewer
+        );
+
     }
 
-    if (themeButton) {
-        themeButton.addEventListener("click", toggleTheme);
+    if (theme) {
+
+        theme.addEventListener(
+            "click",
+            toggleTheme
+        );
+
     }
 
-    if (changePasswordButton) {
-        changePasswordButton.addEventListener("click", changeAccessPassword);
+    if (password) {
+
+        password.addEventListener(
+            "click",
+            changePassword
+        );
+
     }
 
-    if (timeFormatButton) {
-        timeFormatButton.addEventListener("click", toggleTimeFormat);
+    if (time) {
+
+        time.addEventListener(
+            "click",
+            toggleTimeFormat
+        );
+
     }
 
-    if (generalShareButton) {
-        generalShareButton.addEventListener("click", shareEverything);
+    if (about) {
+
+        about.addEventListener(
+            "click",
+            () =>
+                showScreen(
+                    "aboutScreen"
+                )
+        );
+
+    }
+
+    if (generalShare) {
+
+        generalShare.addEventListener(
+            "click",
+            shareEverything
+        );
+
     }
 
     updateSettingsButtons();
 }
 
 function updateSettingsButtons() {
-    const viewerButton = $("viewerModeButton");
-    const themeButton = $("themeButton");
-    const timeFormatButton = $("timeFormatButton");
 
-    if (viewerButton) {
-        viewerButton.textContent = state.viewer
-            ? "Modo Visualizador: ATIVO"
-            : "Modo Visualizador: DESATIVADO";
+    const viewer =
+        get(
+            "viewerModeButton"
+        );
+
+    const theme =
+        get("themeButton");
+
+    const time =
+        get("timeFormatButton");
+
+    if (viewer) {
+
+        viewer.textContent =
+            state.viewer
+                ? "👁️ Modo Visualizador: ATIVO"
+                : "👁️ Modo Visualizador: DESATIVADO";
+
     }
 
-    if (themeButton) {
-        themeButton.textContent =
+    if (theme) {
+
+        theme.textContent =
             state.theme === "dark"
-                ? "Tema: Preto e vermelho"
-                : "Tema: Branco e vermelho";
+                ? "🎨 Tema: Preto e vermelho"
+                : "🎨 Tema: Branco e vermelho";
+
     }
 
-    if (timeFormatButton) {
-        timeFormatButton.textContent =
+    if (time) {
+
+        time.textContent =
             state.timeFormat === "24"
-                ? "Formato da hora: 24 horas"
-                : "Formato da hora: 12 horas";
+                ? "🕐 Formato da hora: 24 horas"
+                : "🕐 Formato da hora: 12 horas";
+
     }
 }
 
-function toggleViewerMode() {
-    state.viewer = !state.viewer;
+function toggleViewer() {
+
+    state.viewer =
+        !state.viewer;
 
     localStorage.setItem(
-        STORAGE_KEYS.viewer,
-        String(state.viewer)
+        KEYS.viewer,
+        String(
+            state.viewer
+        )
     );
 
-    applyViewerMode();
+    applyViewer();
+
     updateSettingsButtons();
 
     renderGoals();
     renderTasks();
     renderNotes();
+    renderClothes();
 
-    showToast(
+    toast(
         state.viewer
             ? "Modo Visualizador ativado."
             : "Modo Visualizador desativado."
     );
 }
 
-function applyViewerMode() {
+function applyViewer() {
+
     document.body.classList.toggle(
         "viewer-mode",
         state.viewer
@@ -1430,21 +3594,24 @@ function applyViewerMode() {
 }
 
 function toggleTheme() {
+
     state.theme =
         state.theme === "dark"
             ? "light"
             : "dark";
 
     localStorage.setItem(
-        STORAGE_KEYS.theme,
+        KEYS.theme,
         state.theme
     );
 
     applyTheme();
+
     updateSettingsButtons();
 }
 
 function applyTheme() {
+
     document.body.classList.toggle(
         "light-theme",
         state.theme === "light"
@@ -1452,582 +3619,1022 @@ function applyTheme() {
 }
 
 function toggleTimeFormat() {
+
     state.timeFormat =
         state.timeFormat === "24"
             ? "12"
             : "24";
 
     localStorage.setItem(
-        STORAGE_KEYS.timeFormat,
+        KEYS.timeFormat,
         state.timeFormat
     );
 
     updateClock();
-    updateSettingsButtons();
+
     renderGoals();
     renderTasks();
     renderNotes();
+    renderClothes();
 
-    showToast(
-        state.timeFormat === "24"
-            ? "Hora em formato de 24 horas."
-            : "Hora em formato de 12 horas."
-    );
+    updateSettingsButtons();
 }
 
-function changeAccessPassword() {
+function changePassword() {
+
     if (state.viewer) {
-        showToast("Desative o Modo Visualizador primeiro.");
+
+        toast(
+            "Desative o Modo Visualizador primeiro."
+        );
+
         return;
     }
 
-    const html = `
-        <div class="form-group">
-            <label for="currentPassword">Senha atual</label>
-            <input id="currentPassword" type="password"
-                placeholder="Senha atual">
-        </div>
-
-        <div class="form-group">
-            <label for="newPassword">Nova senha</label>
-            <input id="newPassword" type="password"
-                placeholder="Nova senha">
-        </div>
-
-        <div class="form-group">
-            <label for="confirmPassword">Confirmar nova senha</label>
-            <input id="confirmPassword" type="password"
-                placeholder="Digite novamente">
-        </div>
-    `;
-
     showModal({
-        title: "Alterar senha de acesso",
-        content: html,
+
+        title:
+            "Alterar senha de acesso",
+
+        content: `
+
+            <div class="form-group">
+
+                <label>
+                    Senha atual
+                </label>
+
+                <input
+                    id="currentPassword"
+                    type="password"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Nova senha
+                </label>
+
+                <input
+                    id="newPassword"
+                    type="password"
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>
+                    Confirmar nova senha
+                </label>
+
+                <input
+                    id="confirmPassword"
+                    type="password"
+                >
+
+            </div>
+
+        `,
+
         buttons: [
+
             {
                 text: "Cancelar",
-                className: "secondary-button",
-                action: closeAllModals
+                className:
+                    "secondary-button",
+                action:
+                    closeModals
             },
+
             {
-                text: "Salvar senha",
-                className: "primary-button",
+                text:
+                    "Salvar",
+
+                className:
+                    "primary-button",
+
                 action: () => {
-                    const current = $("currentPassword")?.value || "";
-                    const newPassword = $("newPassword")?.value || "";
-                    const confirm = $("confirmPassword")?.value || "";
 
-                    if (current !== state.accessPassword) {
-                        showModalMessage("A senha atual está incorreta.");
+                    const current =
+                        get(
+                            "currentPassword"
+                        )?.value;
+
+                    const newPassword =
+                        get(
+                            "newPassword"
+                        )?.value;
+
+                    const confirm =
+                        get(
+                            "confirmPassword"
+                        )?.value;
+
+                    if (
+                        current !==
+                        state.password
+                    ) {
+
+                        modalMessage(
+                            "Senha atual incorreta."
+                        );
+
                         return;
                     }
 
-                    if (!newPassword) {
-                        showModalMessage("Digite uma nova senha.");
+                    if (
+                        !newPassword
+                    ) {
+
+                        modalMessage(
+                            "Digite a nova senha."
+                        );
+
                         return;
                     }
 
-                    if (newPassword !== confirm) {
-                        showModalMessage("As senhas novas não são iguais.");
+                    if (
+                        newPassword !==
+                        confirm
+                    ) {
+
+                        modalMessage(
+                            "As senhas não são iguais."
+                        );
+
                         return;
                     }
 
-                    state.accessPassword = newPassword;
+                    state.password =
+                        newPassword;
 
                     localStorage.setItem(
-                        STORAGE_KEYS.accessPassword,
+                        KEYS.password,
                         newPassword
                     );
 
-                    closeAllModals();
+                    closeModals();
 
-                    showToast("Senha alterada com sucesso.");
+                    toast(
+                        "Senha alterada."
+                    );
+
                 }
             }
+
         ]
     });
 }
 
 function deleteEverything() {
+
     if (state.viewer) {
-        showToast("Desative o Modo Visualizador primeiro.");
+
+        toast(
+            "Desative o Modo Visualizador primeiro."
+        );
+
         return;
     }
 
-    const html = `
-        <div class="form-group">
-            <label for="masterPassword">Senha de confirmação</label>
-            <input id="masterPassword" type="password"
-                placeholder="Digite a senha">
-        </div>
-
-        <p class="modal-warning">
-            Essa ação apagará metas, tarefas, notas, cronômetro
-            e configurações salvas.
-        </p>
-    `;
-
     showModal({
-        title: "Apagar geral",
-        content: html,
-        buttons: [
-            {
-                text: "Cancelar",
-                className: "secondary-button",
-                action: closeAllModals
-            },
-            {
-                text: "Continuar",
-                className: "danger-button",
-                action: () => {
-                    const password = $("masterPassword")?.value || "";
 
-                    if (password !== MASTER_DELETE_PASSWORD) {
-                        showModalMessage("Senha de confirmação incorreta.");
+        title:
+            "Apagar geral",
+
+        content: `
+
+            <div class="form-group">
+
+                <label>
+                    Senha de confirmação
+                </label>
+
+                <input
+                    id="masterDeletePassword"
+                    type="password"
+                    placeholder="Digite a senha"
+                >
+
+            </div>
+
+            <p class="modal-warning">
+                Isso apagará todas as metas,
+                tarefas, notas, roupas,
+                lixeira, cronômetro e configurações.
+            </p>
+
+        `,
+
+        buttons: [
+
+            {
+                text:
+                    "Cancelar",
+
+                className:
+                    "secondary-button",
+
+                action:
+                    closeModals
+            },
+
+            {
+                text:
+                    "Continuar",
+
+                className:
+                    "danger-button",
+
+                action: () => {
+
+                    const password =
+                        get(
+                            "masterDeletePassword"
+                        )?.value;
+
+                    if (
+                        password !==
+                        MASTER_DELETE_PASSWORD
+                    ) {
+
+                        modalMessage(
+                            "Senha de confirmação incorreta."
+                        );
+
                         return;
                     }
 
-                    closeAllModals();
+                    closeModals();
 
-                    showConfirmModal(
+                    confirmModal(
                         "Apagar tudo?",
-                        "Todas as metas, tarefas, notas, cronômetro e configurações serão apagados. A senha de acesso voltará para Hg99.",
+                        "Todos os dados serão apagados e a senha voltará para Hg99.",
                         "Apagar tudo",
-                        performFullReset
+                        fullReset
                     );
+
                 }
             }
+
         ]
     });
 }
 
-function performFullReset() {
+function fullReset() {
+
     pauseTimer();
 
-    Object.values(STORAGE_KEYS).forEach(key => {
-        localStorage.removeItem(key);
-    });
+    Object.values(KEYS)
+        .forEach(
+            key =>
+                localStorage.removeItem(
+                    key
+                )
+        );
 
-    state.accessPassword = DEFAULT_ACCESS_PASSWORD;
+    state.password =
+        DEFAULT_ACCESS_PASSWORD;
+
     state.goals = [];
     state.tasks = [];
     state.notes = [];
-    state.theme = "dark";
-    state.viewer = false;
-    state.timeFormat = "24";
-    state.timerSeconds = 0;
-    state.timerRunning = false;
+    state.clothes = [];
+    state.trash = [];
+
+    state.theme =
+        "dark";
+
+    state.viewer =
+        false;
+
+    state.timeFormat =
+        "24";
+
+    state.timerSeconds =
+        0;
 
     applyTheme();
-    applyViewerMode();
-    updateSettingsButtons();
-    updateTimerDisplay();
-    updateClock();
+    applyViewer();
 
     renderGoals();
     renderTasks();
     renderNotes();
+    renderClothes();
+    renderTrash();
     renderProgress();
 
-    showScreen("loginScreen");
+    updateTimer();
 
-    showToast("Tudo foi apagado.");
+    updateSettingsButtons();
+
+    lockSite();
+
+    toast(
+        "Tudo foi apagado."
+    );
 }
 
-async function shareEverything() {
-    const stats = getGoalStats();
+function shareEverything() {
 
-    const goalsText =
-        state.goals.length === 0
-            ? "Nenhuma meta."
-            : state.goals
+    const stats =
+        getStats();
+
+    const goals =
+        state.goals.length
+            ? state.goals
                 .slice()
                 .sort(sortItems)
-                .map((goal, index) => {
-                    return `${index + 1}. ${goal.title}
-Status: ${goal.completed ? "Concluída" : "Em andamento"}
-Criada: ${formatDateTime(goal.createdAt)}
-${goal.content || ""}`;
-                })
-                .join("\n\n");
+                .map(
+                    (item, i) =>
+                        `${i + 1}. ${item.title}
+Status: ${
+    item.completed
+        ? "Concluída"
+        : "Em andamento"
+}
+${item.content || ""}`
+                )
+                .join(
+                    "\n\n"
+                )
+            : "Nenhuma.";
 
-    const tasksText =
-        state.tasks.length === 0
-            ? "Nenhuma tarefa."
-            : state.tasks
+    const tasks =
+        state.tasks.length
+            ? state.tasks
                 .slice()
                 .sort(sortItems)
-                .map((task, index) => {
-                    return `${index + 1}. ${task.title}
-Status: ${task.completed ? "Concluída" : "Em andamento"}
-Criada: ${formatDateTime(task.createdAt)}
-${task.content || ""}`;
-                })
-                .join("\n\n");
+                .map(
+                    (item, i) =>
+                        `${i + 1}. ${item.title}
+Status: ${
+    item.completed
+        ? "Concluída"
+        : "Em andamento"
+}
+${item.content || ""}`
+                )
+                .join(
+                    "\n\n"
+                )
+            : "Nenhuma.";
 
-    const notesText =
-        state.notes.length === 0
-            ? "Nenhuma nota."
-            : state.notes
+    const notes =
+        state.notes.length
+            ? state.notes
                 .slice()
                 .sort(sortItems)
-                .map((note, index) => {
-                    return `${index + 1}. ${note.title}
-Criada: ${formatDateTime(note.createdAt)}
+                .map(
+                    (item, i) =>
+                        `${i + 1}. ${item.title}
 
-${note.content || ""}`;
-                })
-                .join("\n\n");
+${item.content || ""}`
+                )
+                .join(
+                    "\n\n"
+                )
+            : "Nenhuma.";
 
-    const text = `📦 MEU ESPAÇO
+    const clothes =
+        state.clothes.length
+            ? state.clothes
+                .slice()
+                .sort(sortItems)
+                .map(
+                    (item, i) =>
+                        `${i + 1}. ${item.title}
+Touca: ${item.touca || "Não informado"}
+Camiseta: ${item.camiseta || "Não informado"}
+Blusa: ${item.blusa || "Não informado"}
+Calça: ${item.calca || "Não informado"}
+Extras: ${item.extras || "Nenhum"}`
+                )
+                .join(
+                    "\n\n"
+                )
+            : "Nenhuma.";
+
+    const text =
+        `📦 SECRETO V3
 
 🎯 METAS
 
-${goalsText}
+${goals}
 
 ====================
 
 📋 TAREFAS
 
-${tasksText}
+${tasks}
 
 ====================
 
 📝 NOTAS
 
-${notesText}
+${notes}
+
+====================
+
+👕 ROUPAS SÍTIO
+
+${clothes}
+
+====================
+
+⏱️ CRONÔMETRO
+
+${formatStopwatch(
+    state.timerSeconds
+)}
 
 ====================
 
 📊 PROGRESSO
 
 Metas totais: ${stats.total}
-Metas concluídas: ${stats.completed}
+Concluídas: ${stats.completed}
 Em andamento: ${stats.inProgress}
 Concluídas: ${stats.completedPercent}%
-Em andamento: ${stats.inProgressPercent}%
+Em andamento: ${stats.inProgressPercent}%`;
 
-====================
-
-⏱️ CRONÔMETRO
-
-Tempo: ${formatStopwatch(state.timerSeconds)}
-Status: ${state.timerRunning ? "Em andamento" : "Parado"}`;
-
-    await shareContent("Meu Espaço", text);
+    share(
+        "Secreto V3",
+        text
+    );
 }
 
-/* =========================
-   SOBRE
-========================= */
 
-function setupAbout() {
-    const aboutButton = $("aboutProjectButton");
-
-    if (aboutButton) {
-        aboutButton.addEventListener("click", () => {
-            showScreen("aboutScreen");
-        });
-    }
-}
-
-/* =========================
+/* =========================================================
    COMPARTILHAMENTO
-========================= */
+========================================================= */
 
-async function shareContent(title, text) {
-    if (navigator.share) {
+async function share(
+    title,
+    text
+) {
+
+    if (
+        navigator.share
+    ) {
+
         try {
+
             await navigator.share({
                 title,
                 text
             });
 
             return;
+
         } catch (error) {
-            if (error && error.name === "AbortError") {
+
+            if (
+                error?.name ===
+                "AbortError"
+            ) {
                 return;
             }
+
         }
     }
 
-    showShareFallback(title, text);
-}
-
-function showShareFallback(title, text) {
-    const html = `
-        <div class="form-group">
-            <label>Conteúdo</label>
-            <textarea id="shareFallbackText" rows="12" readonly></textarea>
-        </div>
-    `;
-
-    showModal({
-        title: `Compartilhar — ${title}`,
-        content: html,
-        buttons: [
-            {
-                text: "Fechar",
-                className: "secondary-button",
-                action: closeAllModals
-            },
-            {
-                text: "Copiar",
-                className: "primary-button",
-                action: async () => {
-                    try {
-                        await navigator.clipboard.writeText(text);
-                        showToast("Texto copiado.");
-                    } catch {
-                        const textarea = $("shareFallbackText");
-
-                        if (textarea) {
-                            textarea.select();
-                        }
-
-                        showToast("Selecione e copie o texto.");
-                    }
-                }
-            }
-        ]
-    });
-
-    const textarea = $("shareFallbackText");
-
-    if (textarea) {
-        textarea.value = text;
-    }
-}
-
-/* =========================
-   MODAIS
-========================= */
-
-let activeModal = null;
-
-function showModal(options) {
-    closeAllModals();
-
-    const overlay = document.createElement("div");
-    overlay.className = "modal-overlay";
-
-    const modal = document.createElement("div");
-    modal.className = "modal-box";
-
-    const title = document.createElement("h2");
-    title.textContent = options.title || "";
-
-    const body = document.createElement("div");
-    body.className = "modal-body";
-    body.innerHTML = options.content || "";
-
-    const buttons = document.createElement("div");
-    buttons.className = "modal-buttons";
-
-    (options.buttons || []).forEach(buttonConfig => {
-        const button = document.createElement("button");
-
-        button.type = "button";
-        button.className =
-            buttonConfig.className || "secondary-button";
-
-        button.textContent = buttonConfig.text;
-
-        button.addEventListener("click", () => {
-            buttonConfig.action();
-        });
-
-        buttons.appendChild(button);
-    });
-
-    modal.appendChild(title);
-    modal.appendChild(body);
-    modal.appendChild(buttons);
-
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-
-    activeModal = overlay;
-
-    const firstInput = modal.querySelector("input, textarea");
-
-    if (firstInput) {
-        setTimeout(() => firstInput.focus(), 50);
-    }
-}
-
-function showConfirmModal(title, message, confirmText, confirmAction) {
-    const html = `
-        <p class="modal-message">
-            ${escapeHTML(message)}
-        </p>
-    `;
-
-    showModal({
+    showShareFallback(
         title,
-        content: html,
-        buttons: [
-            {
-                text: "Cancelar",
-                className: "secondary-button",
-                action: closeAllModals
-            },
-            {
-                text: confirmText,
-                className: "danger-button",
-                action: () => {
-                    closeAllModals();
-                    confirmAction();
-                }
-            }
-        ]
-    });
-}
-
-function showModalMessage(message) {
-    const existingMessage = document.querySelector(".modal-inline-message");
-
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-
-    const modal = document.querySelector(".modal-box");
-
-    if (!modal) return;
-
-    const messageElement = document.createElement("p");
-
-    messageElement.className = "modal-inline-message";
-    messageElement.textContent = message;
-
-    modal.insertBefore(
-        messageElement,
-        modal.querySelector(".modal-buttons")
+        text
     );
 }
 
-function closeAllModals() {
-    document.querySelectorAll(".modal-overlay").forEach(element => {
-        element.remove();
+function showShareFallback(
+    title,
+    text
+) {
+
+    showModal({
+
+        title:
+            "Compartilhar — " +
+            title,
+
+        content: `
+
+            <div class="form-group">
+
+                <label>
+                    Texto
+                </label>
+
+                <textarea
+                    id="shareText"
+                    rows="14"
+                    readonly
+                ></textarea>
+
+            </div>
+
+        `,
+
+        buttons: [
+
+            {
+                text:
+                    "Fechar",
+
+                className:
+                    "secondary-button",
+
+                action:
+                    closeModals
+            },
+
+            {
+                text:
+                    "Copiar",
+
+                className:
+                    "primary-button",
+
+                action:
+                    async () => {
+
+                        const textarea =
+                            get(
+                                "shareText"
+                            );
+
+                        try {
+
+                            await navigator
+                                .clipboard
+                                .writeText(
+                                    text
+                                );
+
+                            toast(
+                                "Texto copiado."
+                            );
+
+                        } catch {
+
+                            if (
+                                textarea
+                            ) {
+
+                                textarea
+                                    .select();
+
+                            }
+
+                            toast(
+                                "Selecione e copie."
+                            );
+                        }
+
+                    }
+            }
+
+        ]
     });
 
-    activeModal = null;
+    const textarea =
+        get("shareText");
+
+    if (textarea) {
+        textarea.value =
+            text;
+    }
 }
 
-/* =========================
-   TOAST
-========================= */
 
-let toastTimeout = null;
+/* =========================================================
+   MODAIS
+========================================================= */
 
-function showToast(message) {
-    const oldToast = document.querySelector(".app-toast");
+function showModal(
+    options
+) {
 
-    if (oldToast) {
-        oldToast.remove();
+    closeModals();
+
+    const overlay =
+        document.createElement(
+            "div"
+        );
+
+    overlay.className =
+        "modal-overlay";
+
+    const box =
+        document.createElement(
+            "div"
+        );
+
+    box.className =
+        "modal-box";
+
+    const title =
+        document.createElement(
+            "h2"
+        );
+
+    title.textContent =
+        options.title || "";
+
+    const body =
+        document.createElement(
+            "div"
+        );
+
+    body.className =
+        "modal-body";
+
+    body.innerHTML =
+        options.content || "";
+
+    const buttons =
+        document.createElement(
+            "div"
+        );
+
+    buttons.className =
+        "modal-buttons";
+
+    (
+        options.buttons || []
+    ).forEach(
+        buttonConfig => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.className =
+                buttonConfig.className ||
+                "secondary-button";
+
+            button.type =
+                "button";
+
+            button.textContent =
+                buttonConfig.text;
+
+            button.addEventListener(
+                "click",
+                buttonConfig.action
+            );
+
+            buttons.appendChild(
+                button
+            );
+
+        }
+    );
+
+    box.appendChild(
+        title
+    );
+
+    box.appendChild(
+        body
+    );
+
+    box.appendChild(
+        buttons
+    );
+
+    overlay.appendChild(
+        box
+    );
+
+    document.body.appendChild(
+        overlay
+    );
+
+    const firstInput =
+        box.querySelector(
+            "input, textarea"
+        );
+
+    if (firstInput) {
+
+        setTimeout(
+            () =>
+                firstInput.focus(),
+            50
+        );
+    }
+}
+
+function confirmModal(
+    title,
+    message,
+    confirmText,
+    action
+) {
+
+    showModal({
+
+        title,
+
+        content:
+            `<p class="modal-message">
+                ${escapeHTML(
+                    message
+                )}
+            </p>`,
+
+        buttons: [
+
+            {
+                text:
+                    "Cancelar",
+
+                className:
+                    "secondary-button",
+
+                action:
+                    closeModals
+            },
+
+            {
+                text:
+                    confirmText,
+
+                className:
+                    "danger-button",
+
+                action: () => {
+
+                    closeModals();
+
+                    action();
+
+                }
+            }
+
+        ]
+    });
+}
+
+function modalMessage(
+    message
+) {
+
+    const old =
+        document.querySelector(
+            ".modal-inline-message"
+        );
+
+    if (old) {
+        old.remove();
     }
 
-    const toast = document.createElement("div");
+    const box =
+        document.querySelector(
+            ".modal-box"
+        );
 
-    toast.className = "app-toast";
-    toast.textContent = message;
+    if (!box) {
+        return;
+    }
 
-    document.body.appendChild(toast);
+    const element =
+        document.createElement(
+            "p"
+        );
 
-    clearTimeout(toastTimeout);
+    element.className =
+        "modal-inline-message";
 
-    toastTimeout = setTimeout(() => {
-        toast.remove();
-    }, 2500);
+    element.textContent =
+        message;
+
+    box.insertBefore(
+        element,
+        box.querySelector(
+            ".modal-buttons"
+        )
+    );
 }
 
-/* =========================
-   UTILIDADES
-========================= */
+function closeModals() {
 
-function createSmallButton(icon, title, className, action) {
-    const button = document.createElement("button");
+    document
+        .querySelectorAll(
+            ".modal-overlay"
+        )
+        .forEach(
+            modal =>
+                modal.remove()
+        );
+}
 
-    button.type = "button";
-    button.className = className;
-    button.textContent = icon;
-    button.title = title;
-    button.setAttribute("aria-label", title);
 
-    button.addEventListener("click", event => {
-        event.stopPropagation();
-        action();
-    });
+/* =========================================================
+   TOAST
+========================================================= */
+
+let toastTimer = null;
+
+function toast(message) {
+
+    const old =
+        document.querySelector(
+            ".app-toast"
+        );
+
+    if (old) {
+        old.remove();
+    }
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+    element.className =
+        "app-toast";
+
+    element.textContent =
+        message;
+
+    document.body.appendChild(
+        element
+    );
+
+    clearTimeout(
+        toastTimer
+    );
+
+    toastTimer =
+        setTimeout(
+            () => {
+
+                element.remove();
+
+            },
+            2500
+        );
+}
+
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+
+function createActionButton(
+    icon,
+    title,
+    action
+) {
+
+    const button =
+        document.createElement(
+            "button"
+        );
+
+    button.type =
+        "button";
+
+    button.className =
+        title === "Excluir"
+            ? "delete-button"
+            : title === "Editar"
+                ? "edit-button"
+                : "pin-button";
+
+    button.textContent =
+        icon;
+
+    button.title =
+        title;
+
+    button.setAttribute(
+        "aria-label",
+        title
+    );
+
+    button.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            action();
+
+        }
+    );
 
     return button;
 }
 
-function generateId() {
-    return `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 10)}`;
+function createClothesAction(
+    icon,
+    title,
+    action
+) {
+
+    const button =
+        document.createElement(
+            "button"
+        );
+
+    button.type =
+        "button";
+
+    button.className =
+        "clothes-action-button";
+
+    button.textContent =
+        icon;
+
+    button.title =
+        title;
+
+    button.setAttribute(
+        "aria-label",
+        title
+    );
+
+    button.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            action();
+
+        }
+    );
+
+    return button;
 }
 
-function normalizeText(value) {
-    return String(value || "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
-}
 
-function sortItems(a, b) {
-    if (Boolean(a.pinned) !== Boolean(b.pinned)) {
-        return a.pinned ? -1 : 1;
-    }
-
-    return new Date(b.createdAt) - new Date(a.createdAt);
-}
-
-function escapeHTML(value) {
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-function escapeAttribute(value) {
-    return escapeHTML(value);
-}
+/* =========================================================
+   ATUALIZAÇÃO GERAL
+========================================================= */
 
 function updateAll() {
+
     renderGoals();
     renderTasks();
     renderNotes();
+    renderClothes();
+    renderTrash();
     renderProgress();
-    updateTimerDisplay();
-    updateTimerButtons();
+
+    updateTimer();
+
     updateSettingsButtons();
 }
 
-/* =========================
+
+/* =========================================================
    SERVICE WORKER
-========================= */
+========================================================= */
 
 function registerServiceWorker() {
-    if (!("serviceWorker" in navigator)) {
+
+    if (
+        !("serviceWorker" in navigator)
+    ) {
         return;
     }
 
-    window.addEventListener("load", () => {
-        navigator.serviceWorker
-            .register("./sw.js")
-            .then(registration => {
-                registration.update().catch(() => {});
-            })
-            .catch(error => {
-                console.log(
-                    "Service Worker não pôde ser registrado:",
-                    error
+    window.addEventListener(
+        "load",
+        () => {
+
+            navigator
+                .serviceWorker
+                .register("./sw.js")
+                .then(
+                    registration => {
+
+                        registration
+                            .update()
+                            .catch(
+                                () => {}
+                            );
+
+                    }
+                )
+                .catch(
+                    error => {
+
+                        console.log(
+                            "Erro no Service Worker:",
+                            error
+                        );
+
+                    }
                 );
-            });
-    });
+
+        }
+    );
 }
