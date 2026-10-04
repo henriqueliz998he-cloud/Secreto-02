@@ -1,4 +1,4 @@
-const CACHE_NAME = "metas-016-cache-v1";
+const CACHE_NAME = "metas-016-v3-cache-2";
 
 const FILES_TO_CACHE = [
     "./",
@@ -13,105 +13,192 @@ const FILES_TO_CACHE = [
    INSTALAÇÃO
 ========================================================= */
 
-self.addEventListener("install", (event) => {
+self.addEventListener(
+    "install",
+    (event) => {
 
-    event.waitUntil(
+        event.waitUntil(
 
-        caches.open(CACHE_NAME)
-            .then((cache) => {
+            caches
+                .open(CACHE_NAME)
+                .then(
+                    (cache) => {
 
-                return cache.addAll(
-                    FILES_TO_CACHE
-                );
+                        return cache.addAll(
+                            FILES_TO_CACHE
+                        );
 
-            })
-            .then(() => {
+                    }
+                )
+                .then(
+                    () => {
 
-                return self.skipWaiting();
+                        return self.skipWaiting();
 
-            })
+                    }
+                )
 
-    );
+        );
 
-});
+    }
+);
 
 
 /* =========================================================
    ATIVAÇÃO
 ========================================================= */
 
-self.addEventListener("activate", (event) => {
+self.addEventListener(
+    "activate",
+    (event) => {
 
-    event.waitUntil(
+        event.waitUntil(
 
-        caches.keys()
-            .then((cacheNames) => {
+            caches
+                .keys()
+                .then(
+                    (cacheNames) => {
 
-                return Promise.all(
+                        return Promise.all(
 
-                    cacheNames
-                        .filter(
-                            (cacheName) =>
-                                cacheName !== CACHE_NAME
-                        )
-                        .map(
-                            (cacheName) =>
-                                caches.delete(cacheName)
-                        )
+                            cacheNames
+                                .filter(
+                                    (cacheName) =>
+                                        cacheName !==
+                                        CACHE_NAME
+                                )
+                                .map(
+                                    (cacheName) =>
+                                        caches.delete(
+                                            cacheName
+                                        )
+                                )
 
-                );
+                        );
 
-            })
-            .then(() => {
+                    }
+                )
+                .then(
+                    () => {
 
-                return self.clients.claim();
+                        return self.clients.claim();
 
-            })
+                    }
+                )
 
-    );
+        );
 
-});
+    }
+);
 
 
 /* =========================================================
-   FUNCIONAMENTO OFFLINE
+   ATUALIZAÇÃO IMEDIATA
 ========================================================= */
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener(
+    "message",
+    (event) => {
 
-    if (event.request.method !== "GET") {
-        return;
+        if (
+            event.data &&
+            event.data.type ===
+            "SKIP_WAITING"
+        ) {
+
+            self.skipWaiting();
+
+        }
+
     }
+);
 
 
-    event.respondWith(
+/* =========================================================
+   FUNCIONAMENTO ONLINE + OFFLINE
+========================================================= */
 
-        caches.match(event.request)
-            .then((cachedResponse) => {
+self.addEventListener(
+    "fetch",
+    (event) => {
 
-                if (cachedResponse) {
+        if (
+            event.request.method !==
+            "GET"
+        ) {
 
-                    return cachedResponse;
+            return;
 
-                }
+        }
 
 
-                return fetch(event.request)
-                    .then((networkResponse) => {
+        event.respondWith(
+
+            fetch(
+                event.request
+            )
+                .then(
+                    (networkResponse) => {
+
+                        if (
+                            networkResponse &&
+                            networkResponse.status === 200
+                        ) {
+
+                            const responseClone =
+                                networkResponse.clone();
+
+                            caches
+                                .open(
+                                    CACHE_NAME
+                                )
+                                .then(
+                                    (cache) => {
+
+                                        cache.put(
+                                            event.request,
+                                            responseClone
+                                        );
+
+                                    }
+                                );
+
+                        }
+
 
                         return networkResponse;
 
-                    })
-                    .catch(() => {
+                    }
+                )
+                .catch(
+                    () => {
 
                         return caches.match(
-                            "./index.html"
-                        );
+                            event.request
+                        )
+                            .then(
+                                (cachedResponse) => {
 
-                    });
+                                    if (
+                                        cachedResponse
+                                    ) {
 
-            })
+                                        return cachedResponse;
 
-    );
+                                    }
 
-});
+
+                                    return caches.match(
+                                        "./index.html"
+                                    );
+
+                                }
+                            );
+
+                    }
+                )
+
+        );
+
+    }
+);
