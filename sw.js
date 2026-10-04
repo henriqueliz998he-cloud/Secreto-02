@@ -1,6 +1,6 @@
-const CACHE_NAME = "metas-016-cache-v2";
+const CACHE_NAME = "secreto-v3-cache-v1";
 
-const APP_FILES = [
+const FILES = [
     "./",
     "./index.html",
     "./style.css",
@@ -8,82 +8,172 @@ const APP_FILES = [
     "./sw.js"
 ];
 
-self.addEventListener("install", event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                return cache.addAll(APP_FILES);
-            })
-            .then(() => {
-                return self.skipWaiting();
-            })
-    );
-});
+self.addEventListener(
+    "install",
+    event => {
 
-self.addEventListener("activate", event => {
-    event.waitUntil(
-        caches.keys()
-            .then(cacheNames => {
-                return Promise.all(
-                    cacheNames
-                        .filter(cacheName => cacheName !== CACHE_NAME)
-                        .map(cacheName => caches.delete(cacheName))
-                );
-            })
-            .then(() => {
-                return self.clients.claim();
-            })
-    );
-});
+        event.waitUntil(
 
-self.addEventListener("fetch", event => {
-    if (event.request.method !== "GET") {
-        return;
+            caches
+                .open(CACHE_NAME)
+                .then(
+                    cache =>
+                        cache.addAll(
+                            FILES
+                        )
+                )
+                .then(
+                    () =>
+                        self.skipWaiting()
+                )
+
+        );
+
     }
+);
 
-    const requestURL = new URL(event.request.url);
 
-    if (requestURL.origin !== self.location.origin) {
-        return;
+self.addEventListener(
+    "activate",
+    event => {
+
+        event.waitUntil(
+
+            caches
+                .keys()
+                .then(
+                    cacheNames =>
+
+                        Promise.all(
+
+                            cacheNames
+                                .filter(
+                                    name =>
+                                        name !==
+                                        CACHE_NAME
+                                )
+                                .map(
+                                    name =>
+                                        caches.delete(
+                                            name
+                                        )
+                                )
+
+                        )
+
+                )
+                .then(
+                    () =>
+                        self.clients.claim()
+                )
+
+        );
+
     }
+);
 
-    event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                if (response && response.ok) {
-                    const responseCopy = response.clone();
 
-                    caches.open(CACHE_NAME)
-                        .then(cache => {
-                            cache.put(event.request, responseCopy);
-                        })
-                        .catch(() => {});
-                }
+self.addEventListener(
+    "fetch",
+    event => {
 
-                return response;
-            })
-            .catch(() => {
-                return caches.match(event.request)
-                    .then(cachedResponse => {
-                        if (cachedResponse) {
-                            return cachedResponse;
+        if (
+            event.request.method !==
+            "GET"
+        ) {
+            return;
+        }
+
+        const url =
+            new URL(
+                event.request.url
+            );
+
+        if (
+            url.origin !==
+            self.location.origin
+        ) {
+            return;
+        }
+
+        event.respondWith(
+
+            fetch(
+                event.request
+            )
+                .then(
+                    response => {
+
+                        if (
+                            response &&
+                            response.ok
+                        ) {
+
+                            const copy =
+                                response.clone();
+
+                            caches
+                                .open(
+                                    CACHE_NAME
+                                )
+                                .then(
+                                    cache =>
+                                        cache.put(
+                                            event.request,
+                                            copy
+                                        )
+                                )
+                                .catch(
+                                    () => {}
+                                );
                         }
 
-                        if (event.request.mode === "navigate") {
-                            return caches.match("./index.html");
-                        }
+                        return response;
 
-                        return new Response(
-                            "Conteúdo indisponível offline.",
-                            {
-                                status: 503,
-                                headers: {
-                                    "Content-Type":
-                                        "text/plain; charset=utf-8"
+                    }
+                )
+                .catch(
+                    () =>
+
+                        caches
+                            .match(
+                                event.request
+                            )
+                            .then(
+                                cached => {
+
+                                    if (
+                                        cached
+                                    ) {
+                                        return cached;
+                                    }
+
+                                    if (
+                                        event.request
+                                            .mode ===
+                                        "navigate"
+                                    ) {
+
+                                        return caches
+                                            .match(
+                                                "./index.html"
+                                            );
+                                    }
+
+                                    return new Response(
+                                        "Offline",
+                                        {
+                                            status:
+                                                503
+                                        }
+                                    );
+
                                 }
-                            }
-                        );
-                    });
-            })
-    );
-});
+                            )
+
+                )
+
+        );
+
+    }
+);
