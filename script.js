@@ -1,3180 +1,2033 @@
-/* =========================================================
-   MINHAS METAS V3.0
-========================================================= */
-
-
-/* =========================================================
-   CONFIGURAÇÕES
-========================================================= */
-
-const DEFAULT_PASSWORD = "Hg99";
-const GENERAL_DELETE_PASSWORD = "Hg88";
-
-const GOALS_STORAGE_KEY = "metas016_goals";
-const TASKS_STORAGE_KEY = "metas016_tasks";
-
-const PASSWORD_STORAGE_KEY = "metas016_password";
-const THEME_STORAGE_KEY = "metas016_theme";
-const TIME_FORMAT_STORAGE_KEY = "metas016_time_format";
-const VISUALIZER_STORAGE_KEY = "metas016_visualizer";
-
-
-/* =========================================================
-   DADOS
-========================================================= */
-
-let password =
-    localStorage.getItem(PASSWORD_STORAGE_KEY)
-    || DEFAULT_PASSWORD;
-
-let goals = loadData(GOALS_STORAGE_KEY);
-let tasks = loadData(TASKS_STORAGE_KEY);
-
-let currentTheme =
-    localStorage.getItem(THEME_STORAGE_KEY)
-    || "dark";
-
-let timeFormat =
-    localStorage.getItem(TIME_FORMAT_STORAGE_KEY)
-    || "24";
-
-let visualizerMode =
-    localStorage.getItem(VISUALIZER_STORAGE_KEY)
-    === "true";
-
-
-/* =========================================================
-   ELEMENTOS
-========================================================= */
-
-const loginScreen =
-    document.getElementById("loginScreen");
-
-const homeScreen =
-    document.getElementById("homeScreen");
-
-const passwordInput =
-    document.getElementById("passwordInput");
-
-const loginButton =
-    document.getElementById("loginButton");
-
-const loginMessage =
-    document.getElementById("loginMessage");
-
-const currentDate =
-    document.getElementById("currentDate");
-
-const currentTime =
-    document.getElementById("currentTime");
-
-const screens =
-    document.querySelectorAll(".screen");
-
-const menuCards =
-    document.querySelectorAll(".menu-card");
-
-const backButtons =
-    document.querySelectorAll(".back-button");
-
-
-/* =========================================================
-   METAS
-========================================================= */
-
-const addGoalButton =
-    document.getElementById("addGoalButton");
-
-const goalsList =
-    document.getElementById("goalsList");
-
-const goalSearchInput =
-    document.getElementById("goalSearchInput");
-
-const shareGoalsButton =
-    document.getElementById("shareGoalsButton");
-
-
-/* =========================================================
-   TAREFAS
-========================================================= */
-
-const addTaskButton =
-    document.getElementById("addTaskButton");
-
-const tasksList =
-    document.getElementById("tasksList");
-
-const taskSearchInput =
-    document.getElementById("taskSearchInput");
-
-const shareTasksButton =
-    document.getElementById("shareTasksButton");
-
-
-/* =========================================================
-   DETALHE
-========================================================= */
-
-const detailBackButton =
-    document.getElementById("detailBackButton");
-
-const detailHeaderTitle =
-    document.getElementById("detailHeaderTitle");
-
-const detailHeaderType =
-    document.getElementById("detailHeaderType");
-
-const detailTitle =
-    document.getElementById("detailTitle");
-
-const detailDescription =
-    document.getElementById("detailDescription");
-
-const detailDate =
-    document.getElementById("detailDate");
-
-const detailCompleteButton =
-    document.getElementById("detailCompleteButton");
-
-const detailEditButton =
-    document.getElementById("detailEditButton");
-
-const detailDeleteButton =
-    document.getElementById("detailDeleteButton");
-
-const shareDetailButton =
-    document.getElementById("shareDetailButton");
-
-let currentDetailType = null;
-let currentDetailItem = null;
-let previousDetailScreen = "homeScreen";
-
-
-/* =========================================================
-   CRONÔMETRO
-========================================================= */
-
-const timerDisplay =
-    document.getElementById("timerDisplay");
-
-const startTimerButton =
-    document.getElementById("startTimerButton");
-
-const pauseTimerButton =
-    document.getElementById("pauseTimerButton");
-
-const resetTimerButton =
-    document.getElementById("resetTimerButton");
-
-let timerInterval = null;
-let timerSeconds = 0;
-let timerRunning = false;
-
-
-/* =========================================================
-   PROGRESSO
-========================================================= */
-
-const totalGoalsElement =
-    document.getElementById("totalGoals");
-
-const completedGoalsElement =
-    document.getElementById("completedGoals");
-
-const activeGoalsElement =
-    document.getElementById("activeGoals");
-
-const chartCompleted =
-    document.getElementById("chartCompleted");
-
-const chartActive =
-    document.getElementById("chartActive");
-
-const shareProgressButton =
-    document.getElementById("shareProgressButton");
-
-
-/* =========================================================
-   CONFIGURAÇÕES
-========================================================= */
-
-const settingsLockButton =
-    document.getElementById("settingsLockButton");
-
-const deleteAllButton =
-    document.getElementById("deleteAllButton");
-
-const visualizerButton =
-    document.getElementById("visualizerButton");
-
-const themeButton =
-    document.getElementById("themeButton");
-
-const changePasswordButton =
-    document.getElementById("changePasswordButton");
-
-const timeFormatButton =
-    document.getElementById("timeFormatButton");
-
-const aboutButton =
-    document.getElementById("aboutButton");
-
-const generalShareButton =
-    document.getElementById("generalShareButton");
-
-
-/* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
+const DEFAULT_ACCESS_PASSWORD = "Hg99";
+const MASTER_DELETE_PASSWORD = "Hg88";
+
+const STORAGE_KEYS = {
+    accessPassword: "metas016_access_password",
+    goals: "metas016_goals",
+    tasks: "metas016_tasks",
+    notes: "metas016_notes",
+    theme: "metas016_theme",
+    viewer: "metas016_viewer_mode",
+    timeFormat: "metas016_time_format",
+    timerSeconds: "metas016_timer_seconds"
+};
+
+const state = {
+    accessPassword: localStorage.getItem(STORAGE_KEYS.accessPassword) || DEFAULT_ACCESS_PASSWORD,
+    goals: loadJSON(STORAGE_KEYS.goals, []),
+    tasks: loadJSON(STORAGE_KEYS.tasks, []),
+    notes: loadJSON(STORAGE_KEYS.notes, []),
+    theme: localStorage.getItem(STORAGE_KEYS.theme) || "dark",
+    viewer: localStorage.getItem(STORAGE_KEYS.viewer) === "true",
+    timeFormat: localStorage.getItem(STORAGE_KEYS.timeFormat) || "24",
+    timerSeconds: Number(localStorage.getItem(STORAGE_KEYS.timerSeconds) || 0),
+    timerRunning: false,
+    timerInterval: null,
+    detailOrigin: "home",
+    detailType: null,
+    detailId: null
+};
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    applyTheme();
-
-    applyVisualizerMode();
-
-    updateDateTime();
-
-    setInterval(
-        updateDateTime,
-        1000
-    );
-
-    renderGoals();
-
-    renderTasks();
-
-    updateProgress();
-
-    updateTimerDisplay();
-
-    updateSettingsLabels();
-
-    registerServiceWorker();
-
-    passwordInput.focus();
-
+    setupApp();
 });
 
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-loginButton.addEventListener(
-    "click",
-    login
-);
-
-passwordInput.addEventListener(
-    "keydown",
-    (event) => {
-
-        if (event.key === "Enter") {
-            login();
-        }
-
+function loadJSON(key, fallback) {
+    try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : fallback;
+    } catch {
+        return fallback;
     }
-);
-
-
-function login() {
-
-    const enteredPassword =
-        passwordInput.value;
-
-    if (enteredPassword === password) {
-
-        loginMessage.textContent = "";
-
-        passwordInput.value = "";
-
-        showScreen("homeScreen");
-
-        return;
-
-    }
-
-    loginMessage.textContent =
-        "Senha incorreta.";
-
-    passwordInput.value = "";
-
-    passwordInput.focus();
-
 }
 
+function saveJSON(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
 
-/* =========================================================
+function setupApp() {
+    applyTheme();
+    applyViewerMode();
+    setupNavigation();
+    setupLogin();
+    setupGoals();
+    setupTasks();
+    setupNotes();
+    setupTimer();
+    setupProgress();
+    setupSettings();
+    setupAbout();
+    updateClock();
+    setInterval(updateClock, 1000);
+    updateAll();
+    registerServiceWorker();
+}
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+/* =========================
    NAVEGAÇÃO
-========================================================= */
+========================= */
 
-menuCards.forEach(
-    (card) => {
-
-        card.addEventListener(
-            "click",
-            () => {
-
-                const targetScreen =
-                    card.dataset.screen;
-
-                showScreen(
-                    targetScreen
-                );
-
-            }
-        );
-
-    }
-);
-
-
-backButtons.forEach(
-    (button) => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const targetScreen =
-                    button.dataset.back;
-
-                if (targetScreen) {
-                    showScreen(targetScreen);
-                }
-
-            }
-        );
-
-    }
-);
-
+const screenIds = [
+    "loginScreen",
+    "homeScreen",
+    "goalsScreen",
+    "tasksScreen",
+    "notesScreen",
+    "timerScreen",
+    "progressScreen",
+    "settingsScreen",
+    "aboutScreen",
+    "detailScreen"
+];
 
 function showScreen(screenId) {
-
-    screens.forEach(
-        (screen) => {
-
-            screen.classList.add(
-                "hidden"
-            );
-
+    screenIds.forEach(id => {
+        const element = $(id);
+        if (element) {
+            element.classList.add("hidden");
         }
-    );
+    });
 
-    const target =
-        document.getElementById(screenId);
+    const target = $(screenId);
 
     if (target) {
-
-        target.classList.remove(
-            "hidden"
-        );
-
+        target.classList.remove("hidden");
     }
 
-    if (
-        screenId === "progressScreen"
-    ) {
+    window.scrollTo({
+        top: 0,
+        behavior: "instant"
+    });
 
-        updateProgress();
-
+    if (screenId === "progressScreen") {
+        renderProgress();
     }
 
+    if (screenId === "settingsScreen") {
+        updateSettingsButtons();
+    }
 }
 
-
-/* =========================================================
-   DATA E HORA
-========================================================= */
-
-function updateDateTime() {
-
-    const now =
-        new Date();
-
-    const day =
-        String(
-            now.getDate()
-        ).padStart(2, "0");
-
-    const month =
-        String(
-            now.getMonth() + 1
-        ).padStart(2, "0");
-
-    const year =
-        now.getFullYear();
-
-    currentDate.textContent =
-        `${day}/${month}/${year}`;
-
-    currentTime.textContent =
-        formatTimeFromDate(now);
-
-}
-
-
-function formatTimeFromDate(date) {
-
-    let hours =
-        date.getHours();
-
-    const minutes =
-        String(
-            date.getMinutes()
-        ).padStart(2, "0");
-
-    const seconds =
-        String(
-            date.getSeconds()
-        ).padStart(2, "0");
-
-
-    if (timeFormat === "12") {
-
-        const suffix =
-            hours >= 12
-                ? "PM"
-                : "AM";
-
-        hours =
-            hours % 12;
-
-        if (hours === 0) {
-            hours = 12;
-        }
-
-        return (
-            `${String(hours).padStart(2, "0")}:` +
-            `${minutes}:${seconds} ${suffix}`
-        );
-
-    }
-
-
-    return (
-        `${String(hours).padStart(2, "0")}:` +
-        `${minutes}:${seconds}`
-    );
-
-}
-
-
-/* =========================================================
-   METAS
-========================================================= */
-
-addGoalButton.addEventListener(
-    "click",
-    () => {
-
-        if (visualizerMode) {
-            return;
-        }
-
-        openGoalModal();
-
-    }
-);
-
-
-goalSearchInput.addEventListener(
-    "input",
-    renderGoals
-);
-
-
-function openGoalModal(goal = null) {
-
-    if (visualizerMode) {
-        return;
-    }
-
-    const editing =
-        goal !== null;
-
-    const overlay =
-        createModalOverlay();
-
-    const modal =
-        document.createElement("div");
-
-    modal.className =
-        "modal";
-
-    modal.innerHTML = `
-
-        <h2>
-            ${editing
-                ? "✏️ Editar meta"
-                : "🎯 Nova meta"}
-        </h2>
-
-        <label>
-            Título
-        </label>
-
-        <input
-            type="text"
-            id="goalTitleInput"
-            placeholder="Nome da meta"
-            maxlength="100"
-        >
-
-        <label>
-            Conteúdo
-        </label>
-
-        <textarea
-            id="goalDescriptionInput"
-            placeholder="Escreva o conteúdo da meta..."
-            maxlength="2000"
-        ></textarea>
-
-        <div class="modal-buttons">
-
-            <button
-                id="cancelGoalButton"
-                class="secondary-button"
-            >
-                Cancelar
-            </button>
-
-            <button
-                id="saveGoalButton"
-                class="primary-button"
-            >
-                ${editing
-                    ? "Salvar"
-                    : "Adicionar"}
-            </button>
-
-        </div>
-
-    `;
-
-
-    overlay.appendChild(modal);
-
-    document.body.appendChild(
-        overlay
-    );
-
-
-    const titleInput =
-        document.getElementById(
-            "goalTitleInput"
-        );
-
-    const descriptionInput =
-        document.getElementById(
-            "goalDescriptionInput"
-        );
-
-
-    if (editing) {
-
-        titleInput.value =
-            goal.title;
-
-        descriptionInput.value =
-            goal.description;
-
-    }
-
-
-    titleInput.focus();
-
-
-    document
-        .getElementById(
-            "cancelGoalButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                overlay.remove();
-
-            }
-        );
-
-
-    document
-        .getElementById(
-            "saveGoalButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                const title =
-                    titleInput.value.trim();
-
-                const description =
-                    descriptionInput.value.trim();
-
-
-                if (!title) {
-
-                    showAlert(
-                        "Digite um título."
-                    );
-
-                    titleInput.focus();
-
-                    return;
-
-                }
-
-
-                if (editing) {
-
-                    goal.title =
-                        title;
-
-                    goal.description =
-                        description;
-
-                } else {
-
-                    goals.push({
-
-                        id: Date.now(),
-
-                        title,
-
-                        description,
-
-                        completed: false,
-
-                        createdAt:
-                            new Date().toISOString()
-
-                    });
-
-                }
-
-
-                saveData(
-                    GOALS_STORAGE_KEY,
-                    goals
-                );
-
-                renderGoals();
-
-                updateProgress();
-
-                overlay.remove();
-
-            }
-        );
-
-    }
-
-
-}
-
-
-/* =========================================================
-   EXIBIR METAS
-========================================================= */
-
-function renderGoals() {
-
-    goalsList.innerHTML = "";
-
-    const search =
-        goalSearchInput.value
-            .trim()
-            .toLowerCase();
-
-    const filtered =
-        goals.filter(
-            (goal) =>
-                goal.title
-                    .toLowerCase()
-                    .includes(search)
-        );
-
-
-    if (filtered.length === 0) {
-
-        const message =
-            document.createElement("div");
-
-        message.className =
-            "empty-message";
-
-        message.textContent =
-            goals.length === 0
-                ? "Você ainda não possui nenhuma meta."
-                : "Nenhuma meta encontrada.";
-
-        goalsList.appendChild(
-            message
-        );
-
-        return;
-
-    }
-
-
-    filtered.forEach(
-        (goal) => {
-
-            const card =
-                document.createElement("div");
-
-            card.className =
-                "item-card";
-
-
-            if (goal.completed) {
-
-                card.classList.add(
-                    "completed"
-                );
-
-            }
-
-
-            card.innerHTML = `
-
-                <div class="item-main">
-
-                    <input
-                        type="checkbox"
-                        class="item-checkbox"
-                        ${goal.completed
-                            ? "checked"
-                            : ""}
-                        aria-label="Concluir meta"
-                    >
-
-                    <div class="item-info">
-
-                        <div class="item-title"></div>
-
-                        <div class="item-date"></div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="item-actions">
-
-                    <button
-                        class="item-action-button edit-button"
-                    >
-                        ✏️
-                    </button>
-
-                    <button
-                        class="item-action-button delete delete-button"
-                    >
-                        🗑️
-                    </button>
-
-                </div>
-
-            `;
-
-
-            const title =
-                card.querySelector(
-                    ".item-title"
-                );
-
-            const date =
-                card.querySelector(
-                    ".item-date"
-                );
-
-            const checkbox =
-                card.querySelector(
-                    ".item-checkbox"
-                );
-
-            const editButton =
-                card.querySelector(
-                    ".edit-button"
-                );
-
-            const deleteButton =
-                card.querySelector(
-                    ".delete-button"
-                );
-
-
-            title.textContent =
-                goal.title;
-
-            date.textContent =
-                formatCreatedDate(
-                    goal.createdAt
-                );
-
-
-            title.addEventListener(
-                "click",
-                () => {
-
-                    openDetail(
-                        "goal",
-                        goal,
-                        "goalsScreen"
-                    );
-
-                }
-            );
-
-
-            checkbox.addEventListener(
-                "change",
-                () => {
-
-                    if (visualizerMode) {
-
-                        checkbox.checked =
-                            goal.completed;
-
-                        return;
-
-                    }
-
-                    goal.completed =
-                        checkbox.checked;
-
-                    saveData(
-                        GOALS_STORAGE_KEY,
-                        goals
-                    );
-
-                    renderGoals();
-
-                    updateProgress();
-
-                }
-            );
-
-
-            editButton.addEventListener(
-                "click",
-                () => {
-
-                    openGoalModal(
-                        goal
-                    );
-
-                }
-            );
-
-
-            deleteButton.addEventListener(
-                "click",
-                () => {
-
-                    confirmDelete(
-                        "Excluir meta",
-                        "Deseja realmente excluir esta meta?",
-                        () => {
-
-                            goals =
-                                goals.filter(
-                                    (item) =>
-                                        item.id !== goal.id
-                                );
-
-                            saveData(
-                                GOALS_STORAGE_KEY,
-                                goals
-                            );
-
-                            renderGoals();
-
-                            updateProgress();
-
-                        }
-                    );
-
-                }
-            );
-
-
-            goalsList.appendChild(
-                card
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   TAREFAS
-========================================================= */
-
-addTaskButton.addEventListener(
-    "click",
-    () => {
-
-        if (visualizerMode) {
-            return;
-        }
-
-        openTaskModal();
-
-    }
-);
-
-
-taskSearchInput.addEventListener(
-    "input",
-    renderTasks
-);
-
-
-function openTaskModal(task = null) {
-
-    if (visualizerMode) {
-        return;
-    }
-
-    const editing =
-        task !== null;
-
-    const overlay =
-        createModalOverlay();
-
-    const modal =
-        document.createElement("div");
-
-    modal.className =
-        "modal";
-
-    modal.innerHTML = `
-
-        <h2>
-            ${editing
-                ? "✏️ Editar tarefa"
-                : "📋 Nova tarefa"}
-        </h2>
-
-        <label>
-            Título
-        </label>
-
-        <input
-            type="text"
-            id="taskTitleInput"
-            placeholder="Nome da tarefa"
-            maxlength="100"
-        >
-
-        <label>
-            Conteúdo
-        </label>
-
-        <textarea
-            id="taskDescriptionInput"
-            placeholder="Escreva o conteúdo da tarefa..."
-            maxlength="2000"
-        ></textarea>
-
-        <div class="modal-buttons">
-
-            <button
-                id="cancelTaskButton"
-                class="secondary-button"
-            >
-                Cancelar
-            </button>
-
-            <button
-                id="saveTaskButton"
-                class="primary-button"
-            >
-                ${editing
-                    ? "Salvar"
-                    : "Adicionar"}
-            </button>
-
-        </div>
-
-    `;
-
-
-    overlay.appendChild(modal);
-
-    document.body.appendChild(
-        overlay
-    );
-
-
-    const titleInput =
-        document.getElementById(
-            "taskTitleInput"
-        );
-
-    const descriptionInput =
-        document.getElementById(
-            "taskDescriptionInput"
-        );
-
-
-    if (editing) {
-
-        titleInput.value =
-            task.title;
-
-        descriptionInput.value =
-            task.description;
-
-    }
-
-
-    titleInput.focus();
-
-
-    document
-        .getElementById(
-            "cancelTaskButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                overlay.remove();
-
-            }
-        );
-
-
-    document
-        .getElementById(
-            "saveTaskButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                const title =
-                    titleInput.value.trim();
-
-                const description =
-                    descriptionInput.value.trim();
-
-
-                if (!title) {
-
-                    showAlert(
-                        "Digite um título."
-                    );
-
-                    titleInput.focus();
-
-                    return;
-
-                }
-
-
-                if (editing) {
-
-                    task.title =
-                        title;
-
-                    task.description =
-                        description;
-
-                } else {
-
-                    tasks.push({
-
-                        id: Date.now(),
-
-                        title,
-
-                        description,
-
-                        completed: false,
-
-                        createdAt:
-                            new Date().toISOString()
-
-                    });
-
-                }
-
-
-                saveData(
-                    TASKS_STORAGE_KEY,
-                    tasks
-                );
-
-                renderTasks();
-
-                overlay.remove();
-
-            }
-        );
-
-    }
-
-
-}
-
-
-/* =========================================================
-   EXIBIR TAREFAS
-========================================================= */
-
-function renderTasks() {
-
-    tasksList.innerHTML = "";
-
-    const search =
-        taskSearchInput.value
-            .trim()
-            .toLowerCase();
-
-    const filtered =
-        tasks.filter(
-            (task) =>
-                task.title
-                    .toLowerCase()
-                    .includes(search)
-        );
-
-
-    if (filtered.length === 0) {
-
-        const message =
-            document.createElement("div");
-
-        message.className =
-            "empty-message";
-
-        message.textContent =
-            tasks.length === 0
-                ? "Você ainda não possui nenhuma tarefa."
-                : "Nenhuma tarefa encontrada.";
-
-        tasksList.appendChild(
-            message
-        );
-
-        return;
-
-    }
-
-
-    filtered.forEach(
-        (task) => {
-
-            const card =
-                document.createElement("div");
-
-            card.className =
-                "item-card";
-
-
-            if (task.completed) {
-
-                card.classList.add(
-                    "completed"
-                );
-
-            }
-
-
-            card.innerHTML = `
-
-                <div class="item-main">
-
-                    <input
-                        type="checkbox"
-                        class="item-checkbox"
-                        ${task.completed
-                            ? "checked"
-                            : ""}
-                        aria-label="Concluir tarefa"
-                    >
-
-                    <div class="item-info">
-
-                        <div class="item-title"></div>
-
-                        <div class="item-date"></div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="item-actions">
-
-                    <button
-                        class="item-action-button edit-button"
-                    >
-                        ✏️
-                    </button>
-
-                    <button
-                        class="item-action-button delete delete-button"
-                    >
-                        🗑️
-                    </button>
-
-                </div>
-
-            `;
-
-
-            const title =
-                card.querySelector(
-                    ".item-title"
-                );
-
-            const date =
-                card.querySelector(
-                    ".item-date"
-                );
-
-            const checkbox =
-                card.querySelector(
-                    ".item-checkbox"
-                );
-
-            const editButton =
-                card.querySelector(
-                    ".edit-button"
-                );
-
-            const deleteButton =
-                card.querySelector(
-                    ".delete-button"
-                );
-
-
-            title.textContent =
-                task.title;
-
-            date.textContent =
-                formatCreatedDate(
-                    task.createdAt
-                );
-
-
-            title.addEventListener(
-                "click",
-                () => {
-
-                    openDetail(
-                        "task",
-                        task,
-                        "tasksScreen"
-                    );
-
-                }
-            );
-
-
-            checkbox.addEventListener(
-                "change",
-                () => {
-
-                    if (visualizerMode) {
-
-                        checkbox.checked =
-                            task.completed;
-
-                        return;
-
-                    }
-
-                    task.completed =
-                        checkbox.checked;
-
-                    saveData(
-                        TASKS_STORAGE_KEY,
-                        tasks
-                    );
-
-                    renderTasks();
-
-                }
-            );
-
-
-            editButton.addEventListener(
-                "click",
-                () => {
-
-                    openTaskModal(
-                        task
-                    );
-
-                }
-            );
-
-
-            deleteButton.addEventListener(
-                "click",
-                () => {
-
-                    confirmDelete(
-                        "Excluir tarefa",
-                        "Deseja realmente excluir esta tarefa?",
-                        () => {
-
-                            tasks =
-                                tasks.filter(
-                                    (item) =>
-                                        item.id !== task.id
-                                );
-
-                            saveData(
-                                TASKS_STORAGE_KEY,
-                                tasks
-                            );
-
-                            renderTasks();
-
-                        }
-                    );
-
-                }
-            );
-
-
-            tasksList.appendChild(
-                card
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   DETALHE
-========================================================= */
-
-function openDetail(
-    type,
-    item,
-    previousScreen
-) {
-
-    currentDetailType =
-        type;
-
-    currentDetailItem =
-        item;
-
-    previousDetailScreen =
-        previousScreen;
-
-
-    detailHeaderTitle.textContent =
-        type === "goal"
-            ? "🎯 Meta"
-            : "📋 Tarefa";
-
-
-    detailHeaderType.textContent =
-        type === "goal"
-            ? "Detalhes da meta"
-            : "Detalhes da tarefa";
-
-
-    detailTitle.textContent =
-        item.title;
-
-
-    detailDescription.textContent =
-        item.description ||
-        "Sem conteúdo.";
-
-
-    detailDate.textContent =
-        `Criado em ${formatCreatedDate(
-            item.createdAt
-        )}`;
-
-
-    detailCompleteButton.textContent =
-        item.completed
-            ? "↩️ Marcar como em andamento"
-            : "✅ Marcar como concluído";
-
-
-    applyVisualizerMode();
-
-
-    showScreen(
-        "detailScreen"
-    );
-
-}
-
-
-detailBackButton.addEventListener(
-    "click",
-    () => {
-
-        showScreen(
-            previousDetailScreen
-        );
-
-    }
-);
-
-
-detailCompleteButton.addEventListener(
-    "click",
-    () => {
-
-        if (visualizerMode) {
-            return;
-        }
-
-        if (!currentDetailItem) {
-            return;
-        }
-
-        currentDetailItem.completed =
-            !currentDetailItem.completed;
-
-
-        if (currentDetailType === "goal") {
-
-            saveData(
-                GOALS_STORAGE_KEY,
-                goals
-            );
-
-            renderGoals();
-
-            updateProgress();
-
-        } else {
-
-            saveData(
-                TASKS_STORAGE_KEY,
-                tasks
-            );
-
-            renderTasks();
-
-        }
-
-
-        openDetail(
-            currentDetailType,
-            currentDetailItem,
-            previousDetailScreen
-        );
-
-    }
-);
-
-
-detailEditButton.addEventListener(
-    "click",
-    () => {
-
-        if (visualizerMode) {
-            return;
-        }
-
-        if (currentDetailType === "goal") {
-
-            openGoalModal(
-                currentDetailItem
-            );
-
-        } else {
-
-            openTaskModal(
-                currentDetailItem
-            );
-
-        }
-
-    }
-);
-
-
-detailDeleteButton.addEventListener(
-    "click",
-    () => {
-
-        if (visualizerMode) {
-            return;
-        }
-
-        confirmDelete(
-            currentDetailType === "goal"
-                ? "Excluir meta"
-                : "Excluir tarefa",
-
-            currentDetailType === "goal"
-                ? "Deseja realmente excluir esta meta?"
-                : "Deseja realmente excluir esta tarefa?",
-
-            () => {
-
-                if (
-                    currentDetailType === "goal"
-                ) {
-
-                    goals =
-                        goals.filter(
-                            (item) =>
-                                item.id !==
-                                currentDetailItem.id
-                        );
-
-                    saveData(
-                        GOALS_STORAGE_KEY,
-                        goals
-                    );
-
-                    renderGoals();
-
-                    updateProgress();
-
-                } else {
-
-                    tasks =
-                        tasks.filter(
-                            (item) =>
-                                item.id !==
-                                currentDetailItem.id
-                        );
-
-                    saveData(
-                        TASKS_STORAGE_KEY,
-                        tasks
-                    );
-
-                    renderTasks();
-
-                }
-
-
-                showScreen(
-                    previousDetailScreen
-                );
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   PROGRESSO
-========================================================= */
-
-function updateProgress() {
-
-    const total =
-        goals.length;
-
-    const completed =
-        goals.filter(
-            (goal) =>
-                goal.completed
-        ).length;
-
-    const active =
-        total - completed;
-
-
-    totalGoalsElement.textContent =
-        total;
-
-    completedGoalsElement.textContent =
-        completed;
-
-    activeGoalsElement.textContent =
-        active;
-
-
-    updateCharts(
-        total,
-        completed,
-        active
-    );
-
-}
-
-
-function updateCharts(
-    total,
-    completed,
-    active
-) {
-
-    if (total === 0) {
-
-        chartCompleted.style.width =
-            "90px";
-
-        chartActive.style.width =
-            "90px";
-
-        chartCompleted.style.opacity =
-            "0.4";
-
-        chartActive.style.opacity =
-            "0.4";
-
-        return;
-
-    }
-
-
-    chartCompleted.style.opacity =
-        "1";
-
-    chartActive.style.opacity =
-        "1";
-
-
-    const completedPercentage =
-        (completed / total) * 100;
-
-    const activePercentage =
-        (active / total) * 100;
-
-
-    chartCompleted.style.width =
-        `${Math.max(
-            completedPercentage,
-            15
-        )}%`;
-
-
-    chartActive.style.width =
-        `${Math.max(
-            activePercentage,
-            15
-        )}%`;
-
-}
-
-
-/* =========================================================
-   COMPARTILHAMENTO
-========================================================= */
-
-shareGoalsButton.addEventListener(
-    "click",
-    () => {
-
-        shareText(
-            buildGoalsShareText()
-        );
-
-    }
-);
-
-
-shareTasksButton.addEventListener(
-    "click",
-    () => {
-
-        shareText(
-            buildTasksShareText()
-        );
-
-    }
-);
-
-
-shareProgressButton.addEventListener(
-    "click",
-    () => {
-
-        shareText(
-            buildProgressShareText()
-        );
-
-    }
-);
-
-
-shareDetailButton.addEventListener(
-    "click",
-    () => {
-
-        if (!currentDetailItem) {
-            return;
-        }
-
-        const typeName =
-            currentDetailType === "goal"
-                ? "Meta"
-                : "Tarefa";
-
-        const text =
-            `${typeName}: ${currentDetailItem.title}\n\n` +
-            `${currentDetailItem.description || "Sem conteúdo."}\n\n` +
-            `Criado em: ${formatCreatedDate(
-                currentDetailItem.createdAt
-            )}\n` +
-            `Status: ${
-                currentDetailItem.completed
-                    ? "Concluído"
-                    : "Em andamento"
-            }`;
-
-        shareText(text);
-
-    }
-);
-
-
-generalShareButton.addEventListener(
-    "click",
-    () => {
-
-        shareText(
-            buildGeneralShareText()
-        );
-
-    }
-);
-
-
-async function shareText(text) {
-
-    if (
-        navigator.share
-    ) {
-
-        try {
-
-            await navigator.share({
-
-                title:
-                    "Meu Espaço",
-
-                text
-
+function setupNavigation() {
+    const menuMap = {
+        goalsCard: "goalsScreen",
+        tasksCard: "tasksScreen",
+        notesCard: "notesScreen",
+        timerCard: "timerScreen",
+        progressCard: "progressScreen",
+        settingsCard: "settingsScreen"
+    };
+
+    Object.entries(menuMap).forEach(([buttonId, screenId]) => {
+        const button = $(buttonId);
+
+        if (button) {
+            button.addEventListener("click", () => {
+                showScreen(screenId);
             });
+        }
+    });
 
-        } catch (error) {
+    document.querySelectorAll("[data-back]").forEach(button => {
+        button.addEventListener("click", () => {
+            showScreen(button.dataset.back);
+        });
+    });
 
-            if (
-                error.name !==
-                "AbortError"
-            ) {
+    const homeBackButtons = document.querySelectorAll(".back-home");
 
-                copyToClipboard(
-                    text
-                );
+    homeBackButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            showScreen("homeScreen");
+        });
+    });
+}
 
+/* =========================
+   LOGIN
+========================= */
+
+function setupLogin() {
+    const loginButton = $("loginButton");
+    const passwordInput = $("passwordInput");
+
+    if (loginButton) {
+        loginButton.addEventListener("click", login);
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                login();
             }
+        });
+    }
+}
 
+function login() {
+    const passwordInput = $("passwordInput");
+    const loginMessage = $("loginMessage");
+
+    if (!passwordInput) return;
+
+    const password = passwordInput.value;
+
+    if (password === state.accessPassword) {
+        passwordInput.value = "";
+
+        if (loginMessage) {
+            loginMessage.textContent = "";
         }
 
-        return;
-
-    }
-
-
-    copyToClipboard(
-        text
-    );
-
-}
-
-
-function buildGoalsShareText() {
-
-    let text =
-        "🎯 MINHAS METAS\n\n";
-
-
-    if (goals.length === 0) {
-
-        return (
-            text +
-            "Nenhuma meta cadastrada."
-        );
-
-    }
-
-
-    goals.forEach(
-        (goal, index) => {
-
-            text +=
-                `${index + 1}. ${goal.title}\n`;
-
-            text +=
-                `Status: ${
-                    goal.completed
-                        ? "Concluída"
-                        : "Em andamento"
-                }\n`;
-
-            text +=
-                `Criada em: ${
-                    formatCreatedDate(
-                        goal.createdAt
-                    )
-                }\n\n`;
-
-        }
-    );
-
-
-    return text.trim();
-
-}
-
-
-function buildTasksShareText() {
-
-    let text =
-        "📋 MINHAS TAREFAS\n\n";
-
-
-    if (tasks.length === 0) {
-
-        return (
-            text +
-            "Nenhuma tarefa cadastrada."
-        );
-
-    }
-
-
-    tasks.forEach(
-        (task, index) => {
-
-            text +=
-                `${index + 1}. ${task.title}\n`;
-
-            text +=
-                `Status: ${
-                    task.completed
-                        ? "Concluída"
-                        : "Em andamento"
-                }\n`;
-
-            text +=
-                `Criada em: ${
-                    formatCreatedDate(
-                        task.createdAt
-                    )
-                }\n\n`;
-
-        }
-    );
-
-
-    return text.trim();
-
-}
-
-
-function buildProgressShareText() {
-
-    const total =
-        goals.length;
-
-    const completed =
-        goals.filter(
-            (goal) =>
-                goal.completed
-        ).length;
-
-    const active =
-        total - completed;
-
-
-    return (
-        "📊 MEU PROGRESSO\n\n" +
-        `🎯 Metas totais: ${total}\n` +
-        `✅ Metas concluídas: ${completed}\n` +
-        `🔄 Em andamento: ${active}\n\n` +
-        "O gráfico representa visualmente " +
-        "a proporção entre metas concluídas " +
-        "e metas em andamento."
-    );
-
-}
-
-
-function buildGeneralShareText() {
-
-    const total =
-        goals.length;
-
-    const completed =
-        goals.filter(
-            (goal) =>
-                goal.completed
-        ).length;
-
-    const active =
-        total - completed;
-
-
-    let text =
-        "📱 MEU ESPAÇO\n\n";
-
-
-    text +=
-        "🎯 METAS\n";
-
-    if (goals.length === 0) {
-
-        text +=
-            "Nenhuma meta cadastrada.\n\n";
-
-    } else {
-
-        goals.forEach(
-            (goal, index) => {
-
-                text +=
-                    `${index + 1}. ${goal.title} — ` +
-                    `${
-                        goal.completed
-                            ? "Concluída"
-                            : "Em andamento"
-                    }\n`;
-
-            }
-        );
-
-        text += "\n";
-
-    }
-
-
-    text +=
-        "📋 TAREFAS\n";
-
-    if (tasks.length === 0) {
-
-        text +=
-            "Nenhuma tarefa cadastrada.\n\n";
-
-    } else {
-
-        tasks.forEach(
-            (task, index) => {
-
-                text +=
-                    `${index + 1}. ${task.title} — ` +
-                    `${
-                        task.completed
-                            ? "Concluída"
-                            : "Em andamento"
-                    }\n`;
-
-            }
-        );
-
-        text += "\n";
-
-    }
-
-
-    text +=
-        "⏱️ CRONÔMETRO\n";
-
-    text +=
-        `Tempo atual: ${
-            formatTimerSeconds(
-                timerSeconds
-            )
-        }\n\n`;
-
-
-    text +=
-        "📊 PROGRESSO\n";
-
-    text +=
-        `Metas totais: ${total}\n`;
-
-    text +=
-        `Metas concluídas: ${completed}\n`;
-
-    text +=
-        `Em andamento: ${active}`;
-
-
-    return text;
-
-}
-
-
-function copyToClipboard(text) {
-
-    if (
-        navigator.clipboard
-    ) {
-
-        navigator.clipboard
-            .writeText(text)
-            .then(
-                () => {
-
-                    showAlert(
-                        "Conteúdo copiado para a área de transferência."
-                    );
-
-                }
-            )
-            .catch(
-                () => {
-
-                    showAlert(
-                        text
-                    );
-
-                }
-            );
-
-        return;
-
-    }
-
-
-    showAlert(text);
-
-}
-
-
-/* =========================================================
-   CRONÔMETRO
-========================================================= */
-
-startTimerButton.addEventListener(
-    "click",
-    startTimer
-);
-
-pauseTimerButton.addEventListener(
-    "click",
-    pauseTimer
-);
-
-resetTimerButton.addEventListener(
-    "click",
-    resetTimer
-);
-
-
-function startTimer() {
-
-    if (timerRunning) {
+        showScreen("homeScreen");
         return;
     }
 
-
-    timerRunning =
-        true;
-
-
-    timerInterval =
-        setInterval(
-            () => {
-
-                timerSeconds++;
-
-                updateTimerDisplay();
-
-            },
-            1000
-        );
-
-}
-
-
-function pauseTimer() {
-
-    if (!timerRunning) {
-        return;
+    if (loginMessage) {
+        loginMessage.textContent = "Senha incorreta.";
     }
-
-
-    timerRunning =
-        false;
-
-    clearInterval(
-        timerInterval
-    );
-
-    timerInterval =
-        null;
-
 }
-
-
-function resetTimer() {
-
-    timerRunning =
-        false;
-
-    clearInterval(
-        timerInterval
-    );
-
-    timerInterval =
-        null;
-
-    timerSeconds =
-        0;
-
-    updateTimerDisplay();
-
-}
-
-
-function updateTimerDisplay() {
-
-    timerDisplay.textContent =
-        formatTimerSeconds(
-            timerSeconds
-        );
-
-}
-
-
-function formatTimerSeconds(
-    totalSeconds
-) {
-
-    const hours =
-        Math.floor(
-            totalSeconds / 3600
-        );
-
-    const minutes =
-        Math.floor(
-            (totalSeconds % 3600) / 60
-        );
-
-    const seconds =
-        totalSeconds % 60;
-
-
-    return (
-        `${String(hours).padStart(2, "0")}:` +
-        `${String(minutes).padStart(2, "0")}:` +
-        `${String(seconds).padStart(2, "0")}`
-    );
-
-}
-
-
-/* =========================================================
-   CONFIGURAÇÕES
-========================================================= */
-
-settingsLockButton.addEventListener(
-    "click",
-    lockSite
-);
-
-
-deleteAllButton.addEventListener(
-    "click",
-    deleteEverything
-);
-
-
-visualizerButton.addEventListener(
-    "click",
-    toggleVisualizer
-);
-
-
-themeButton.addEventListener(
-    "click",
-    toggleTheme
-);
-
-
-changePasswordButton.addEventListener(
-    "click",
-    changeAccessPassword
-);
-
-
-timeFormatButton.addEventListener(
-    "click",
-    toggleTimeFormat
-);
-
-
-aboutButton.addEventListener(
-    "click",
-    () => {
-
-        showScreen(
-            "aboutScreen"
-        );
-
-    }
-);
-
-
-/* =========================================================
-   BLOQUEAR
-========================================================= */
 
 function lockSite() {
+    if (state.timerRunning) {
+        pauseTimer();
+    }
 
-    pauseTimer();
+    closeAllModals();
 
-    showScreen(
-        "loginScreen"
-    );
+    const passwordInput = $("passwordInput");
+    const loginMessage = $("loginMessage");
 
-    passwordInput.value =
-        "";
+    if (passwordInput) {
+        passwordInput.value = "";
+    }
 
-    loginMessage.textContent =
-        "";
+    if (loginMessage) {
+        loginMessage.textContent = "";
+    }
 
-    passwordInput.focus();
-
+    showScreen("loginScreen");
 }
 
+/* =========================
+   RELÓGIO
+========================= */
 
-/* =========================================================
-   APAGAR GERAL
-========================================================= */
+function updateClock() {
+    const now = new Date();
 
-function deleteEverything() {
+    const dateElement = $("currentDate");
+    const timeElement = $("currentTime");
 
-    const overlay =
-        createModalOverlay();
+    if (dateElement) {
+        dateElement.textContent = formatDate(now);
+    }
 
-    const modal =
-        document.createElement("div");
+    if (timeElement) {
+        timeElement.textContent = formatTime(now);
+    }
 
-    modal.className =
-        "modal";
+    updateItemDates();
+}
 
-    modal.innerHTML = `
+function formatDate(date) {
+    return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }).format(date);
+}
 
-        <h2>
-            🗑️ Apagar geral
-        </h2>
+function formatTime(date) {
+    return new Intl.DateTimeFormat("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: state.timeFormat === "12"
+    }).format(date);
+}
 
-        <p>
-            Esta função apagará todas as metas
-            e todas as tarefas.
-            Esta ação não poderá ser desfeita.
-        </p>
+function formatDateTime(iso) {
+    const date = new Date(iso);
 
-        <label>
-            Senha para apagar geral
-        </label>
+    return `${formatDate(date)} • ${formatTime(date)}`;
+}
 
-        <input
-            type="password"
-            id="generalDeletePasswordInput"
-            placeholder="Senha"
-            autocomplete="off"
-        >
+function updateItemDates() {
+    document.querySelectorAll("[data-created-at]").forEach(element => {
+        const date = element.dataset.createdAt;
 
-        <div class="modal-buttons">
+        if (date) {
+            element.textContent = formatDateTime(date);
+        }
+    });
+}
 
-            <button
-                id="cancelGeneralDeleteButton"
-                class="secondary-button"
-            >
-                Cancelar
-            </button>
+/* =========================
+   METAS
+========================= */
 
-            <button
-                id="continueGeneralDeleteButton"
-                class="danger-button"
-            >
-                Continuar
-            </button>
+function setupGoals() {
+    const addButton = $("addGoalButton");
+    const shareButton = $("shareGoalsButton");
+    const searchInput = $("goalSearch");
 
+    if (addButton) {
+        addButton.addEventListener("click", () => {
+            if (state.viewer) return;
+
+            openGoalEditor();
+        });
+    }
+
+    if (shareButton) {
+        shareButton.addEventListener("click", shareGoals);
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", renderGoals);
+    }
+
+    renderGoals();
+}
+
+function renderGoals() {
+    const container = $("goalsList");
+
+    if (!container) return;
+
+    const searchInput = $("goalSearch");
+    const search = normalizeText(searchInput ? searchInput.value : "");
+
+    let goals = state.goals.filter(goal => {
+        return normalizeText(goal.title).includes(search);
+    });
+
+    goals.sort(sortItems);
+
+    container.innerHTML = "";
+
+    if (goals.length === 0) {
+        container.innerHTML = `
+            <div class="empty-message">
+                Nenhuma meta encontrada.
+            </div>
+        `;
+        return;
+    }
+
+    goals.forEach(goal => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+
+        if (goal.completed) {
+            card.classList.add("completed");
+        }
+
+        if (goal.pinned) {
+            card.classList.add("pinned");
+        }
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "item-checkbox";
+        checkbox.checked = Boolean(goal.completed);
+        checkbox.title = goal.completed ? "Meta concluída" : "Marcar como concluída";
+        checkbox.disabled = state.viewer;
+
+        checkbox.addEventListener("change", () => {
+            if (state.viewer) return;
+
+            goal.completed = checkbox.checked;
+            saveJSON(STORAGE_KEYS.goals, state.goals);
+
+            renderGoals();
+            renderProgress();
+        });
+
+        const content = document.createElement("div");
+        content.className = "item-main";
+
+        const title = document.createElement("button");
+        title.className = "item-title";
+        title.textContent = goal.title || "Meta sem título";
+
+        title.addEventListener("click", () => {
+            openDetail("goal", goal.id, "goalsScreen");
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "item-date";
+        meta.dataset.createdAt = goal.createdAt;
+        meta.textContent = formatDateTime(goal.createdAt);
+
+        content.appendChild(title);
+        content.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "item-actions";
+
+        if (goal.pinned) {
+            const pinLabel = document.createElement("span");
+            pinLabel.className = "pin-indicator";
+            pinLabel.textContent = "📌";
+            pinLabel.title = "Fixada";
+            actions.appendChild(pinLabel);
+        }
+
+        if (!state.viewer) {
+            const pinButton = createSmallButton(
+                "📌",
+                "Fixar/desafixar",
+                "pin-button",
+                () => togglePin("goal", goal.id)
+            );
+
+            const editButton = createSmallButton(
+                "✏️",
+                "Editar",
+                "edit-button",
+                () => openGoalEditor(goal)
+            );
+
+            const deleteButton = createSmallButton(
+                "🗑️",
+                "Excluir",
+                "delete-button",
+                () => deleteItem("goal", goal.id)
+            );
+
+            actions.appendChild(pinButton);
+            actions.appendChild(editButton);
+            actions.appendChild(deleteButton);
+        }
+
+        card.appendChild(checkbox);
+        card.appendChild(content);
+        card.appendChild(actions);
+
+        container.appendChild(card);
+    });
+}
+
+function openGoalEditor(goal = null) {
+    const editing = Boolean(goal);
+
+    const html = `
+        <div class="form-group">
+            <label for="modalTitle">Título</label>
+            <input id="modalTitle" type="text" maxlength="120"
+                value="${escapeAttribute(goal?.title || "")}"
+                placeholder="Título da meta">
         </div>
 
+        <div class="form-group">
+            <label for="modalContent">Descrição</label>
+            <textarea id="modalContent" rows="6"
+                placeholder="Descreva sua meta">${escapeHTML(goal?.content || "")}</textarea>
+        </div>
     `;
 
+    showModal({
+        title: editing ? "Editar meta" : "Nova meta",
+        content: html,
+        buttons: [
+            {
+                text: "Cancelar",
+                className: "secondary-button",
+                action: closeAllModals
+            },
+            {
+                text: editing ? "Salvar" : "Adicionar",
+                className: "primary-button",
+                action: () => {
+                    const titleInput = $("modalTitle");
+                    const contentInput = $("modalContent");
 
-    overlay.appendChild(modal);
+                    const title = titleInput ? titleInput.value.trim() : "";
+                    const content = contentInput ? contentInput.value.trim() : "";
 
-    document.body.appendChild(
-        overlay
-    );
-
-
-    const passwordField =
-        document.getElementById(
-            "generalDeletePasswordInput"
-        );
-
-
-    passwordField.focus();
-
-
-    document
-        .getElementById(
-            "cancelGeneralDeleteButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                overlay.remove();
-
-            }
-        );
-
-
-    document
-        .getElementById(
-            "continueGeneralDeleteButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                if (
-                    passwordField.value !==
-                    GENERAL_DELETE_PASSWORD
-                ) {
-
-                    showAlert(
-                        "Senha incorreta."
-                    );
-
-                    passwordField.value =
-                        "";
-
-                    passwordField.focus();
-
-                    return;
-
-                }
-
-
-                overlay.remove();
-
-
-                confirmDelete(
-                    "Confirmar apagamento geral",
-                    "Tem certeza que deseja apagar todas as metas e tarefas?",
-                    () => {
-
-                        goals = [];
-
-                        tasks = [];
-
-
-                        saveData(
-                            GOALS_STORAGE_KEY,
-                            goals
-                        );
-
-                        saveData(
-                            TASKS_STORAGE_KEY,
-                            tasks
-                        );
-
-
-                        renderGoals();
-
-                        renderTasks();
-
-                        updateProgress();
-
-
-                        showAlert(
-                            "Tudo foi apagado."
-                        );
-
+                    if (!title) {
+                        showModalMessage("Digite um título para a meta.");
+                        return;
                     }
-                );
 
+                    if (editing) {
+                        goal.title = title;
+                        goal.content = content;
+                    } else {
+                        state.goals.push({
+                            id: generateId(),
+                            title,
+                            content,
+                            completed: false,
+                            pinned: false,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+
+                    saveJSON(STORAGE_KEYS.goals, state.goals);
+
+                    closeAllModals();
+                    renderGoals();
+                    renderProgress();
+                }
             }
-        );
-
+        ]
+    });
 }
 
+async function shareGoals() {
+    if (state.goals.length === 0) {
+        showToast("Não há metas para compartilhar.");
+        return;
+    }
 
-/* =========================================================
-   MODO VISUALIZADOR
-========================================================= */
+    const text = state.goals
+        .slice()
+        .sort(sortItems)
+        .map((goal, index) => {
+            return `${index + 1}. ${goal.title}
+Status: ${goal.completed ? "Concluída" : "Em andamento"}
+Criada: ${formatDateTime(goal.createdAt)}
+${goal.content || ""}`;
+        })
+        .join("\n\n");
 
-function toggleVisualizer() {
+    await shareContent("Minhas metas", `🎯 METAS\n\n${text}`);
+}
 
-    visualizerMode =
-        !visualizerMode;
+/* =========================
+   TAREFAS
+========================= */
 
+function setupTasks() {
+    const addButton = $("addTaskButton");
+    const shareButton = $("shareTasksButton");
+    const searchInput = $("taskSearch");
+
+    if (addButton) {
+        addButton.addEventListener("click", () => {
+            if (state.viewer) return;
+
+            openTaskEditor();
+        });
+    }
+
+    if (shareButton) {
+        shareButton.addEventListener("click", shareTasks);
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", renderTasks);
+    }
+
+    renderTasks();
+}
+
+function renderTasks() {
+    const container = $("tasksList");
+
+    if (!container) return;
+
+    const searchInput = $("taskSearch");
+    const search = normalizeText(searchInput ? searchInput.value : "");
+
+    let tasks = state.tasks.filter(task => {
+        return normalizeText(task.title).includes(search);
+    });
+
+    tasks.sort(sortItems);
+
+    container.innerHTML = "";
+
+    if (tasks.length === 0) {
+        container.innerHTML = `
+            <div class="empty-message">
+                Nenhuma tarefa encontrada.
+            </div>
+        `;
+        return;
+    }
+
+    tasks.forEach(task => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+
+        if (task.completed) {
+            card.classList.add("completed");
+        }
+
+        if (task.pinned) {
+            card.classList.add("pinned");
+        }
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "item-checkbox";
+        checkbox.checked = Boolean(task.completed);
+        checkbox.title = task.completed ? "Tarefa concluída" : "Marcar como concluída";
+        checkbox.disabled = state.viewer;
+
+        checkbox.addEventListener("change", () => {
+            if (state.viewer) return;
+
+            task.completed = checkbox.checked;
+            saveJSON(STORAGE_KEYS.tasks, state.tasks);
+
+            renderTasks();
+        });
+
+        const content = document.createElement("div");
+        content.className = "item-main";
+
+        const title = document.createElement("button");
+        title.className = "item-title";
+        title.textContent = task.title || "Tarefa sem título";
+
+        title.addEventListener("click", () => {
+            openDetail("task", task.id, "tasksScreen");
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "item-date";
+        meta.dataset.createdAt = task.createdAt;
+        meta.textContent = formatDateTime(task.createdAt);
+
+        content.appendChild(title);
+        content.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "item-actions";
+
+        if (task.pinned) {
+            const pinLabel = document.createElement("span");
+            pinLabel.className = "pin-indicator";
+            pinLabel.textContent = "📌";
+            pinLabel.title = "Fixada";
+            actions.appendChild(pinLabel);
+        }
+
+        if (!state.viewer) {
+            actions.appendChild(
+                createSmallButton(
+                    "📌",
+                    "Fixar/desafixar",
+                    "pin-button",
+                    () => togglePin("task", task.id)
+                )
+            );
+
+            actions.appendChild(
+                createSmallButton(
+                    "✏️",
+                    "Editar",
+                    "edit-button",
+                    () => openTaskEditor(task)
+                )
+            );
+
+            actions.appendChild(
+                createSmallButton(
+                    "🗑️",
+                    "Excluir",
+                    "delete-button",
+                    () => deleteItem("task", task.id)
+                )
+            );
+        }
+
+        card.appendChild(checkbox);
+        card.appendChild(content);
+        card.appendChild(actions);
+
+        container.appendChild(card);
+    });
+}
+
+function openTaskEditor(task = null) {
+    const editing = Boolean(task);
+
+    const html = `
+        <div class="form-group">
+            <label for="modalTitle">Título</label>
+            <input id="modalTitle" type="text" maxlength="120"
+                value="${escapeAttribute(task?.title || "")}"
+                placeholder="Título da tarefa">
+        </div>
+
+        <div class="form-group">
+            <label for="modalContent">Descrição</label>
+            <textarea id="modalContent" rows="6"
+                placeholder="Descreva a tarefa">${escapeHTML(task?.content || "")}</textarea>
+        </div>
+    `;
+
+    showModal({
+        title: editing ? "Editar tarefa" : "Nova tarefa",
+        content: html,
+        buttons: [
+            {
+                text: "Cancelar",
+                className: "secondary-button",
+                action: closeAllModals
+            },
+            {
+                text: editing ? "Salvar" : "Adicionar",
+                className: "primary-button",
+                action: () => {
+                    const titleInput = $("modalTitle");
+                    const contentInput = $("modalContent");
+
+                    const title = titleInput ? titleInput.value.trim() : "";
+                    const content = contentInput ? contentInput.value.trim() : "";
+
+                    if (!title) {
+                        showModalMessage("Digite um título para a tarefa.");
+                        return;
+                    }
+
+                    if (editing) {
+                        task.title = title;
+                        task.content = content;
+                    } else {
+                        state.tasks.push({
+                            id: generateId(),
+                            title,
+                            content,
+                            completed: false,
+                            pinned: false,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+
+                    saveJSON(STORAGE_KEYS.tasks, state.tasks);
+
+                    closeAllModals();
+                    renderTasks();
+                }
+            }
+        ]
+    });
+}
+
+async function shareTasks() {
+    if (state.tasks.length === 0) {
+        showToast("Não há tarefas para compartilhar.");
+        return;
+    }
+
+    const text = state.tasks
+        .slice()
+        .sort(sortItems)
+        .map((task, index) => {
+            return `${index + 1}. ${task.title}
+Status: ${task.completed ? "Concluída" : "Em andamento"}
+Criada: ${formatDateTime(task.createdAt)}
+${task.content || ""}`;
+        })
+        .join("\n\n");
+
+    await shareContent("Minhas tarefas", `📋 TAREFAS\n\n${text}`);
+}
+
+/* =========================
+   NOTAS
+========================= */
+
+function setupNotes() {
+    const addButton = $("addNoteButton");
+    const shareButton = $("shareNotesButton");
+    const searchInput = $("noteSearch");
+
+    if (addButton) {
+        addButton.addEventListener("click", () => {
+            if (state.viewer) return;
+
+            openNoteEditor();
+        });
+    }
+
+    if (shareButton) {
+        shareButton.addEventListener("click", shareNotes);
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", renderNotes);
+    }
+
+    renderNotes();
+}
+
+function renderNotes() {
+    const container = $("notesList");
+
+    if (!container) return;
+
+    const searchInput = $("noteSearch");
+    const search = normalizeText(searchInput ? searchInput.value : "");
+
+    let notes = state.notes.filter(note => {
+        return normalizeText(note.title).includes(search);
+    });
+
+    notes.sort(sortItems);
+
+    container.innerHTML = "";
+
+    if (notes.length === 0) {
+        container.innerHTML = `
+            <div class="empty-message">
+                Nenhuma nota encontrada.
+            </div>
+        `;
+        return;
+    }
+
+    notes.forEach(note => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+
+        if (note.pinned) {
+            card.classList.add("pinned");
+        }
+
+        const content = document.createElement("div");
+        content.className = "item-main";
+
+        const title = document.createElement("button");
+        title.className = "item-title";
+        title.textContent = note.title || "Nota sem título";
+
+        title.addEventListener("click", () => {
+            openDetail("note", note.id, "notesScreen");
+        });
+
+        const meta = document.createElement("div");
+        meta.className = "item-date";
+        meta.dataset.createdAt = note.createdAt;
+        meta.textContent = formatDateTime(note.createdAt);
+
+        content.appendChild(title);
+        content.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "item-actions";
+
+        if (note.pinned) {
+            const pinLabel = document.createElement("span");
+            pinLabel.className = "pin-indicator";
+            pinLabel.textContent = "📌";
+            pinLabel.title = "Fixada";
+            actions.appendChild(pinLabel);
+        }
+
+        if (!state.viewer) {
+            actions.appendChild(
+                createSmallButton(
+                    "📌",
+                    "Fixar/desafixar",
+                    "pin-button",
+                    () => togglePin("note", note.id)
+                )
+            );
+
+            actions.appendChild(
+                createSmallButton(
+                    "✏️",
+                    "Editar",
+                    "edit-button",
+                    () => openNoteEditor(note)
+                )
+            );
+
+            actions.appendChild(
+                createSmallButton(
+                    "🗑️",
+                    "Excluir",
+                    "delete-button",
+                    () => deleteItem("note", note.id)
+                )
+            );
+        }
+
+        card.appendChild(content);
+        card.appendChild(actions);
+
+        container.appendChild(card);
+    });
+}
+
+function openNoteEditor(note = null) {
+    const editing = Boolean(note);
+
+    const html = `
+        <div class="form-group">
+            <label for="modalTitle">Título</label>
+            <input id="modalTitle" type="text" maxlength="120"
+                value="${escapeAttribute(note?.title || "")}"
+                placeholder="Título da nota">
+        </div>
+
+        <div class="form-group">
+            <label for="modalContent">Conteúdo</label>
+            <textarea id="modalContent" rows="8"
+                placeholder="Escreva sua nota">${escapeHTML(note?.content || "")}</textarea>
+        </div>
+    `;
+
+    showModal({
+        title: editing ? "Editar nota" : "Nova nota",
+        content: html,
+        buttons: [
+            {
+                text: "Cancelar",
+                className: "secondary-button",
+                action: closeAllModals
+            },
+            {
+                text: editing ? "Salvar" : "Adicionar",
+                className: "primary-button",
+                action: () => {
+                    const titleInput = $("modalTitle");
+                    const contentInput = $("modalContent");
+
+                    const title = titleInput ? titleInput.value.trim() : "";
+                    const content = contentInput ? contentInput.value.trim() : "";
+
+                    if (!title) {
+                        showModalMessage("Digite um título para a nota.");
+                        return;
+                    }
+
+                    if (editing) {
+                        note.title = title;
+                        note.content = content;
+                    } else {
+                        state.notes.push({
+                            id: generateId(),
+                            title,
+                            content,
+                            pinned: false,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+
+                    saveJSON(STORAGE_KEYS.notes, state.notes);
+
+                    closeAllModals();
+                    renderNotes();
+                }
+            }
+        ]
+    });
+}
+
+async function shareNotes() {
+    if (state.notes.length === 0) {
+        showToast("Não há notas para compartilhar.");
+        return;
+    }
+
+    const text = state.notes
+        .slice()
+        .sort(sortItems)
+        .map((note, index) => {
+            return `${index + 1}. ${note.title}
+Criada: ${formatDateTime(note.createdAt)}
+
+${note.content || ""}`;
+        })
+        .join("\n\n--------------------\n\n");
+
+    await shareContent("Minhas notas", `📝 NOTAS\n\n${text}`);
+}
+
+/* =========================
+   DETALHES
+========================= */
+
+function ensureDetailScreen() {
+    if ($("detailScreen")) return;
+
+    const section = document.createElement("section");
+    section.id = "detailScreen";
+    section.className = "screen hidden";
+
+    section.innerHTML = `
+        <header class="page-header">
+            <button id="detailBackButton" class="back-button">←</button>
+
+            <div class="page-header-info">
+                <h1 id="detailTitle">Detalhes</h1>
+                <p id="detailMeta"></p>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="about-card detail-card">
+                <div id="detailContent"></div>
+            </div>
+        </main>
+    `;
+
+    document.body.appendChild(section);
+
+    $("detailBackButton").addEventListener("click", () => {
+        showScreen(state.detailOrigin);
+    });
+}
+
+function openDetail(type, id, origin) {
+    ensureDetailScreen();
+
+    let item = null;
+
+    if (type === "goal") {
+        item = state.goals.find(goal => goal.id === id);
+    }
+
+    if (type === "task") {
+        item = state.tasks.find(task => task.id === id);
+    }
+
+    if (type === "note") {
+        item = state.notes.find(note => note.id === id);
+    }
+
+    if (!item) return;
+
+    state.detailOrigin = origin;
+    state.detailType = type;
+    state.detailId = id;
+
+    const title = $("detailTitle");
+    const meta = $("detailMeta");
+    const content = $("detailContent");
+
+    if (title) {
+        title.textContent = item.title || "Sem título";
+    }
+
+    if (meta) {
+        let typeName = "Nota";
+
+        if (type === "goal") typeName = item.completed ? "Meta concluída" : "Meta em andamento";
+        if (type === "task") typeName = item.completed ? "Tarefa concluída" : "Tarefa em andamento";
+
+        meta.textContent = `${typeName} • ${formatDateTime(item.createdAt)}`;
+    }
+
+    if (content) {
+        content.textContent = item.content || "Sem conteúdo.";
+    }
+
+    showScreen("detailScreen");
+}
+
+/* =========================
+   PIN
+========================= */
+
+function togglePin(type, id) {
+    if (state.viewer) return;
+
+    let collection = null;
+    let storageKey = "";
+
+    if (type === "goal") {
+        collection = state.goals;
+        storageKey = STORAGE_KEYS.goals;
+    }
+
+    if (type === "task") {
+        collection = state.tasks;
+        storageKey = STORAGE_KEYS.tasks;
+    }
+
+    if (type === "note") {
+        collection = state.notes;
+        storageKey = STORAGE_KEYS.notes;
+    }
+
+    if (!collection) return;
+
+    const item = collection.find(element => element.id === id);
+
+    if (!item) return;
+
+    item.pinned = !item.pinned;
+
+    saveJSON(storageKey, collection);
+
+    renderGoals();
+    renderTasks();
+    renderNotes();
+}
+
+/* =========================
+   EXCLUSÃO
+========================= */
+
+function deleteItem(type, id) {
+    if (state.viewer) return;
+
+    let item = null;
+
+    if (type === "goal") {
+        item = state.goals.find(element => element.id === id);
+    }
+
+    if (type === "task") {
+        item = state.tasks.find(element => element.id === id);
+    }
+
+    if (type === "note") {
+        item = state.notes.find(element => element.id === id);
+    }
+
+    if (!item) return;
+
+    const names = {
+        goal: "meta",
+        task: "tarefa",
+        note: "nota"
+    };
+
+    showConfirmModal(
+        `Excluir ${names[type]}?`,
+        `Você realmente deseja excluir "${item.title}"?`,
+        "Excluir",
+        () => {
+            if (type === "goal") {
+                state.goals = state.goals.filter(element => element.id !== id);
+                saveJSON(STORAGE_KEYS.goals, state.goals);
+                renderGoals();
+                renderProgress();
+            }
+
+            if (type === "task") {
+                state.tasks = state.tasks.filter(element => element.id !== id);
+                saveJSON(STORAGE_KEYS.tasks, state.tasks);
+                renderTasks();
+            }
+
+            if (type === "note") {
+                state.notes = state.notes.filter(element => element.id !== id);
+                saveJSON(STORAGE_KEYS.notes, state.notes);
+                renderNotes();
+            }
+
+            showToast("Excluído.");
+        }
+    );
+}
+
+/* =========================
+   CRONÔMETRO
+========================= */
+
+function setupTimer() {
+    const startButton = $("startTimerButton");
+    const pauseButton = $("pauseTimerButton");
+    const resetButton = $("resetTimerButton");
+
+    if (startButton) {
+        startButton.addEventListener("click", startTimer);
+    }
+
+    if (pauseButton) {
+        pauseButton.addEventListener("click", pauseTimer);
+    }
+
+    if (resetButton) {
+        resetButton.addEventListener("click", resetTimer);
+    }
+
+    updateTimerDisplay();
+}
+
+function startTimer() {
+    if (state.timerRunning) return;
+
+    state.timerRunning = true;
+
+    state.timerInterval = setInterval(() => {
+        state.timerSeconds++;
+
+        localStorage.setItem(
+            STORAGE_KEYS.timerSeconds,
+            String(state.timerSeconds)
+        );
+
+        updateTimerDisplay();
+    }, 1000);
+
+    updateTimerButtons();
+}
+
+function pauseTimer() {
+    if (!state.timerRunning) return;
+
+    state.timerRunning = false;
+
+    if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+    }
+
+    updateTimerButtons();
+}
+
+function resetTimer() {
+    pauseTimer();
+
+    state.timerSeconds = 0;
 
     localStorage.setItem(
-        VISUALIZER_STORAGE_KEY,
-        visualizerMode
+        STORAGE_KEYS.timerSeconds,
+        "0"
     );
 
+    updateTimerDisplay();
+}
 
-    applyVisualizerMode();
+function updateTimerDisplay() {
+    const timerDisplay = $("timerDisplay");
 
+    if (!timerDisplay) return;
 
-    showAlert(
-        visualizerMode
+    timerDisplay.textContent = formatStopwatch(state.timerSeconds);
+}
+
+function updateTimerButtons() {
+    const startButton = $("startTimerButton");
+    const pauseButton = $("pauseTimerButton");
+
+    if (startButton) {
+        startButton.disabled = state.timerRunning;
+    }
+
+    if (pauseButton) {
+        pauseButton.disabled = !state.timerRunning;
+    }
+}
+
+function formatStopwatch(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return [
+        String(hours).padStart(2, "0"),
+        String(minutes).padStart(2, "0"),
+        String(seconds).padStart(2, "0")
+    ].join(":");
+}
+
+/* =========================
+   PROGRESSO
+========================= */
+
+function setupProgress() {
+    const shareButton = $("shareProgressButton");
+
+    if (shareButton) {
+        shareButton.addEventListener("click", shareProgress);
+    }
+
+    renderProgress();
+}
+
+function getGoalStats() {
+    const total = state.goals.length;
+
+    const completed = state.goals.filter(goal => goal.completed).length;
+
+    const inProgress = total - completed;
+
+    const completedPercent =
+        total === 0 ? 0 : Math.round((completed / total) * 100);
+
+    const inProgressPercent =
+        total === 0 ? 0 : Math.round((inProgress / total) * 100);
+
+    return {
+        total,
+        completed,
+        inProgress,
+        completedPercent,
+        inProgressPercent
+    };
+}
+
+function renderProgress() {
+    const stats = getGoalStats();
+
+    const totalElement = $("totalGoals");
+    const completedElement = $("completedGoals");
+    const inProgressElement = $("inProgressGoals");
+
+    if (totalElement) {
+        totalElement.textContent = stats.total;
+    }
+
+    if (completedElement) {
+        completedElement.textContent = stats.completed;
+    }
+
+    if (inProgressElement) {
+        inProgressElement.textContent = stats.inProgress;
+    }
+
+    const completedBar = $("completedBar");
+    const inProgressBar = $("inProgressBar");
+
+    if (completedBar) {
+        completedBar.style.width = `${stats.completedPercent}%`;
+        completedBar.setAttribute(
+            "aria-label",
+            `${stats.completedPercent}% concluídas`
+        );
+    }
+
+    if (inProgressBar) {
+        inProgressBar.style.width = `${stats.inProgressPercent}%`;
+        inProgressBar.setAttribute(
+            "aria-label",
+            `${stats.inProgressPercent}% em andamento`
+        );
+    }
+
+    const completedPercent = $("completedPercent");
+    const inProgressPercent = $("inProgressPercent");
+
+    if (completedPercent) {
+        completedPercent.textContent = `${stats.completedPercent}%`;
+    }
+
+    if (inProgressPercent) {
+        inProgressPercent.textContent = `${stats.inProgressPercent}%`;
+    }
+}
+
+async function shareProgress() {
+    const stats = getGoalStats();
+
+    const text = `📊 PROGRESSO
+
+Metas totais: ${stats.total}
+Metas concluídas: ${stats.completed}
+Em andamento: ${stats.inProgress}
+
+Concluídas: ${stats.completedPercent}%
+Em andamento: ${stats.inProgressPercent}%`;
+
+    await shareContent("Progresso das metas", text);
+}
+
+/* =========================
+   CONFIGURAÇÕES
+========================= */
+
+function setupSettings() {
+    const lockButton = $("settingsLockButton");
+    const deleteAllButton = $("deleteAllButton");
+    const viewerButton = $("viewerModeButton");
+    const themeButton = $("themeButton");
+    const changePasswordButton = $("changePasswordButton");
+    const timeFormatButton = $("timeFormatButton");
+    const generalShareButton = $("generalShareButton");
+
+    if (lockButton) {
+        lockButton.addEventListener("click", lockSite);
+    }
+
+    if (deleteAllButton) {
+        deleteAllButton.addEventListener("click", deleteEverything);
+    }
+
+    if (viewerButton) {
+        viewerButton.addEventListener("click", toggleViewerMode);
+    }
+
+    if (themeButton) {
+        themeButton.addEventListener("click", toggleTheme);
+    }
+
+    if (changePasswordButton) {
+        changePasswordButton.addEventListener("click", changeAccessPassword);
+    }
+
+    if (timeFormatButton) {
+        timeFormatButton.addEventListener("click", toggleTimeFormat);
+    }
+
+    if (generalShareButton) {
+        generalShareButton.addEventListener("click", shareEverything);
+    }
+
+    updateSettingsButtons();
+}
+
+function updateSettingsButtons() {
+    const viewerButton = $("viewerModeButton");
+    const themeButton = $("themeButton");
+    const timeFormatButton = $("timeFormatButton");
+
+    if (viewerButton) {
+        viewerButton.textContent = state.viewer
+            ? "Modo Visualizador: ATIVO"
+            : "Modo Visualizador: DESATIVADO";
+    }
+
+    if (themeButton) {
+        themeButton.textContent =
+            state.theme === "dark"
+                ? "Tema: Preto e vermelho"
+                : "Tema: Branco e vermelho";
+    }
+
+    if (timeFormatButton) {
+        timeFormatButton.textContent =
+            state.timeFormat === "24"
+                ? "Formato da hora: 24 horas"
+                : "Formato da hora: 12 horas";
+    }
+}
+
+function toggleViewerMode() {
+    state.viewer = !state.viewer;
+
+    localStorage.setItem(
+        STORAGE_KEYS.viewer,
+        String(state.viewer)
+    );
+
+    applyViewerMode();
+    updateSettingsButtons();
+
+    renderGoals();
+    renderTasks();
+    renderNotes();
+
+    showToast(
+        state.viewer
             ? "Modo Visualizador ativado."
             : "Modo Visualizador desativado."
     );
-
 }
 
-
-function applyVisualizerMode() {
-
+function applyViewerMode() {
     document.body.classList.toggle(
-        "visualizer-mode",
-        visualizerMode
+        "viewer-mode",
+        state.viewer
     );
-
-
-    visualizerButton.textContent =
-        visualizerMode
-            ? "👁️ Visualizador: ativado"
-            : "👁️ Modo Visualizador";
-
 }
-
-
-/* =========================================================
-   TEMA
-========================================================= */
 
 function toggleTheme() {
-
-    currentTheme =
-        currentTheme === "dark"
+    state.theme =
+        state.theme === "dark"
             ? "light"
             : "dark";
 
-
     localStorage.setItem(
-        THEME_STORAGE_KEY,
-        currentTheme
+        STORAGE_KEYS.theme,
+        state.theme
     );
-
 
     applyTheme();
-
+    updateSettingsButtons();
 }
-
 
 function applyTheme() {
-
     document.body.classList.toggle(
         "light-theme",
-        currentTheme === "light"
+        state.theme === "light"
     );
-
-
-    updateSettingsLabels();
-
 }
-
-
-function updateSettingsLabels() {
-
-    themeButton.textContent =
-        currentTheme === "light"
-            ? "🌑 Tema: branco e vermelho"
-            : "☀️ Tema: preto e vermelho";
-
-
-    timeFormatButton.textContent =
-        timeFormat === "24"
-            ? "⏰ Formato da hora: 24 horas"
-            : "⏰ Formato da hora: 12 horas";
-
-
-    visualizerButton.textContent =
-        visualizerMode
-            ? "👁️ Visualizador: ativado"
-            : "👁️ Modo Visualizador";
-
-}
-
-
-/* =========================================================
-   ALTERAR SENHA
-========================================================= */
-
-function changeAccessPassword() {
-
-    const overlay =
-        createModalOverlay();
-
-    const modal =
-        document.createElement("div");
-
-    modal.className =
-        "modal";
-
-    modal.innerHTML = `
-
-        <h2>
-            🔑 Alterar senha
-        </h2>
-
-        <label>
-            Senha atual
-        </label>
-
-        <input
-            type="password"
-            id="currentPasswordInput"
-            autocomplete="off"
-        >
-
-        <label>
-            Nova senha
-        </label>
-
-        <input
-            type="password"
-            id="newPasswordInput"
-            autocomplete="off"
-        >
-
-        <label>
-            Confirmar nova senha
-        </label>
-
-        <input
-            type="password"
-            id="confirmPasswordInput"
-            autocomplete="off"
-        >
-
-        <div class="modal-buttons">
-
-            <button
-                id="cancelPasswordButton"
-                class="secondary-button"
-            >
-                Cancelar
-            </button>
-
-            <button
-                id="savePasswordButton"
-                class="primary-button"
-            >
-                Salvar
-            </button>
-
-        </div>
-
-    `;
-
-
-    overlay.appendChild(modal);
-
-    document.body.appendChild(
-        overlay
-    );
-
-
-    document
-        .getElementById(
-            "cancelPasswordButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                overlay.remove();
-
-            }
-        );
-
-
-    document
-        .getElementById(
-            "savePasswordButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                const current =
-                    document
-                        .getElementById(
-                            "currentPasswordInput"
-                        )
-                        .value;
-
-                const newPassword =
-                    document
-                        .getElementById(
-                            "newPasswordInput"
-                        )
-                        .value;
-
-                const confirmation =
-                    document
-                        .getElementById(
-                            "confirmPasswordInput"
-                        )
-                        .value;
-
-
-                if (
-                    current !== password
-                ) {
-
-                    showAlert(
-                        "A senha atual está incorreta."
-                    );
-
-                    return;
-
-                }
-
-
-                if (
-                    newPassword.length < 1
-                ) {
-
-                    showAlert(
-                        "Digite uma nova senha."
-                    );
-
-                    return;
-
-                }
-
-
-                if (
-                    newPassword !==
-                    confirmation
-                ) {
-
-                    showAlert(
-                        "As novas senhas não coincidem."
-                    );
-
-                    return;
-
-                }
-
-
-                password =
-                    newPassword;
-
-
-                localStorage.setItem(
-                    PASSWORD_STORAGE_KEY,
-                    password
-                );
-
-
-                overlay.remove();
-
-
-                showAlert(
-                    "Senha alterada com sucesso."
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   FORMATO DA HORA
-========================================================= */
 
 function toggleTimeFormat() {
-
-    timeFormat =
-        timeFormat === "24"
+    state.timeFormat =
+        state.timeFormat === "24"
             ? "12"
             : "24";
 
-
     localStorage.setItem(
-        TIME_FORMAT_STORAGE_KEY,
-        timeFormat
+        STORAGE_KEYS.timeFormat,
+        state.timeFormat
     );
 
+    updateClock();
+    updateSettingsButtons();
+    renderGoals();
+    renderTasks();
+    renderNotes();
 
-    updateSettingsLabels();
-
-    updateDateTime();
-
+    showToast(
+        state.timeFormat === "24"
+            ? "Hora em formato de 24 horas."
+            : "Hora em formato de 12 horas."
+    );
 }
 
-
-/* =========================================================
-   CONFIRMAÇÃO PERSONALIZADA
-========================================================= */
-
-function confirmDelete(
-    title,
-    message,
-    onConfirm
-) {
-
-    if (visualizerMode) {
+function changeAccessPassword() {
+    if (state.viewer) {
+        showToast("Desative o Modo Visualizador primeiro.");
         return;
     }
 
-
-    const overlay =
-        createModalOverlay();
-
-    const modal =
-        document.createElement("div");
-
-    modal.className =
-        "modal";
-
-    modal.innerHTML = `
-
-        <h2>
-            ⚠️ ${title}
-        </h2>
-
-        <p>
-            ${message}
-        </p>
-
-        <div class="modal-buttons">
-
-            <button
-                id="cancelConfirmButton"
-                class="secondary-button"
-            >
-                Cancelar
-            </button>
-
-            <button
-                id="confirmDeleteButton"
-                class="danger-button"
-            >
-                Excluir
-            </button>
-
+    const html = `
+        <div class="form-group">
+            <label for="currentPassword">Senha atual</label>
+            <input id="currentPassword" type="password"
+                placeholder="Senha atual">
         </div>
 
+        <div class="form-group">
+            <label for="newPassword">Nova senha</label>
+            <input id="newPassword" type="password"
+                placeholder="Nova senha">
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirmar nova senha</label>
+            <input id="confirmPassword" type="password"
+                placeholder="Digite novamente">
+        </div>
     `;
 
-
-    overlay.appendChild(modal);
-
-    document.body.appendChild(
-        overlay
-    );
-
-
-    document
-        .getElementById(
-            "cancelConfirmButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                overlay.remove();
-
-            }
-        );
-
-
-    document
-        .getElementById(
-            "confirmDeleteButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                overlay.remove();
-
-                onConfirm();
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   MODAL BASE
-========================================================= */
-
-function createModalOverlay() {
-
-    const overlay =
-        document.createElement("div");
-
-    overlay.className =
-        "modal-overlay";
-
-
-    overlay.addEventListener(
-        "click",
-        (event) => {
-
-            if (
-                event.target === overlay
-            ) {
-
-                overlay.remove();
-
-            }
-
-        }
-    );
-
-
-    return overlay;
-
-}
-
-
-function showAlert(message) {
-
-    const overlay =
-        createModalOverlay();
-
-    const modal =
-        document.createElement("div");
-
-    modal.className =
-        "modal";
-
-    modal.innerHTML = `
-
-        <h2>
-            ℹ️ Aviso
-        </h2>
-
-        <p></p>
-
-        <button
-            id="closeAlertButton"
-            class="primary-button"
-        >
-            OK
-        </button>
-
-    `;
-
-
-    modal.querySelector(
-        "p"
-    ).textContent =
-        message;
-
-
-    overlay.appendChild(modal);
-
-    document.body.appendChild(
-        overlay
-    );
-
-
-    document
-        .getElementById(
-            "closeAlertButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                overlay.remove();
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   DATAS
-========================================================= */
-
-function formatCreatedDate(
-    dateString
-) {
-
-    if (!dateString) {
-        return "Data desconhecida";
-    }
-
-
-    const date =
-        new Date(dateString);
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "Data desconhecida";
-
-    }
-
-
-    const day =
-        String(
-            date.getDate()
-        ).padStart(2, "0");
-
-    const month =
-        String(
-            date.getMonth() + 1
-        ).padStart(2, "0");
-
-    const year =
-        date.getFullYear();
-
-
-    return (
-        `${day}/${month}/${year} às ` +
-        `${formatTimeFromDate(date)}`
-    );
-
-}
-
-
-/* =========================================================
-   LOCALSTORAGE
-========================================================= */
-
-function loadData(key) {
-
-    try {
-
-        const saved =
-            localStorage.getItem(key);
-
-        if (!saved) {
-            return [];
-        }
-
-        const parsed =
-            JSON.parse(saved);
-
-        if (
-            !Array.isArray(parsed)
-        ) {
-
-            return [];
-
-        }
-
-        return parsed;
-
-    } catch (error) {
-
-        console.error(
-            "Erro ao carregar dados:",
-            error
-        );
-
-        return [];
-
-    }
-
-}
-
-
-function saveData(
-    key,
-    data
-) {
-
-    try {
-
-        localStorage.setItem(
-            key,
-            JSON.stringify(data)
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Erro ao salvar dados:",
-            error
-        );
-
-        showAlert(
-            "Não foi possível salvar os dados."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   SERVICE WORKER
-========================================================= */
-
-function registerServiceWorker() {
-
-    if (
-        "serviceWorker" in navigator
-    ) {
-
-        window.addEventListener(
-            "load",
-            () => {
-
-                navigator.serviceWorker
-                    .register("./sw.js")
-                    .then(
-                        (registration) => {
-
-                            console.log(
-                                "Service Worker registrado."
-                            );
-
-
-                            if (
-                                registration.waiting
-                            ) {
-
-                                registration.waiting
-                                    .postMessage(
-                                        {
-                                            type:
-                                                "SKIP_WAITING"
-                                        }
-                                    );
-
-                            }
-
-
-                            registration.addEventListener(
-                                "updatefound",
-                                () => {
-
-                                    const worker =
-                                        registration.installing;
-
-                                    if (!worker) {
-                                        return;
-                                    }
-
-
-                                    worker.addEventListener(
-                                        "statechange",
-                                        () => {
-
-                                            if (
-                                                worker.state ===
-                                                "installed" &&
-                                                navigator.serviceWorker.controller
-                                            ) {
-
-                                                worker.postMessage(
-                                                    {
-                                                        type:
-                                                            "SKIP_WAITING"
-                                                    }
-                                                );
-
-                                            }
-
-                                        }
-                                    );
-
-                                }
-                            );
-
-                        }
-                    )
-                    .catch(
-                        (error) => {
-
-                            console.error(
-                                "Erro no Service Worker:",
-                                error
-                            );
-
-                        }
+    showModal({
+        title: "Alterar senha de acesso",
+        content: html,
+        buttons: [
+            {
+                text: "Cancelar",
+                className: "secondary-button",
+                action: closeAllModals
+            },
+            {
+                text: "Salvar senha",
+                className: "primary-button",
+                action: () => {
+                    const current = $("currentPassword")?.value || "";
+                    const newPassword = $("newPassword")?.value || "";
+                    const confirm = $("confirmPassword")?.value || "";
+
+                    if (current !== state.accessPassword) {
+                        showModalMessage("A senha atual está incorreta.");
+                        return;
+                    }
+
+                    if (!newPassword) {
+                        showModalMessage("Digite uma nova senha.");
+                        return;
+                    }
+
+                    if (newPassword !== confirm) {
+                        showModalMessage("As senhas novas não são iguais.");
+                        return;
+                    }
+
+                    state.accessPassword = newPassword;
+
+                    localStorage.setItem(
+                        STORAGE_KEYS.accessPassword,
+                        newPassword
                     );
 
+                    closeAllModals();
+
+                    showToast("Senha alterada com sucesso.");
+                }
             }
-        );
-
-    }
-
+        ]
+    });
 }
 
-
-/* =========================================================
-   SERVICE WORKER — RECARREGAR APÓS ATUALIZAÇÃO
-========================================================= */
-
-navigator.serviceWorker?.addEventListener(
-    "controllerchange",
-    () => {
-
-        window.location.reload();
-
+function deleteEverything() {
+    if (state.viewer) {
+        showToast("Desative o Modo Visualizador primeiro.");
+        return;
     }
-);
 
+    const html = `
+        <div class="form-group">
+            <label for="masterPassword">Senha de confirmação</label>
+            <input id="masterPassword" type="password"
+                placeholder="Digite a senha">
+        </div>
 
-/* =========================================================
-   ESC
-========================================================= */
+        <p class="modal-warning">
+            Essa ação apagará metas, tarefas, notas, cronômetro
+            e configurações salvas.
+        </p>
+    `;
 
-window.addEventListener(
-    "keydown",
-    (event) => {
+    showModal({
+        title: "Apagar geral",
+        content: html,
+        buttons: [
+            {
+                text: "Cancelar",
+                className: "secondary-button",
+                action: closeAllModals
+            },
+            {
+                text: "Continuar",
+                className: "danger-button",
+                action: () => {
+                    const password = $("masterPassword")?.value || "";
 
-        if (
-            event.key === "Escape"
-        ) {
+                    if (password !== MASTER_DELETE_PASSWORD) {
+                        showModalMessage("Senha de confirmação incorreta.");
+                        return;
+                    }
 
-            const modal =
-                document.querySelector(
-                    ".modal-overlay"
-                );
+                    closeAllModals();
 
-            if (modal) {
-
-                modal.remove();
-
+                    showConfirmModal(
+                        "Apagar tudo?",
+                        "Todas as metas, tarefas, notas, cronômetro e configurações serão apagados. A senha de acesso voltará para Hg99.",
+                        "Apagar tudo",
+                        performFullReset
+                    );
+                }
             }
+        ]
+    });
+}
 
-        }
+function performFullReset() {
+    pauseTimer();
 
+    Object.values(STORAGE_KEYS).forEach(key => {
+        localStorage.removeItem(key);
+    });
+
+    state.accessPassword = DEFAULT_ACCESS_PASSWORD;
+    state.goals = [];
+    state.tasks = [];
+    state.notes = [];
+    state.theme = "dark";
+    state.viewer = false;
+    state.timeFormat = "24";
+    state.timerSeconds = 0;
+    state.timerRunning = false;
+
+    applyTheme();
+    applyViewerMode();
+    updateSettingsButtons();
+    updateTimerDisplay();
+    updateClock();
+
+    renderGoals();
+    renderTasks();
+    renderNotes();
+    renderProgress();
+
+    showScreen("loginScreen");
+
+    showToast("Tudo foi apagado.");
+}
+
+async function shareEverything() {
+    const stats = getGoalStats();
+
+    const goalsText =
+        state.goals.length === 0
+            ? "Nenhuma meta."
+            : state.goals
+                .slice()
+                .sort(sortItems)
+                .map((goal, index) => {
+                    return `${index + 1}. ${goal.title}
+Status: ${goal.completed ? "Concluída" : "Em andamento"}
+Criada: ${formatDateTime(goal.createdAt)}
+${goal.content || ""}`;
+                })
+                .join("\n\n");
+
+    const tasksText =
+        state.tasks.length === 0
+            ? "Nenhuma tarefa."
+            : state.tasks
+                .slice()
+                .sort(sortItems)
+                .map((task, index) => {
+                    return `${index + 1}. ${task.title}
+Status: ${task.completed ? "Concluída" : "Em andamento"}
+Criada: ${formatDateTime(task.createdAt)}
+${task.content || ""}`;
+                })
+                .join("\n\n");
+
+    const notesText =
+        state.notes.length === 0
+            ? "Nenhuma nota."
+            : state.notes
+                .slice()
+                .sort(sortItems)
+                .map((note, index) => {
+                    return `${index + 1}. ${note.title}
+Criada: ${formatDateTime(note.createdAt)}
+
+${note.content || ""}`;
+                })
+                .join("\n\n");
+
+    const text = `📦 MEU ESPAÇO
+
+🎯 METAS
+
+${goalsText}
+
+====================
+
+📋 TAREFAS
+
+${tasksText}
+
+====================
+
+📝 NOTAS
+
+${notesText}
+
+====================
+
+📊 PROGRESSO
+
+Metas totais: ${stats.total}
+Metas concluídas: ${stats.completed}
+Em andamento: ${stats.inProgress}
+Concluídas: ${stats.completedPercent}%
+Em andamento: ${stats.inProgressPercent}%
+
+====================
+
+⏱️ CRONÔMETRO
+
+Tempo: ${formatStopwatch(state.timerSeconds)}
+Status: ${state.timerRunning ? "Em andamento" : "Parado"}`;
+
+    await shareContent("Meu Espaço", text);
+}
+
+/* =========================
+   SOBRE
+========================= */
+
+function setupAbout() {
+    const aboutButton = $("aboutProjectButton");
+
+    if (aboutButton) {
+        aboutButton.addEventListener("click", () => {
+            showScreen("aboutScreen");
+        });
     }
-);
+}
+
+/* =========================
+   COMPARTILHAMENTO
+========================= */
+
+async function shareContent(title, text) {
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title,
+                text
+            });
+
+            return;
+        } catch (error) {
+            if (error && error.name === "AbortError") {
+                return;
+            }
+        }
+    }
+
+    showShareFallback(title, text);
+}
+
+function showShareFallback(title, text) {
+    const html = `
+        <div class="form-group">
+            <label>Conteúdo</label>
+            <textarea id="shareFallbackText" rows="12" readonly></textarea>
+        </div>
+    `;
+
+    showModal({
+        title: `Compartilhar — ${title}`,
+        content: html,
+        buttons: [
+            {
+                text: "Fechar",
+                className: "secondary-button",
+                action: closeAllModals
+            },
+            {
+                text: "Copiar",
+                className: "primary-button",
+                action: async () => {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        showToast("Texto copiado.");
+                    } catch {
+                        const textarea = $("shareFallbackText");
+
+                        if (textarea) {
+                            textarea.select();
+                        }
+
+                        showToast("Selecione e copie o texto.");
+                    }
+                }
+            }
+        ]
+    });
+
+    const textarea = $("shareFallbackText");
+
+    if (textarea) {
+        textarea.value = text;
+    }
+}
+
+/* =========================
+   MODAIS
+========================= */
+
+let activeModal = null;
+
+function showModal(options) {
+    closeAllModals();
+
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+
+    const modal = document.createElement("div");
+    modal.className = "modal-box";
+
+    const title = document.createElement("h2");
+    title.textContent = options.title || "";
+
+    const body = document.createElement("div");
+    body.className = "modal-body";
+    body.innerHTML = options.content || "";
+
+    const buttons = document.createElement("div");
+    buttons.className = "modal-buttons";
+
+    (options.buttons || []).forEach(buttonConfig => {
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className =
+            buttonConfig.className || "secondary-button";
+
+        button.textContent = buttonConfig.text;
+
+        button.addEventListener("click", () => {
+            buttonConfig.action();
+        });
+
+        buttons.appendChild(button);
+    });
+
+    modal.appendChild(title);
+    modal.appendChild(body);
+    modal.appendChild(buttons);
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    activeModal = overlay;
+
+    const firstInput = modal.querySelector("input, textarea");
+
+    if (firstInput) {
+        setTimeout(() => firstInput.focus(), 50);
+    }
+}
+
+function showConfirmModal(title, message, confirmText, confirmAction) {
+    const html = `
+        <p class="modal-message">
+            ${escapeHTML(message)}
+        </p>
+    `;
+
+    showModal({
+        title,
+        content: html,
+        buttons: [
+            {
+                text: "Cancelar",
+                className: "secondary-button",
+                action: closeAllModals
+            },
+            {
+                text: confirmText,
+                className: "danger-button",
+                action: () => {
+                    closeAllModals();
+                    confirmAction();
+                }
+            }
+        ]
+    });
+}
+
+function showModalMessage(message) {
+    const existingMessage = document.querySelector(".modal-inline-message");
+
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+
+    const modal = document.querySelector(".modal-box");
+
+    if (!modal) return;
+
+    const messageElement = document.createElement("p");
+
+    messageElement.className = "modal-inline-message";
+    messageElement.textContent = message;
+
+    modal.insertBefore(
+        messageElement,
+        modal.querySelector(".modal-buttons")
+    );
+}
+
+function closeAllModals() {
+    document.querySelectorAll(".modal-overlay").forEach(element => {
+        element.remove();
+    });
+
+    activeModal = null;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+let toastTimeout = null;
+
+function showToast(message) {
+    const oldToast = document.querySelector(".app-toast");
+
+    if (oldToast) {
+        oldToast.remove();
+    }
+
+    const toast = document.createElement("div");
+
+    toast.className = "app-toast";
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    clearTimeout(toastTimeout);
+
+    toastTimeout = setTimeout(() => {
+        toast.remove();
+    }, 2500);
+}
+
+/* =========================
+   UTILIDADES
+========================= */
+
+function createSmallButton(icon, title, className, action) {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = className;
+    button.textContent = icon;
+    button.title = title;
+    button.setAttribute("aria-label", title);
+
+    button.addEventListener("click", event => {
+        event.stopPropagation();
+        action();
+    });
+
+    return button;
+}
+
+function generateId() {
+    return `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2, 10)}`;
+}
+
+function normalizeText(value) {
+    return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+function sortItems(a, b) {
+    if (Boolean(a.pinned) !== Boolean(b.pinned)) {
+        return a.pinned ? -1 : 1;
+    }
+
+    return new Date(b.createdAt) - new Date(a.createdAt);
+}
+
+function escapeHTML(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function escapeAttribute(value) {
+    return escapeHTML(value);
+}
+
+function updateAll() {
+    renderGoals();
+    renderTasks();
+    renderNotes();
+    renderProgress();
+    updateTimerDisplay();
+    updateTimerButtons();
+    updateSettingsButtons();
+}
+
+/* =========================
+   SERVICE WORKER
+========================= */
+
+function registerServiceWorker() {
+    if (!("serviceWorker" in navigator)) {
+        return;
+    }
+
+    window.addEventListener("load", () => {
+        navigator.serviceWorker
+            .register("./sw.js")
+            .then(registration => {
+                registration.update().catch(() => {});
+            })
+            .catch(error => {
+                console.log(
+                    "Service Worker não pôde ser registrado:",
+                    error
+                );
+            });
+    });
+}
