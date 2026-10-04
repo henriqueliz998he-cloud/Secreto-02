@@ -1,179 +1,191 @@
-const CACHE_NAME = "secreto-v3-cache-v1";
+const CACHE_NAME = "secreto-v3-cache-v3";
 
-const FILES = [
-    "./",
-    "./index.html",
-    "./style.css",
-    "./script.js",
-    "./sw.js"
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./script.js",
+  "./sw.js"
 ];
 
+
+/* =========================
+   INSTALAÇÃO
+========================= */
+
 self.addEventListener(
-    "install",
-    event => {
+  "install",
+  (event) => {
 
-        event.waitUntil(
+    event.waitUntil(
 
-            caches
-                .open(CACHE_NAME)
-                .then(
-                    cache =>
-                        cache.addAll(
-                            FILES
-                        )
-                )
-                .then(
-                    () =>
-                        self.skipWaiting()
-                )
+      caches.open(
+        CACHE_NAME
+      )
+      .then(
+        (cache) =>
+          cache.addAll(
+            APP_SHELL
+          )
+      )
+      .then(
+        () =>
+          self.skipWaiting()
+      )
 
-        );
+    );
 
-    }
+  }
 );
 
 
-self.addEventListener(
-    "activate",
-    event => {
-
-        event.waitUntil(
-
-            caches
-                .keys()
-                .then(
-                    cacheNames =>
-
-                        Promise.all(
-
-                            cacheNames
-                                .filter(
-                                    name =>
-                                        name !==
-                                        CACHE_NAME
-                                )
-                                .map(
-                                    name =>
-                                        caches.delete(
-                                            name
-                                        )
-                                )
-
-                        )
-
-                )
-                .then(
-                    () =>
-                        self.clients.claim()
-                )
-
-        );
-
-    }
-);
-
+/* =========================
+   ATIVAÇÃO
+========================= */
 
 self.addEventListener(
-    "fetch",
-    event => {
+  "activate",
+  (event) => {
 
-        if (
-            event.request.method !==
-            "GET"
-        ) {
-            return;
-        }
+    event.waitUntil(
 
-        const url =
-            new URL(
-                event.request.url
+      caches.keys()
+        .then(
+          (cacheNames) => {
+
+            return Promise.all(
+
+              cacheNames
+                .filter(
+                  (name) =>
+                    name !==
+                    CACHE_NAME
+                )
+                .map(
+                  (name) =>
+                    caches.delete(
+                      name
+                    )
+                )
+
             );
 
-        if (
-            url.origin !==
-            self.location.origin
-        ) {
-            return;
-        }
+          }
+        )
+        .then(
+          () =>
+            self.clients.claim()
+        )
 
-        event.respondWith(
+    );
 
-            fetch(
-                event.request
-            )
-                .then(
-                    response => {
+  }
+);
 
-                        if (
-                            response &&
-                            response.ok
-                        ) {
 
-                            const copy =
-                                response.clone();
+/* =========================
+   REDE PRIMEIRO
+========================= */
 
-                            caches
-                                .open(
-                                    CACHE_NAME
-                                )
-                                .then(
-                                    cache =>
-                                        cache.put(
-                                            event.request,
-                                            copy
-                                        )
-                                )
-                                .catch(
-                                    () => {}
-                                );
-                        }
+self.addEventListener(
+  "fetch",
+  (event) => {
 
-                        return response;
-
-                    }
-                )
-                .catch(
-                    () =>
-
-                        caches
-                            .match(
-                                event.request
-                            )
-                            .then(
-                                cached => {
-
-                                    if (
-                                        cached
-                                    ) {
-                                        return cached;
-                                    }
-
-                                    if (
-                                        event.request
-                                            .mode ===
-                                        "navigate"
-                                    ) {
-
-                                        return caches
-                                            .match(
-                                                "./index.html"
-                                            );
-                                    }
-
-                                    return new Response(
-                                        "Offline",
-                                        {
-                                            status:
-                                                503
-                                        }
-                                    );
-
-                                }
-                            )
-
-                )
-
-        );
-
+    if (
+      event.request.method !==
+      "GET"
+    ) {
+      return;
     }
+
+    const requestURL =
+      new URL(
+        event.request.url
+      );
+
+    if (
+      requestURL.origin !==
+      self.location.origin
+    ) {
+      return;
+    }
+
+    event.respondWith(
+
+      fetch(
+        event.request
+      )
+      .then(
+        (response) => {
+
+          if (
+            response &&
+            response.status === 200
+          ) {
+
+            const copy =
+              response.clone();
+
+            caches.open(
+              CACHE_NAME
+            )
+            .then(
+              (cache) =>
+                cache.put(
+                  event.request,
+                  copy
+                )
+            );
+
+          }
+
+          return response;
+
+        }
+      )
+      .catch(
+        async () => {
+
+          const cached =
+            await caches.match(
+              event.request
+            );
+
+          if (cached) {
+            return cached;
+          }
+
+          if (
+            event.request.mode ===
+            "navigate"
+          ) {
+
+            const fallback =
+              await caches.match(
+                "./index.html"
+              );
+
+            if (fallback) {
+              return fallback;
+            }
+
+          }
+
+          return new Response(
+            "Offline",
+            {
+              status: 503,
+              headers: {
+                "Content-Type":
+                  "text/plain; charset=utf-8"
+              }
+            }
+          );
+
+        }
+      )
+
+    );
+
+  }
 );
