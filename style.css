@@ -1,6 +1,6 @@
-/* ================================
-   CONFIGURAÇÕES GERAIS
-================================ */
+/* =========================================================
+   MINHAS METAS V3.0
+========================================================= */
 
 * {
     box-sizing: border-box;
@@ -21,7 +21,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
     font-family: inherit;
 }
 
@@ -35,14 +36,19 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    TELAS
-================================ */
+========================================================= */
 
 .screen {
     width: 100%;
     min-height: 100vh;
 }
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 .login-screen {
     display: flex;
@@ -50,11 +56,6 @@ button {
     justify-content: center;
     padding: 20px;
 }
-
-
-/* ================================
-   TELA DE LOGIN
-================================ */
 
 .login-card {
     width: 100%;
@@ -65,6 +66,17 @@ button {
     background: #0d0d0d;
     text-align: center;
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+}
+
+.logo {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.login-label {
+    color: #aaaaaa;
+    font-size: 15px;
+    margin-bottom: 20px;
 }
 
 .login-card input {
@@ -101,20 +113,19 @@ button {
 
 .message {
     min-height: 20px;
-    margin-top: 12px !important;
-    margin-bottom: 0 !important;
-    color: #ff4444 !important;
+    margin-top: 12px;
+    color: #ff4444;
 }
 
 
-/* ================================
-   BARRA SUPERIOR
-================================ */
+/* =========================================================
+   BARRAS SUPERIORES
+========================================================= */
 
 .top-bar {
     width: 100%;
     min-height: 82px;
-    padding: 18px 18px;
+    padding: 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -147,13 +158,13 @@ button {
 }
 
 
-/* ================================
-   CONTEÚDO PRINCIPAL
-================================ */
+/* =========================================================
+   HOME
+========================================================= */
 
 .home-content {
     width: 100%;
-    max-width: 700px;
+    max-width: 850px;
     margin: 0 auto;
     padding: 25px 18px 40px;
 }
@@ -162,11 +173,6 @@ button {
     font-size: 20px;
     margin-bottom: 18px;
 }
-
-
-/* ================================
-   MENU PRINCIPAL
-================================ */
 
 .menu-grid {
     display: grid;
@@ -201,21 +207,19 @@ button {
 }
 
 .menu-card strong {
-    display: block;
     font-size: 18px;
     margin-bottom: 4px;
 }
 
 .menu-card small {
-    display: block;
     color: #999999;
     font-size: 13px;
 }
 
 
-/* ================================
+/* =========================================================
    CABEÇALHO DAS PÁGINAS
-================================ */
+========================================================= */
 
 .page-header {
     width: 100%;
@@ -223,9 +227,14 @@ button {
     padding: 15px 18px;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     border-bottom: 1px solid #222222;
     background: #050505;
+}
+
+.page-header-title {
+    flex: 1;
+    min-width: 0;
 }
 
 .page-header h1 {
@@ -257,25 +266,42 @@ button {
     border-color: #ff0000;
 }
 
+.header-action-button {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border: 1px solid #333333;
+    border-radius: 12px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 19px;
+}
 
-/* ================================
-   CONTEÚDO DAS PÁGINAS
-================================ */
+.header-action-button:active {
+    transform: scale(0.94);
+    border-color: #ff0000;
+}
+
+
+/* =========================================================
+   CONTEÚDO
+========================================================= */
 
 .page-content {
     width: 100%;
-    max-width: 700px;
+    max-width: 850px;
     margin: 0 auto;
     padding: 20px 18px 40px;
 }
 
 
-/* ================================
+/* =========================================================
    BOTÕES
-================================ */
+========================================================= */
 
 .primary-button,
-.secondary-button {
+.secondary-button,
+.danger-button {
     width: 100%;
     min-height: 50px;
     border-radius: 12px;
@@ -290,32 +316,61 @@ button {
     color: #ffffff;
 }
 
-.primary-button:active {
-    transform: scale(0.98);
-}
-
 .secondary-button {
     border: 1px solid #333333;
     background: #111111;
     color: #ffffff;
 }
 
-.secondary-button:active {
+.danger-button {
+    border: 1px solid #7a0000;
+    background: #330000;
+    color: #ff7777;
+}
+
+.primary-button:active,
+.secondary-button:active,
+.danger-button:active {
     transform: scale(0.98);
+}
+
+
+/* =========================================================
+   PESQUISA
+========================================================= */
+
+.search-box {
+    width: 100%;
+    margin-bottom: 14px;
+}
+
+.search-box input {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid #333333;
+    border-radius: 12px;
+    background: #111111;
+    color: #ffffff;
+    outline: none;
+    font-size: 15px;
+}
+
+.search-box input:focus {
     border-color: #ff0000;
 }
 
 
-/* ================================
-   LISTAS DE METAS E TAREFAS
-================================ */
+/* =========================================================
+   LISTAS
+========================================================= */
 
 .items-list {
     width: 100%;
     margin-top: 18px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .empty-message {
@@ -328,13 +383,13 @@ button {
 }
 
 
-/* ================================
-   CARTÕES DE ITEM
-================================ */
+/* =========================================================
+   ITENS
+========================================================= */
 
 .item-card {
     width: 100%;
-    padding: 16px;
+    padding: 15px;
     border: 1px solid #292929;
     border-radius: 15px;
     background: #0d0d0d;
@@ -372,8 +427,8 @@ button {
     cursor: pointer;
 }
 
-.item-title:active {
-    opacity: 0.65;
+.item-title:hover {
+    text-decoration: underline;
 }
 
 .item-card.completed .item-title {
@@ -382,7 +437,7 @@ button {
 }
 
 .item-date {
-    margin-top: 5px;
+    margin-top: 7px;
     color: #666666;
     font-size: 11px;
 }
@@ -390,8 +445,8 @@ button {
 .item-actions {
     display: flex;
     gap: 7px;
-    margin-top: 14px;
-    padding-top: 12px;
+    margin-top: 13px;
+    padding-top: 11px;
     border-top: 1px solid #202020;
 }
 
@@ -414,9 +469,53 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
+   DETALHE
+========================================================= */
+
+.detail-card {
+    width: 100%;
+    padding: 22px;
+    border: 1px solid #292929;
+    border-radius: 18px;
+    background: #0d0d0d;
+}
+
+.detail-card h2 {
+    font-size: 25px;
+    line-height: 1.3;
+    word-break: break-word;
+    margin-bottom: 20px;
+}
+
+.detail-description {
+    color: #dddddd;
+    font-size: 16px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 60px;
+}
+
+.detail-date {
+    margin-top: 22px;
+    padding-top: 15px;
+    border-top: 1px solid #222222;
+    color: #777777;
+    font-size: 12px;
+}
+
+.detail-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+
+/* =========================================================
    CRONÔMETRO
-================================ */
+========================================================= */
 
 .timer-content {
     display: flex;
@@ -446,9 +545,9 @@ button {
 }
 
 
-/* ================================
-   ESTATÍSTICAS
-================================ */
+/* =========================================================
+   PROGRESSO
+========================================================= */
 
 .stats-grid {
     display: grid;
@@ -482,18 +581,20 @@ button {
     font-size: 13px;
 }
 
-
-/* ================================
-   GRÁFICOS
-================================ */
-
 .chart-section {
     margin-top: 28px;
 }
 
 .chart-section h2 {
     font-size: 19px;
-    margin-bottom: 18px;
+    margin-bottom: 8px;
+}
+
+.chart-explanation {
+    color: #888888;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 15px;
 }
 
 .chart-container {
@@ -533,9 +634,9 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    CONFIGURAÇÕES
-================================ */
+========================================================= */
 
 .settings-card {
     width: 100%;
@@ -551,10 +652,63 @@ button {
     margin-bottom: 14px;
 }
 
+.settings-card button {
+    margin-top: 8px;
+}
 
-/* ================================
+
+/* =========================================================
+   SOBRE
+========================================================= */
+
+.about-card {
+    width: 100%;
+    padding: 22px;
+    border: 1px solid #292929;
+    border-radius: 18px;
+    background: #0d0d0d;
+}
+
+.about-card h2 {
+    font-size: 23px;
+    margin-bottom: 15px;
+}
+
+.about-card > p {
+    color: #bbbbbb;
+    line-height: 1.5;
+    margin-bottom: 22px;
+}
+
+.about-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 13px 0;
+    border-top: 1px solid #222222;
+}
+
+.about-item strong {
+    font-size: 14px;
+}
+
+.about-item span {
+    color: #999999;
+    font-size: 14px;
+}
+
+.about-warning {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #222222;
+    color: #777777 !important;
+    font-size: 13px;
+}
+
+
+/* =========================================================
    MODAIS
-================================ */
+========================================================= */
 
 .modal-overlay {
     position: fixed;
@@ -569,7 +723,7 @@ button {
 
 .modal {
     width: 100%;
-    max-width: 400px;
+    max-width: 410px;
     max-height: 90vh;
     overflow-y: auto;
     padding: 22px;
@@ -581,6 +735,12 @@ button {
 
 .modal h2 {
     font-size: 21px;
+    margin-bottom: 18px;
+}
+
+.modal p {
+    color: #aaaaaa;
+    line-height: 1.5;
     margin-bottom: 18px;
 }
 
@@ -609,7 +769,7 @@ button {
 }
 
 .modal textarea {
-    min-height: 100px;
+    min-height: 120px;
     resize: vertical;
 }
 
@@ -629,23 +789,139 @@ button {
 }
 
 
-/* ================================
-   VISUALIZAÇÃO DO CONTEÚDO
-================================ */
+/* =========================================================
+   TEMA CLARO
+========================================================= */
 
-.content-modal-text {
-    color: #dddddd;
-    font-size: 15px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-    margin-bottom: 20px;
+body.light-theme {
+    background: #ffffff;
+    color: #111111;
+}
+
+body.light-theme .top-bar,
+body.light-theme .page-header {
+    background: #ffffff;
+    border-color: #dddddd;
+}
+
+body.light-theme .top-bar p,
+body.light-theme .page-header p {
+    color: #666666;
+}
+
+body.light-theme .clock-box,
+body.light-theme .menu-card,
+body.light-theme .item-card,
+body.light-theme .timer-display,
+body.light-theme .stat-card,
+body.light-theme .chart-container,
+body.light-theme .settings-card,
+body.light-theme .detail-card,
+body.light-theme .about-card {
+    background: #ffffff;
+    border-color: #dddddd;
+    color: #111111;
+}
+
+body.light-theme .menu-card {
+    color: #111111;
+}
+
+body.light-theme .menu-card small,
+body.light-theme .item-date,
+body.light-theme .stat-card small {
+    color: #666666;
+}
+
+body.light-theme .item-title {
+    color: #111111;
+}
+
+body.light-theme .item-card.completed .item-title {
+    color: #777777;
+}
+
+body.light-theme .item-description,
+body.light-theme .detail-description {
+    color: #333333;
+}
+
+body.light-theme .back-button,
+body.light-theme .header-action-button,
+body.light-theme .secondary-button {
+    background: #ffffff;
+    border-color: #cccccc;
+    color: #111111;
+}
+
+body.light-theme .search-box input,
+body.light-theme .modal input,
+body.light-theme .modal textarea {
+    background: #ffffff;
+    color: #111111;
+    border-color: #cccccc;
+}
+
+body.light-theme .login-card,
+body.light-theme .modal {
+    background: #ffffff;
+    border-color: #dddddd;
+    color: #111111;
+}
+
+body.light-theme .login-card input {
+    background: #ffffff;
+    color: #111111;
+    border-color: #cccccc;
+}
+
+body.light-theme .login-label {
+    color: #666666;
+}
+
+body.light-theme .empty-message {
+    border-color: #cccccc;
+    color: #777777;
+}
+
+body.light-theme .item-actions,
+body.light-theme .detail-date,
+body.light-theme .about-item {
+    border-color: #eeeeee;
+}
+
+body.light-theme .chart-explanation {
+    color: #666666;
+}
+
+body.light-theme .about-item span {
+    color: #666666;
 }
 
 
-/* ================================
+/* =========================================================
+   VISUALIZADOR
+========================================================= */
+
+body.visualizer-mode .item-actions,
+body.visualizer-mode .detail-actions {
+    display: none !important;
+}
+
+body.visualizer-mode #addGoalButton,
+body.visualizer-mode #addTaskButton {
+    display: none !important;
+}
+
+body.visualizer-mode .item-checkbox {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+
+/* =========================================================
    RESPONSIVIDADE
-================================ */
+========================================================= */
 
 @media (min-width: 600px) {
 
@@ -674,35 +950,11 @@ button {
 
 }
 
-
-/* ================================
-   TELAS MAIORES
-================================ */
-
-@media (min-width: 900px) {
-
-    .home-content,
-    .page-content {
-        max-width: 850px;
-    }
-
-    .menu-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-}
-
-
-/* ================================
-   REDUÇÃO DE MOVIMENTO
-================================ */
-
 @media (prefers-reduced-motion: reduce) {
 
     *,
     *::before,
     *::after {
-        scroll-behavior: auto !important;
         transition: none !important;
         animation: none !important;
     }
