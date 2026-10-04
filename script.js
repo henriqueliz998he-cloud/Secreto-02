@@ -2644,4 +2644,2584 @@ function permanentlyDeleteTrash(
 
 function openDeleteAll() {
 
-  openModal
+  openModal(
+    "Apagar geral",
+    `
+
+      <p>
+        Esta ação apagará todos os dados
+        do aplicativo.
+      </p>
+
+      <p>
+        Digite a senha de confirmação:
+        <strong>Hg88</strong>
+      </p>
+
+      <input
+        id="deleteAllPassword"
+        type="password"
+        placeholder="Senha de confirmação"
+      >
+
+      <button
+        id="confirmDeleteAllButton"
+        class="danger-button"
+      >
+        Continuar
+      </button>
+
+    `
+  );
+
+  $("confirmDeleteAllButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        const password =
+          $("deleteAllPassword")
+            .value;
+
+        if (
+          password !==
+          "Hg88"
+        ) {
+
+          showToast(
+            "Senha de confirmação incorreta."
+          );
+
+          return;
+
+        }
+
+        closeModal();
+
+        openFinalDeleteConfirmation();
+
+      }
+    );
+
+}
+
+
+function openFinalDeleteConfirmation() {
+
+  openModal(
+    "Confirmar exclusão",
+    `
+
+      <p>
+        Tem certeza que deseja apagar
+        absolutamente todos os dados?
+      </p>
+
+      <button
+        id="finalDeleteButton"
+        class="danger-button"
+      >
+        SIM, APAGAR TUDO
+      </button>
+
+      <button
+        id="cancelFinalDeleteButton"
+        class="secondary-button"
+      >
+        Cancelar
+      </button>
+
+    `
+  );
+
+  $("cancelFinalDeleteButton")
+    .addEventListener(
+      "click",
+      closeModal
+    );
+
+  $("finalDeleteButton")
+    .addEventListener(
+      "click",
+      performDeleteAll
+    );
+
+}
+
+
+function performDeleteAll() {
+
+  localStorage.removeItem(
+    KEYS.goals
+  );
+
+  localStorage.removeItem(
+    KEYS.tasks
+  );
+
+  localStorage.removeItem(
+    KEYS.notes
+  );
+
+  localStorage.removeItem(
+    KEYS.clothes
+  );
+
+  localStorage.removeItem(
+    KEYS.trash
+  );
+
+  localStorage.removeItem(
+    KEYS.timerSeconds
+  );
+
+  localStorage.setItem(
+    KEYS.accessPassword,
+    "Hg99"
+  );
+
+  localStorage.setItem(
+    KEYS.theme,
+    "dark"
+  );
+
+  localStorage.setItem(
+    KEYS.viewer,
+    "false"
+  );
+
+  localStorage.setItem(
+    KEYS.timeFormat,
+    "24h"
+  );
+
+  localStorage.setItem(
+    KEYS.currentScreen,
+    "dashboardScreen"
+  );
+
+  goals = [];
+  tasks = [];
+  notes = [];
+  clothes = [];
+  trash = [];
+
+  timerSeconds = 0;
+
+  clearInterval(
+    timerInterval
+  );
+
+  timerInterval =
+    null;
+
+  renderTimer();
+
+  renderGoals();
+  renderTasks();
+  renderNotes();
+  renderClothes();
+  renderTrash();
+
+  updateProgress();
+
+  applyTheme();
+
+  applyViewerMode();
+
+  closeModal();
+
+  lockSite();
+
+}
+
+
+/* =========================================================
+   CRONÔMETRO
+========================================================= */
+
+function renderTimer() {
+
+  const display =
+    $("timerDisplay");
+
+  if (!display) {
+
+    return;
+
+  }
+
+  const hours =
+    Math.floor(
+      timerSeconds / 3600
+    );
+
+  const minutes =
+    Math.floor(
+      (timerSeconds % 3600) /
+      60
+    );
+
+  const seconds =
+    timerSeconds % 60;
+
+  display.textContent =
+    `${String(hours).padStart(2, "0")}:` +
+    `${String(minutes).padStart(2, "0")}:` +
+    `${String(seconds).padStart(2, "0")}`;
+
+}
+
+
+function startTimer() {
+
+  if (
+    timerInterval !== null
+  ) {
+
+    return;
+
+  }
+
+  timerInterval =
+    setInterval(
+      () => {
+
+        timerSeconds++;
+
+        localStorage.setItem(
+          KEYS.timerSeconds,
+          String(
+            timerSeconds
+          )
+        );
+
+        renderTimer();
+
+      },
+      1000
+    );
+
+  showToast(
+    "Cronômetro iniciado."
+  );
+
+}
+
+
+function pauseTimer() {
+
+  clearInterval(
+    timerInterval
+  );
+
+  timerInterval =
+    null;
+
+  showToast(
+    "Cronômetro pausado."
+  );
+
+}
+
+
+function resetTimer() {
+
+  clearInterval(
+    timerInterval
+  );
+
+  timerInterval =
+    null;
+
+  timerSeconds =
+    0;
+
+  localStorage.setItem(
+    KEYS.timerSeconds,
+    "0"
+  );
+
+  renderTimer();
+
+  showToast(
+    "Cronômetro zerado."
+  );
+
+}
+
+
+/* =========================================================
+   PROGRESSO
+========================================================= */
+
+function updateProgress() {
+
+  const container =
+    $("progressContent");
+
+  if (!container) {
+
+    return;
+
+  }
+
+  const totalGoals =
+    goals.length;
+
+  const completedGoals =
+    goals.filter(
+      (goal) =>
+        goal.completed
+    ).length;
+
+  const totalTasks =
+    tasks.length;
+
+  const completedTasks =
+    tasks.filter(
+      (task) =>
+        task.completed
+    ).length;
+
+  const goalPercent =
+    totalGoals === 0
+      ? 0
+      : Math.round(
+          (
+            completedGoals /
+            totalGoals
+          ) *
+          100
+        );
+
+  const taskPercent =
+    totalTasks === 0
+      ? 0
+      : Math.round(
+          (
+            completedTasks /
+            totalTasks
+          ) *
+          100
+        );
+
+  const totalItems =
+    totalGoals +
+    totalTasks;
+
+  const completedItems =
+    completedGoals +
+    completedTasks;
+
+  const totalPercent =
+    totalItems === 0
+      ? 0
+      : Math.round(
+          (
+            completedItems /
+            totalItems
+          ) *
+          100
+        );
+
+  container.innerHTML = `
+
+    <div class="progress-card">
+
+      <h3>
+        Metas
+      </h3>
+
+      <div class="progress-number">
+
+        ${completedGoals}
+        /
+        ${totalGoals}
+
+      </div>
+
+      <div class="progress-bar">
+
+        <div
+          class="progress-fill"
+          style="width: ${goalPercent}%"
+        ></div>
+
+      </div>
+
+      <p>
+        ${goalPercent}% concluído
+      </p>
+
+    </div>
+
+
+    <div class="progress-card">
+
+      <h3>
+        Tarefas
+      </h3>
+
+      <div class="progress-number">
+
+        ${completedTasks}
+        /
+        ${totalTasks}
+
+      </div>
+
+      <div class="progress-bar">
+
+        <div
+          class="progress-fill"
+          style="width: ${taskPercent}%"
+        ></div>
+
+      </div>
+
+      <p>
+        ${taskPercent}% concluído
+      </p>
+
+    </div>
+
+
+    <div class="progress-card">
+
+      <h3>
+        Progresso geral
+      </h3>
+
+      <div class="progress-number">
+
+        ${totalPercent}%
+
+      </div>
+
+      <div class="progress-bar">
+
+        <div
+          class="progress-fill"
+          style="width: ${totalPercent}%"
+        ></div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   COMPARTILHAMENTO
+========================================================= */
+
+async function shareOrFallback(
+  title,
+  text
+) {
+
+  if (
+    navigator.share
+  ) {
+
+    try {
+
+      await navigator.share({
+
+        title,
+
+        text
+
+      });
+
+      return;
+
+    } catch (error) {
+
+      if (
+        error.name ===
+        "AbortError"
+      ) {
+
+        return;
+
+      }
+
+    }
+
+  }
+
+  openModal(
+    "Compartilhar",
+    `
+
+      <textarea
+        id="shareText"
+        readonly
+      >${escapeHtml(
+        text
+      )}</textarea>
+
+      <button
+        id="copyShareButton"
+        class="primary-button"
+      >
+        📋 Copiar texto
+      </button>
+
+    `
+  );
+
+  $("copyShareButton")
+    .addEventListener(
+      "click",
+      async () => {
+
+        try {
+
+          await navigator.clipboard
+            .writeText(text);
+
+          showToast(
+            "Texto copiado."
+          );
+
+        } catch (error) {
+
+          const textarea =
+            $("shareText");
+
+          textarea.select();
+
+          document.execCommand(
+            "copy"
+          );
+
+          showToast(
+            "Texto copiado."
+          );
+
+        }
+
+      }
+    );
+
+}
+
+
+function buildGoalsShareText() {
+
+  let text =
+    "=== METAS — SECRETO V3 ===\n";
+
+  if (
+    goals.length === 0
+  ) {
+
+    text +=
+      "\nNenhuma meta cadastrada.";
+
+    return text;
+
+  }
+
+  goals.forEach(
+    (goal, index) => {
+
+      text +=
+        `\n${index + 1}. ${goal.title}\n`;
+
+      text +=
+        `Status: ${
+          goal.completed
+            ? "Concluída"
+            : "Pendente"
+        }\n`;
+
+      text +=
+        `Descrição: ${
+          goal.description ||
+          "Nenhuma"
+        }\n`;
+
+      text +=
+        `Criado em: ${
+          formatDateTime(
+            goal.createdAt
+          )
+        }\n`;
+
+    }
+  );
+
+  return text;
+
+}
+
+
+function buildTasksShareText() {
+
+  let text =
+    "=== TAREFAS — SECRETO V3 ===\n";
+
+  if (
+    tasks.length === 0
+  ) {
+
+    text +=
+      "\nNenhuma tarefa cadastrada.";
+
+    return text;
+
+  }
+
+  tasks.forEach(
+    (task, index) => {
+
+      text +=
+        `\n${index + 1}. ${task.title}\n`;
+
+      text +=
+        `Status: ${
+          task.completed
+            ? "Concluída"
+            : "Pendente"
+        }\n`;
+
+      text +=
+        `Descrição: ${
+          task.description ||
+          "Nenhuma"
+        }\n`;
+
+      text +=
+        `Criado em: ${
+          formatDateTime(
+            task.createdAt
+          )
+        }\n`;
+
+    }
+  );
+
+  return text;
+
+}
+
+
+function buildNotesShareText() {
+
+  let text =
+    "=== NOTAS — SECRETO V3 ===\n";
+
+  if (
+    notes.length === 0
+  ) {
+
+    text +=
+      "\nNenhuma nota cadastrada.";
+
+    return text;
+
+  }
+
+  notes.forEach(
+    (note, index) => {
+
+      text +=
+        `\n${index + 1}. ${note.title}\n`;
+
+      text +=
+        `Conteúdo:\n${
+          note.content ||
+          "Nenhum"
+        }\n`;
+
+      text +=
+        `Criado em: ${
+          formatDateTime(
+            note.createdAt
+          )
+        }\n`;
+
+    }
+  );
+
+  return text;
+
+}
+
+
+function buildProgressShareText() {
+
+  const totalGoals =
+    goals.length;
+
+  const completedGoals =
+    goals.filter(
+      (goal) =>
+        goal.completed
+    ).length;
+
+  const totalTasks =
+    tasks.length;
+
+  const completedTasks =
+    tasks.filter(
+      (task) =>
+        task.completed
+    ).length;
+
+  const total =
+    totalGoals +
+    totalTasks;
+
+  const completed =
+    completedGoals +
+    completedTasks;
+
+  const percent =
+    total === 0
+      ? 0
+      : Math.round(
+          (
+            completed /
+            total
+          ) *
+          100
+        );
+
+  return `
+
+=== PROGRESSO — SECRETO V3 ===
+
+Metas:
+${completedGoals}/${totalGoals} concluídas
+
+Tarefas:
+${completedTasks}/${totalTasks} concluídas
+
+Progresso geral:
+${percent}%
+
+  `.trim();
+
+}
+
+
+function buildGeneralShareText() {
+
+  let text =
+    "=== SECRETO V3 ===\n";
+
+
+  text +=
+    "\n=== METAS ===\n";
+
+  if (
+    goals.length === 0
+  ) {
+
+    text +=
+      "Nenhuma meta cadastrada.\n";
+
+  } else {
+
+    goals.forEach(
+      (goal, index) => {
+
+        text +=
+          `${index + 1}. ${goal.title}\n`;
+
+        text +=
+          `Status: ${
+            goal.completed
+              ? "Concluída"
+              : "Pendente"
+          }\n`;
+
+        text +=
+          `Descrição: ${
+            goal.description ||
+            "Nenhuma"
+          }\n`;
+
+        text +=
+          `Criado: ${
+            formatDateTime(
+              goal.createdAt
+            )
+          }\n\n`;
+
+      }
+    );
+
+  }
+
+
+  text +=
+    "\n=== TAREFAS ===\n";
+
+  if (
+    tasks.length === 0
+  ) {
+
+    text +=
+      "Nenhuma tarefa cadastrada.\n";
+
+  } else {
+
+    tasks.forEach(
+      (task, index) => {
+
+        text +=
+          `${index + 1}. ${task.title}\n`;
+
+        text +=
+          `Status: ${
+            task.completed
+              ? "Concluída"
+              : "Pendente"
+          }\n`;
+
+        text +=
+          `Descrição: ${
+            task.description ||
+            "Nenhuma"
+          }\n`;
+
+        text +=
+          `Criado: ${
+            formatDateTime(
+              task.createdAt
+            )
+          }\n\n`;
+
+      }
+    );
+
+  }
+
+
+  text +=
+    "\n=== NOTAS ===\n";
+
+  if (
+    notes.length === 0
+  ) {
+
+    text +=
+      "Nenhuma nota cadastrada.\n";
+
+  } else {
+
+    notes.forEach(
+      (note, index) => {
+
+        text +=
+          `${index + 1}. ${note.title}\n`;
+
+        text +=
+          `Conteúdo: ${
+            note.content ||
+            "Nenhum"
+          }\n`;
+
+        text +=
+          `Criado: ${
+            formatDateTime(
+              note.createdAt
+            )
+          }\n\n`;
+
+      }
+    );
+
+  }
+
+
+  text +=
+    "\n=== ROUPAS SÍTIO ===\n";
+
+  if (
+    clothes.length === 0
+  ) {
+
+    text +=
+      "Nenhuma roupa cadastrada.\n";
+
+  } else {
+
+    clothes.forEach(
+      (clothing, index) => {
+
+        text +=
+          `${index + 1}. ${clothing.title}\n`;
+
+        text +=
+          `Na cabeça: ${
+            clothing.naCabeca ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `No corpo 1: ${
+            clothing.corpo1 ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `No corpo 2: ${
+            clothing.corpo2 ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `Calça: ${
+            clothing.calca ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `Meia: ${
+            clothing.meia ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `Sapato: ${
+            clothing.sapato ||
+            "Não informado"
+          }\n`;
+
+        text +=
+          `Extras: ${
+            clothing.extras ||
+            "Nenhum"
+          }\n`;
+
+        text +=
+          `Criado: ${
+            formatDateTime(
+              clothing.createdAt
+            )
+          }\n\n`;
+
+      }
+    );
+
+  }
+
+
+  text +=
+    "\n=== PROGRESSO ===\n";
+
+  text +=
+    buildProgressShareText();
+
+
+  text +=
+    "\n\n=== CONFIGURAÇÕES ===\n";
+
+  text +=
+    `Tema: ${
+      (
+        localStorage.getItem(
+          KEYS.theme
+        ) || "dark"
+      ) === "dark"
+        ? "Escuro"
+        : "Claro"
+    }\n`;
+
+  text +=
+    `Modo Visualizador: ${
+      isViewerMode()
+        ? "Ativado"
+        : "Desativado"
+    }\n`;
+
+  text +=
+    `Formato de horário: ${
+      localStorage.getItem(
+        KEYS.timeFormat
+      ) || "24h"
+    }\n`;
+
+  return text;
+
+}
+
+
+/* =========================================================
+   AÇÕES DOS ITENS
+========================================================= */
+
+function findById(
+  array,
+  id
+) {
+
+  return array.find(
+    (item) =>
+      String(item.id) ===
+      String(id)
+  );
+
+}
+
+
+/* =========================================================
+   EVENTOS DE METAS
+========================================================= */
+
+function handleGoalAction(
+  action,
+  id
+) {
+
+  const goal =
+    findById(
+      goals,
+      id
+    );
+
+  if (!goal) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "view-goal"
+  ) {
+
+    showGoalDetail(
+      goal
+    );
+
+    return;
+
+  }
+
+  if (
+    isViewerMode()
+  ) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "toggle-goal"
+  ) {
+
+    goal.completed =
+      !goal.completed;
+
+    writeStorage(
+      KEYS.goals,
+      goals
+    );
+
+    renderGoals();
+
+    updateProgress();
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "pin-goal"
+  ) {
+
+    goal.pinned =
+      !goal.pinned;
+
+    writeStorage(
+      KEYS.goals,
+      goals
+    );
+
+    renderGoals();
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "edit-goal"
+  ) {
+
+    openGoalForm(
+      goal
+    );
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "delete-goal"
+  ) {
+
+    addToTrash(
+      "goal",
+      goal
+    );
+
+    goals =
+      goals.filter(
+        (item) =>
+          item.id !==
+          goal.id
+      );
+
+    writeStorage(
+      KEYS.goals,
+      goals
+    );
+
+    renderGoals();
+
+    renderTrash();
+
+    updateProgress();
+
+    showToast(
+      "Meta enviada para a lixeira."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   EVENTOS DE TAREFAS
+========================================================= */
+
+function handleTaskAction(
+  action,
+  id
+) {
+
+  const task =
+    findById(
+      tasks,
+      id
+    );
+
+  if (!task) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "view-task"
+  ) {
+
+    showTaskDetail(
+      task
+    );
+
+    return;
+
+  }
+
+  if (
+    isViewerMode()
+  ) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "toggle-task"
+  ) {
+
+    task.completed =
+      !task.completed;
+
+    writeStorage(
+      KEYS.tasks,
+      tasks
+    );
+
+    renderTasks();
+
+    updateProgress();
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "pin-task"
+  ) {
+
+    task.pinned =
+      !task.pinned;
+
+    writeStorage(
+      KEYS.tasks,
+      tasks
+    );
+
+    renderTasks();
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "edit-task"
+  ) {
+
+    openTaskForm(
+      task
+    );
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "delete-task"
+  ) {
+
+    addToTrash(
+      "task",
+      task
+    );
+
+    tasks =
+      tasks.filter(
+        (item) =>
+          item.id !==
+          task.id
+      );
+
+    writeStorage(
+      KEYS.tasks,
+      tasks
+    );
+
+    renderTasks();
+
+    renderTrash();
+
+    updateProgress();
+
+    showToast(
+      "Tarefa enviada para a lixeira."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   EVENTOS DE NOTAS
+========================================================= */
+
+function handleNoteAction(
+  action,
+  id
+) {
+
+  const note =
+    findById(
+      notes,
+      id
+    );
+
+  if (!note) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "view-note"
+  ) {
+
+    showNoteDetail(
+      note
+    );
+
+    return;
+
+  }
+
+  if (
+    isViewerMode()
+  ) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "pin-note"
+  ) {
+
+    note.pinned =
+      !note.pinned;
+
+    writeStorage(
+      KEYS.notes,
+      notes
+    );
+
+    renderNotes();
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "edit-note"
+  ) {
+
+    openNoteForm(
+      note
+    );
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "delete-note"
+  ) {
+
+    addToTrash(
+      "note",
+      note
+    );
+
+    notes =
+      notes.filter(
+        (item) =>
+          item.id !==
+          note.id
+      );
+
+    writeStorage(
+      KEYS.notes,
+      notes
+    );
+
+    renderNotes();
+
+    renderTrash();
+
+    showToast(
+      "Nota enviada para a lixeira."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   EVENTOS DE ROUPAS
+========================================================= */
+
+function handleClothingAction(
+  action,
+  id
+) {
+
+  const clothing =
+    findById(
+      clothes,
+      id
+    );
+
+  if (!clothing) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "view-clothing"
+  ) {
+
+    showClothingDetail(
+      clothing
+    );
+
+    return;
+
+  }
+
+  if (
+    isViewerMode()
+  ) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "pin-clothing"
+  ) {
+
+    clothing.pinned =
+      !clothing.pinned;
+
+    writeStorage(
+      KEYS.clothes,
+      clothes
+    );
+
+    renderClothes();
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "edit-clothing"
+  ) {
+
+    openClothingForm(
+      clothing
+    );
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "delete-clothing"
+  ) {
+
+    clothes =
+      clothes.filter(
+        (item) =>
+          item.id !==
+          clothing.id
+      );
+
+    writeStorage(
+      KEYS.clothes,
+      clothes
+    );
+
+    renderClothes();
+
+    showToast(
+      "Roupa excluída."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   EVENTOS DA LIXEIRA
+========================================================= */
+
+function handleTrashAction(
+  action,
+  id
+) {
+
+  const entry =
+    findById(
+      trash,
+      id
+    );
+
+  if (!entry) {
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "restore-trash"
+  ) {
+
+    restoreTrashItem(
+      entry
+    );
+
+    return;
+
+  }
+
+  if (
+    action ===
+    "delete-trash"
+  ) {
+
+    permanentlyDeleteTrash(
+      entry
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   DELEGAÇÃO DE EVENTOS
+========================================================= */
+
+function setupListEvents() {
+
+  $("goalsList")
+    .addEventListener(
+      "click",
+      (event) => {
+
+        const button =
+          event.target.closest(
+            "[data-action]"
+          );
+
+        if (!button) {
+
+          return;
+
+        }
+
+        handleGoalAction(
+          button.dataset.action,
+          button.dataset.id
+        );
+
+      }
+    );
+
+
+  $("tasksList")
+    .addEventListener(
+      "click",
+      (event) => {
+
+        const button =
+          event.target.closest(
+            "[data-action]"
+          );
+
+        if (!button) {
+
+          return;
+
+        }
+
+        handleTaskAction(
+          button.dataset.action,
+          button.dataset.id
+        );
+
+      }
+    );
+
+
+  $("notesList")
+    .addEventListener(
+      "click",
+      (event) => {
+
+        const button =
+          event.target.closest(
+            "[data-action]"
+          );
+
+        if (!button) {
+
+          return;
+
+        }
+
+        handleNoteAction(
+          button.dataset.action,
+          button.dataset.id
+        );
+
+      }
+    );
+
+
+  $("clothesList")
+    .addEventListener(
+      "click",
+      (event) => {
+
+        const button =
+          event.target.closest(
+            "[data-action]"
+          );
+
+        if (!button) {
+
+          return;
+
+        }
+
+        handleClothingAction(
+          button.dataset.action,
+          button.dataset.id
+        );
+
+      }
+    );
+
+
+  $("trashList")
+    .addEventListener(
+      "click",
+      (event) => {
+
+        const button =
+          event.target.closest(
+            "[data-action]"
+          );
+
+        if (!button) {
+
+          return;
+
+        }
+
+        handleTrashAction(
+          button.dataset.action,
+          button.dataset.id
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   EVENTOS PRINCIPAIS
+========================================================= */
+
+function setupEvents() {
+
+
+  /* LOGIN */
+
+  $("loginButton")
+    .addEventListener(
+      "click",
+      login
+    );
+
+
+  $("accessPassword")
+    .addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          login();
+
+        }
+
+      }
+    );
+
+
+  $("togglePasswordButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        const input =
+          $("accessPassword");
+
+        input.type =
+          input.type ===
+          "password"
+            ? "text"
+            : "password";
+
+      }
+    );
+
+
+  /* DASHBOARD */
+
+  $("openNotesButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "notesScreen"
+        )
+    );
+
+
+  $("openGoalsButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "goalsScreen"
+        )
+    );
+
+
+  $("openTasksButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "tasksScreen"
+        )
+    );
+
+
+  $("openClothesButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "clothesScreen"
+        )
+    );
+
+
+  $("openTimerButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "timerScreen"
+        )
+    );
+
+
+  $("openProgressButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "progressScreen"
+        )
+    );
+
+
+  $("openSettingsButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "settingsScreen"
+        )
+    );
+
+
+  /* VOLTAR */
+
+  $("goalsBackButton")
+    .addEventListener(
+      "click",
+      goBack
+    );
+
+
+  $("tasksBackButton")
+    .addEventListener(
+      "click",
+      goBack
+    );
+
+
+  $("notesBackButton")
+    .addEventListener(
+      "click",
+      goBack
+    );
+
+
+  $("clothesBackButton")
+    .addEventListener(
+      "click",
+      goBack
+    );
+
+
+  $("timerBackButton")
+    .addEventListener(
+      "click",
+      goBack
+    );
+
+
+  $("progressBackButton")
+    .addEventListener(
+      "click",
+      goBack
+    );
+
+
+  $("settingsBackButton")
+    .addEventListener(
+      "click",
+      goBack
+    );
+
+
+  $("aboutBackButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "settingsScreen"
+        )
+    );
+
+
+  $("trashBackButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "settingsScreen"
+        )
+    );
+
+
+  /* ADICIONAR */
+
+  $("addGoalButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        if (
+          isViewerMode()
+        ) {
+
+          showToast(
+            "Desative o Modo Visualizador primeiro."
+          );
+
+          return;
+
+        }
+
+        openGoalForm();
+
+      }
+    );
+
+
+  $("addTaskButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        if (
+          isViewerMode()
+        ) {
+
+          showToast(
+            "Desative o Modo Visualizador primeiro."
+          );
+
+          return;
+
+        }
+
+        openTaskForm();
+
+      }
+    );
+
+
+  $("addNoteButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        if (
+          isViewerMode()
+        ) {
+
+          showToast(
+            "Desative o Modo Visualizador primeiro."
+          );
+
+          return;
+
+        }
+
+        openNoteForm();
+
+      }
+    );
+
+
+  $("addClothingButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        if (
+          isViewerMode()
+        ) {
+
+          showToast(
+            "Desative o Modo Visualizador primeiro."
+          );
+
+          return;
+
+        }
+
+        openClothingForm();
+
+      }
+    );
+
+
+  /* PESQUISA */
+
+  $("goalSearch")
+    .addEventListener(
+      "input",
+      renderGoals
+    );
+
+
+  $("taskSearch")
+    .addEventListener(
+      "input",
+      renderTasks
+    );
+
+
+  $("noteSearch")
+    .addEventListener(
+      "input",
+      renderNotes
+    );
+
+
+  /* FILTROS METAS */
+
+  $("goalFilterAll")
+    .addEventListener(
+      "click",
+      () => {
+
+        currentGoalFilter =
+          "all";
+
+        updateGoalFilterButtons();
+
+        renderGoals();
+
+      }
+    );
+
+
+  $("goalFilterPending")
+    .addEventListener(
+      "click",
+      () => {
+
+        currentGoalFilter =
+          "pending";
+
+        updateGoalFilterButtons();
+
+        renderGoals();
+
+      }
+    );
+
+
+  $("goalFilterCompleted")
+    .addEventListener(
+      "click",
+      () => {
+
+        currentGoalFilter =
+          "completed";
+
+        updateGoalFilterButtons();
+
+        renderGoals();
+
+      }
+    );
+
+
+  /* FILTROS TAREFAS */
+
+  $("taskFilterAll")
+    .addEventListener(
+      "click",
+      () => {
+
+        currentTaskFilter =
+          "all";
+
+        updateTaskFilterButtons();
+
+        renderTasks();
+
+      }
+    );
+
+
+  $("taskFilterPending")
+    .addEventListener(
+      "click",
+      () => {
+
+        currentTaskFilter =
+          "pending";
+
+        updateTaskFilterButtons();
+
+        renderTasks();
+
+      }
+    );
+
+
+  $("taskFilterCompleted")
+    .addEventListener(
+      "click",
+      () => {
+
+        currentTaskFilter =
+          "completed";
+
+        updateTaskFilterButtons();
+
+        renderTasks();
+
+      }
+    );
+
+
+  /* COMPARTILHAR */
+
+  $("shareGoalsButton")
+    .addEventListener(
+      "click",
+      () =>
+        shareOrFallback(
+          "Metas — Secreto V3",
+          buildGoalsShareText()
+        )
+    );
+
+
+  $("shareTasksButton")
+    .addEventListener(
+      "click",
+      () =>
+        shareOrFallback(
+          "Tarefas — Secreto V3",
+          buildTasksShareText()
+        )
+    );
+
+
+  $("shareNotesButton")
+    .addEventListener(
+      "click",
+      () =>
+        shareOrFallback(
+          "Notas — Secreto V3",
+          buildNotesShareText()
+        )
+    );
+
+
+  $("shareProgressButton")
+    .addEventListener(
+      "click",
+      () =>
+        shareOrFallback(
+          "Progresso — Secreto V3",
+          buildProgressShareText()
+        )
+    );
+
+
+  /* CRONÔMETRO */
+
+  $("timerStartButton")
+    .addEventListener(
+      "click",
+      startTimer
+    );
+
+
+  $("timerPauseButton")
+    .addEventListener(
+      "click",
+      pauseTimer
+    );
+
+
+  $("timerResetButton")
+    .addEventListener(
+      "click",
+      resetTimer
+    );
+
+
+  /* CONFIGURAÇÕES */
+
+  $("lockSiteButton")
+    .addEventListener(
+      "click",
+      lockSite
+    );
+
+
+  $("deleteAllButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        if (
+          isViewerMode()
+        ) {
+
+          showToast(
+            "Desative o Modo Visualizador primeiro."
+          );
+
+          return;
+
+        }
+
+        openDeleteAll();
+
+      }
+    );
+
+
+  $("viewerToggleButton")
+    .addEventListener(
+      "click",
+      toggleViewerMode
+    );
+
+
+  $("themeButton")
+    .addEventListener(
+      "click",
+      toggleTheme
+    );
+
+
+  $("changePasswordButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        if (
+          isViewerMode()
+        ) {
+
+          showToast(
+            "Desative o Modo Visualizador primeiro."
+          );
+
+          return;
+
+        }
+
+        openChangePassword();
+
+      }
+    );
+
+
+  $("timeFormatButton")
+    .addEventListener(
+      "click",
+      changeTimeFormat
+    );
+
+
+  $("trashButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "trashScreen"
+        )
+    );
+
+
+  $("shareAllButton")
+    .addEventListener(
+      "click",
+      () =>
+        shareOrFallback(
+          "Secreto V3",
+          buildGeneralShareText()
+        )
+    );
+
+
+  $("aboutButton")
+    .addEventListener(
+      "click",
+      () =>
+        showScreen(
+          "aboutScreen"
+        )
+    );
+
+
+  /* MODAL */
+
+  $("appModal")
+    .addEventListener(
+      "click",
+      (event) => {
+
+        if (
+          event.target ===
+          $("appModal")
+        ) {
+
+          closeModal();
+
+        }
+
+      }
+    );
+
+
+  setupListEvents();
+
+}
+
+
+/* =========================================================
+   ALTERAR SENHA
+========================================================= */
+
+function openChangePassword() {
+
+  openModal(
+    "Alterar senha",
+    `
+
+      <label>
+        Senha atual
+      </label>
+
+      <input
+        id="currentPassword"
+        type="password"
+        placeholder="Senha atual"
+      >
+
+
+      <label>
+        Nova senha
+      </label>
+
+      <input
+        id="newPassword"
+        type="password"
+        placeholder="Nova senha"
+      >
+
+
+      <label>
+        Confirmar nova senha
+      </label>
+
+      <input
+        id="confirmPassword"
+        type="password"
+        placeholder="Confirmar nova senha"
+      >
+
+
+      <button
+        id="savePasswordButton"
+        class="primary-button"
+      >
+        Alterar senha
+      </button>
+
+    `
+  );
+
+  $("savePasswordButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        const current =
+          $("currentPassword")
+            .value;
+
+        const next =
+          $("newPassword")
+            .value;
+
+        const confirm =
+          $("confirmPassword")
+            .value;
+
+        const saved =
+          localStorage.getItem(
+            KEYS.accessPassword
+          ) || "Hg99";
+
+        if (
+          current !==
+          saved
+        ) {
+
+          showToast(
+            "Senha atual incorreta."
+          );
+
+          return;
+
+        }
+
+        if (
+          !next
+        ) {
+
+          showToast(
+            "Digite a nova senha."
+          );
+
+          return;
+
+        }
+
+        if (
+          next !==
+          confirm
+        ) {
+
+          showToast(
+            "As senhas não coincidem."
+          );
+
+          return;
+
+        }
+
+        localStorage.setItem(
+          KEYS.accessPassword,
+          next
+        );
+
+        closeModal();
+
+        showToast(
+          "Senha alterada."
+        );
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   SERVICE WORKER
+========================================================= */
+
+function registerServiceWorker() {
+
+  if (
+    "serviceWorker" in
+    navigator
+  ) {
+
+    window.addEventListener(
+      "load",
+      async () => {
+
+        try {
+
+          const registration =
+            await navigator.serviceWorker
+              .register(
+                "./sw.js"
+              );
+
+          await registration.update();
+
+        } catch (error) {
+
+          console.error(
+            "Erro no Service Worker:",
+            error
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+function init() {
+
+  initializePassword();
+
+  initializeSessionState();
+
+  loadData();
+
+  setupEvents();
+
+  setupDetailBackButton();
+
+  applyTheme();
+
+  applyViewerMode();
+
+  updateClock();
+
+  setInterval(
+    updateClock,
+    1000
+  );
+
+  renderGoals();
+
+  renderTasks();
+
+  renderNotes();
+
+  renderClothes();
+
+  renderTrash();
+
+  renderTimer();
+
+  updateProgress();
+
+
+  if (
+    isLoggedIn()
+  ) {
+
+    showApp();
+
+    const savedScreen =
+      localStorage.getItem(
+        KEYS.currentScreen
+      ) ||
+      "dashboardScreen";
+
+    if (
+      $(savedScreen) &&
+      savedScreen !==
+        "loginScreen"
+    ) {
+
+      showScreen(
+        savedScreen
+      );
+
+    } else {
+
+      showScreen(
+        "dashboardScreen"
+      );
+
+    }
+
+  } else {
+
+    $("appScreen")
+      .classList
+      .add("hidden");
+
+    $("loginScreen")
+      .classList
+      .remove("hidden");
+
+  }
+
+
+  registerServiceWorker();
+
+}
+
+
+/* =========================================================
+   INICIAR
+========================================================= */
+
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    init
+  );
+
+} else {
+
+  init();
+
+}
