@@ -1,130 +1,141 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Secreto V3</title>
-
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <title>Secreto V3</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+  <!-- =========================
+       TELA DE SENHA
+  ========================== -->
+  <section id="loginScreen" class="screen login-screen">
+
+    <div class="login-card">
+
+      <div class="login-icon">🔒</div>
+
+      <input
+        id="accessPassword"
+        type="password"
+        placeholder="Senha"
+        autocomplete="off"
+      >
+
+      <button id="loginButton" class="primary-button">
+        Entrar
+      </button>
+
+      <p id="loginMessage" class="message"></p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       APLICAÇÃO
+  ========================== -->
+  <section id="appScreen" class="hidden">
+
     <!-- =========================
-         LOGIN
+         DASHBOARD
     ========================== -->
+    <section id="dashboardScreen" class="screen">
 
-    <section id="loginScreen" class="screen">
-        <div class="login-box">
+      <header class="dashboard-header">
 
-            <div class="login-lock">
-                🔒
-            </div>
-
-            <input
-                id="passwordInput"
-                type="password"
-                placeholder="Senha"
-                autocomplete="off"
-            >
-
-            <button
-                id="loginButton"
-                class="primary-button"
-            >
-                Entrar
-            </button>
-
-            <p id="loginMessage" class="login-message"></p>
-
+        <div>
+          <p id="clockDate" class="dashboard-date"></p>
+          <p id="clockTime" class="dashboard-time"></p>
         </div>
-    </section>
 
+      </header>
 
-    <!-- =========================
-         HOME
-    ========================== -->
+      <main class="dashboard-content">
 
-    <section id="homeScreen" class="screen hidden">
+        <!-- 1 -->
+        <button
+          id="openNotesButton"
+          class="dashboard-card"
+          data-screen="notesScreen"
+        >
+          <span class="card-icon">📝</span>
+          <span class="card-title">Notas</span>
+          <span class="card-arrow">›</span>
+        </button>
 
-        <header class="home-header">
+        <!-- 2 -->
+        <button
+          id="openGoalsButton"
+          class="dashboard-card"
+          data-screen="goalsScreen"
+        >
+          <span class="card-icon">🎯</span>
+          <span class="card-title">Metas</span>
+          <span class="card-arrow">›</span>
+        </button>
 
-            <div>
-                <div id="currentDate" class="current-date">
-                    --/--/----
-                </div>
+        <!-- 3 -->
+        <button
+          id="openTasksButton"
+          class="dashboard-card"
+          data-screen="tasksScreen"
+        >
+          <span class="card-icon">✅</span>
+          <span class="card-title">Tarefas</span>
+          <span class="card-arrow">›</span>
+        </button>
 
-                <div id="currentTime" class="current-time">
-                    --:--:--
-                </div>
-            </div>
+        <!-- 4 -->
+        <button
+          id="openClothesButton"
+          class="dashboard-card"
+          data-screen="clothesScreen"
+        >
+          <span class="card-icon">👕</span>
+          <span class="card-title">Roupas Sítio</span>
+          <span class="card-arrow">›</span>
+        </button>
 
-        </header>
+        <!-- 5 -->
+        <button
+          id="openTimerButton"
+          class="dashboard-card"
+          data-screen="timerScreen"
+        >
+          <span class="card-icon">⏱️</span>
+          <span class="card-title">Cronômetro</span>
+          <span class="card-arrow">›</span>
+        </button>
 
-        <main class="home-content">
+        <!-- 6 -->
+        <button
+          id="openProgressButton"
+          class="dashboard-card"
+          data-screen="progressScreen"
+        >
+          <span class="card-icon">📊</span>
+          <span class="card-title">Progresso</span>
+          <span class="card-arrow">›</span>
+        </button>
 
-            <button
-                id="goalsCard"
-                class="menu-card"
-            >
-                <span class="menu-icon">🎯</span>
-                <span>Metas</span>
-            </button>
+        <!-- 7 -->
+        <button
+          id="openSettingsButton"
+          class="dashboard-card"
+          data-screen="settingsScreen"
+        >
+          <span class="card-icon">⚙️</span>
+          <span class="card-title">Configurações</span>
+          <span class="card-arrow">›</span>
+        </button>
 
-            <button
-                id="tasksCard"
-                class="menu-card"
-            >
-                <span class="menu-icon">📋</span>
-                <span>Tarefas</span>
-            </button>
-
-            <button
-                id="notesCard"
-                class="menu-card"
-            >
-                <span class="menu-icon">📝</span>
-                <span>Notas</span>
-            </button>
-
-            <button
-                id="clothesCard"
-                class="menu-card"
-            >
-                <span class="menu-icon">👕</span>
-                <span>Roupas Sítio</span>
-            </button>
-
-            <button
-                id="timerCard"
-                class="menu-card"
-            >
-                <span class="menu-icon">⏱️</span>
-                <span>Cronômetro</span>
-            </button>
-
-            <button
-                id="progressCard"
-                class="menu-card"
-            >
-                <span class="menu-icon">📊</span>
-                <span>Progresso</span>
-            </button>
-
-            <button
-                id="settingsCard"
-                class="menu-card"
-            >
-                <span class="menu-icon">⚙️</span>
-                <span>Configurações</span>
-            </button>
-
-        </main>
+      </main>
 
     </section>
 
@@ -132,55 +143,52 @@
     <!-- =========================
          METAS
     ========================== -->
+    <section id="goalsScreen" class="screen sub-screen hidden">
 
-    <section id="goalsScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="goalsBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="homeScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Metas</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Metas</h1>
-            </div>
+        <button
+          id="shareGoalsButton"
+          class="icon-button"
+        >
+          ↗
+        </button>
 
-            <button
-                id="shareGoalsButton"
-                class="header-action"
-                title="Compartilhar"
-            >
-                📤
-            </button>
+      </header>
 
-        </header>
+      <main class="page-content">
 
-        <main class="page-content">
+        <!-- ADICIONAR PRIMEIRO -->
+        <button
+          id="addGoalButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar meta
+        </button>
 
-            <div class="search-row">
+        <!-- PESQUISAR DEPOIS -->
+        <input
+          id="goalSearch"
+          class="search-input"
+          type="search"
+          placeholder="Pesquisar pelo título..."
+          autocomplete="off"
+        >
 
-                <input
-                    id="goalSearch"
-                    class="search-input"
-                    type="search"
-                    placeholder="Pesquisar pelo título..."
-                >
+        <div id="goalsList" class="items-list"></div>
 
-                <button
-                    id="addGoalButton"
-                    class="primary-button small-button"
-                >
-                    + Adicionar
-                </button>
-
-            </div>
-
-            <div id="goalsList" class="items-list"></div>
-
-        </main>
+      </main>
 
     </section>
 
@@ -188,55 +196,50 @@
     <!-- =========================
          TAREFAS
     ========================== -->
+    <section id="tasksScreen" class="screen sub-screen hidden">
 
-    <section id="tasksScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="tasksBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="homeScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Tarefas</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Tarefas</h1>
-            </div>
+        <button
+          id="shareTasksButton"
+          class="icon-button"
+        >
+          ↗
+        </button>
 
-            <button
-                id="shareTasksButton"
-                class="header-action"
-                title="Compartilhar"
-            >
-                📤
-            </button>
+      </header>
 
-        </header>
+      <main class="page-content">
 
-        <main class="page-content">
+        <button
+          id="addTaskButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar tarefa
+        </button>
 
-            <div class="search-row">
+        <input
+          id="taskSearch"
+          class="search-input"
+          type="search"
+          placeholder="Pesquisar pelo título..."
+          autocomplete="off"
+        >
 
-                <input
-                    id="taskSearch"
-                    class="search-input"
-                    type="search"
-                    placeholder="Pesquisar pelo título..."
-                >
+        <div id="tasksList" class="items-list"></div>
 
-                <button
-                    id="addTaskButton"
-                    class="primary-button small-button"
-                >
-                    + Adicionar
-                </button>
-
-            </div>
-
-            <div id="tasksList" class="items-list"></div>
-
-        </main>
+      </main>
 
     </section>
 
@@ -244,55 +247,50 @@
     <!-- =========================
          NOTAS
     ========================== -->
+    <section id="notesScreen" class="screen sub-screen hidden">
 
-    <section id="notesScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="notesBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="homeScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Notas</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Notas</h1>
-            </div>
+        <button
+          id="shareNotesButton"
+          class="icon-button"
+        >
+          ↗
+        </button>
 
-            <button
-                id="shareNotesButton"
-                class="header-action"
-                title="Compartilhar"
-            >
-                📤
-            </button>
+      </header>
 
-        </header>
+      <main class="page-content">
 
-        <main class="page-content">
+        <button
+          id="addNoteButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar nota
+        </button>
 
-            <div class="search-row">
+        <input
+          id="noteSearch"
+          class="search-input"
+          type="search"
+          placeholder="Pesquisar pelo título..."
+          autocomplete="off"
+        >
 
-                <input
-                    id="noteSearch"
-                    class="search-input"
-                    type="search"
-                    placeholder="Pesquisar pelo título..."
-                >
+        <div id="notesList" class="items-list"></div>
 
-                <button
-                    id="addNoteButton"
-                    class="primary-button small-button"
-                >
-                    + Adicionar
-                </button>
-
-            </div>
-
-            <div id="notesList" class="items-list"></div>
-
-        </main>
+      </main>
 
     </section>
 
@@ -300,43 +298,37 @@
     <!-- =========================
          ROUPAS SÍTIO
     ========================== -->
+    <section id="clothesScreen" class="screen sub-screen hidden">
 
-    <section id="clothesScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="clothesBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="homeScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Roupas Sítio</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Roupas Sítio</h1>
-            </div>
+        <div></div>
 
-        </header>
+      </header>
 
-        <main class="page-content">
+      <main class="page-content">
 
-            <div class="top-action-row">
+        <button
+          id="addClothingButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar roupa
+        </button>
 
-                <button
-                    id="addClothesButton"
-                    class="primary-button"
-                >
-                    + Adicionar
-                </button>
+        <div id="clothesList" class="items-list"></div>
 
-            </div>
-
-            <div
-                id="clothesList"
-                class="items-list"
-            ></div>
-
-        </main>
+      </main>
 
     </section>
 
@@ -344,59 +336,57 @@
     <!-- =========================
          CRONÔMETRO
     ========================== -->
+    <section id="timerScreen" class="screen sub-screen hidden">
 
-    <section id="timerScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="timerBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="homeScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Cronômetro</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Cronômetro</h1>
-            </div>
+        <div></div>
 
-        </header>
+      </header>
 
-        <main class="page-content timer-page">
+      <main class="page-content timer-content">
 
-            <div
-                id="timerDisplay"
-                class="timer-display"
-            >
-                00:00:00
-            </div>
+        <div id="timerDisplay" class="timer-display">
+          00:00:00
+        </div>
 
-            <div class="timer-buttons">
+        <div class="timer-buttons">
 
-                <button
-                    id="startTimerButton"
-                    class="primary-button"
-                >
-                    ▶ Iniciar
-                </button>
+          <button
+            id="timerStartButton"
+            class="primary-button"
+          >
+            Iniciar
+          </button>
 
-                <button
-                    id="pauseTimerButton"
-                    class="secondary-button"
-                >
-                    ⏸ Pausar
-                </button>
+          <button
+            id="timerPauseButton"
+            class="secondary-button"
+          >
+            Pausar
+          </button>
 
-                <button
-                    id="resetTimerButton"
-                    class="danger-button"
-                >
-                    ↻ Zerar
-                </button>
+          <button
+            id="timerResetButton"
+            class="danger-button"
+          >
+            Zerar
+          </button>
 
-            </div>
+        </div>
 
-        </main>
+      </main>
 
     </section>
 
@@ -404,90 +394,68 @@
     <!-- =========================
          PROGRESSO
     ========================== -->
+    <section id="progressScreen" class="screen sub-screen hidden">
 
-    <section id="progressScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="progressBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="homeScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Progresso</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Progresso</h1>
-            </div>
+        <button
+          id="shareProgressButton"
+          class="icon-button"
+        >
+          ↗
+        </button>
 
-            <button
-                id="shareProgressButton"
-                class="header-action"
-                title="Compartilhar"
-            >
-                📤
-            </button>
+      </header>
 
-        </header>
+      <main class="page-content">
 
-        <main class="page-content">
+        <div class="progress-stats">
 
-            <div class="stats-grid">
+          <div class="stat-card">
+            <strong id="totalGoalsStat">0</strong>
+            <span>Total de metas</span>
+          </div>
 
-                <div class="stat-card">
-                    <strong id="totalGoals">0</strong>
-                    <span>Metas totais</span>
-                </div>
+          <div class="stat-card">
+            <strong id="completedGoalsStat">0</strong>
+            <span>Concluídas</span>
+          </div>
 
-                <div class="stat-card">
-                    <strong id="completedGoals">0</strong>
-                    <span>Concluídas</span>
-                </div>
+          <div class="stat-card">
+            <strong id="pendingGoalsStat">0</strong>
+            <span>Em andamento</span>
+          </div>
 
-                <div class="stat-card">
-                    <strong id="inProgressGoals">0</strong>
-                    <span>Em andamento</span>
-                </div>
+        </div>
 
-            </div>
+        <div class="progress-card">
 
+          <div class="progress-label">
+            <span>Progresso das metas</span>
+            <strong id="goalPercentage">0%</strong>
+          </div>
 
-            <div class="graph-card">
+          <div class="progress-bar">
+            <div
+              id="goalProgressBar"
+              class="progress-fill"
+            ></div>
+          </div>
 
-                <h2>Metas concluídas</h2>
+        </div>
 
-                <div class="graph-line">
-                    <div
-                        id="completedBar"
-                        class="graph-bar"
-                    ></div>
-                </div>
-
-                <strong id="completedPercent">
-                    0%
-                </strong>
-
-            </div>
-
-
-            <div class="graph-card">
-
-                <h2>Metas em andamento</h2>
-
-                <div class="graph-line">
-                    <div
-                        id="inProgressBar"
-                        class="graph-bar"
-                    ></div>
-                </div>
-
-                <strong id="inProgressPercent">
-                    0%
-                </strong>
-
-            </div>
-
-        </main>
+      </main>
 
     </section>
 
@@ -495,124 +463,91 @@
     <!-- =========================
          CONFIGURAÇÕES
     ========================== -->
+    <section id="settingsScreen" class="screen sub-screen hidden">
 
-    <section id="settingsScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="settingsBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="homeScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Configurações</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Configurações</h1>
-            </div>
+        <div></div>
 
-        </header>
+      </header>
 
-        <main class="page-content settings-page">
+      <main class="page-content settings-list">
 
-            <button
-                id="settingsLockButton"
-                class="settings-button"
-            >
-                🔒 Voltar para tela de senha
-            </button>
+        <button
+          id="lockSiteButton"
+          class="settings-button"
+        >
+          🔒 Voltar para tela de senha
+        </button>
 
-            <button
-                id="trashButton"
-                class="settings-button"
-            >
-                🗑️ Lixeira
-            </button>
+        <button
+          id="deleteAllButton"
+          class="settings-button danger-setting"
+        >
+          🗑️ Apagar geral
+        </button>
 
-            <button
-                id="deleteAllButton"
-                class="settings-button danger-outline"
-            >
-                🗑️ Apagar geral
-            </button>
+        <button
+          id="viewerToggleButton"
+          class="settings-button"
+        >
+          👁️ Modo Visualizador
+        </button>
 
-            <button
-                id="viewerModeButton"
-                class="settings-button"
-            >
-                👁️ Modo Visualizador: DESATIVADO
-            </button>
+        <button
+          id="themeButton"
+          class="settings-button"
+        >
+          🎨 Tema
+        </button>
 
-            <button
-                id="themeButton"
-                class="settings-button"
-            >
-                🎨 Tema
-            </button>
+        <button
+          id="changePasswordButton"
+          class="settings-button"
+        >
+          🔑 Alterar senha de acesso
+        </button>
 
-            <button
-                id="changePasswordButton"
-                class="settings-button"
-            >
-                🔑 Alterar senha de acesso
-            </button>
+        <button
+          id="timeFormatButton"
+          class="settings-button"
+        >
+          🕐 Formato da hora
+        </button>
 
-            <button
-                id="timeFormatButton"
-                class="settings-button"
-            >
-                🕐 Formato da hora
-            </button>
+        <button
+          id="trashButton"
+          class="settings-button"
+        >
+          🗑️ Lixeira
+        </button>
 
-            <button
-                id="aboutProjectButton"
-                class="settings-button"
-            >
-                ℹ️ Sobre o projeto
-            </button>
+        <button
+          id="shareAllButton"
+          class="settings-button"
+        >
+          ↗ Compartilhar geral
+        </button>
 
-            <button
-                id="generalShareButton"
-                class="settings-button"
-            >
-                📤 Compartilhar geral
-            </button>
+        <button
+          id="aboutButton"
+          class="settings-button"
+        >
+          ℹ️ Sobre o projeto
+        </button>
 
-        </main>
-
-    </section>
-
-
-    <!-- =========================
-         LIXEIRA
-    ========================== -->
-
-    <section id="trashScreen" class="screen hidden">
-
-        <header class="page-header">
-
-            <button
-                class="back-button"
-                data-back="settingsScreen"
-            >
-                ←
-            </button>
-
-            <div class="page-header-info">
-                <h1>Lixeira</h1>
-                <p>Itens excluídos ficam por 50 dias.</p>
-            </div>
-
-        </header>
-
-        <main class="page-content">
-
-            <div
-                id="trashList"
-                class="items-list"
-            ></div>
-
-        </main>
+      </main>
 
     </section>
 
@@ -620,60 +555,168 @@
     <!-- =========================
          SOBRE
     ========================== -->
+    <section id="aboutScreen" class="screen sub-screen hidden">
 
-    <section id="aboutScreen" class="screen hidden">
+      <header class="page-header">
 
-        <header class="page-header">
+        <button
+          id="aboutBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-            <button
-                class="back-button"
-                data-back="settingsScreen"
-            >
-                ←
-            </button>
+        <div class="page-heading">
+          <h1>Sobre</h1>
+        </div>
 
-            <div class="page-header-info">
-                <h1>Sobre</h1>
-            </div>
+        <div></div>
 
-        </header>
+      </header>
 
-        <main class="page-content">
+      <main class="page-content">
 
-            <div class="about-card">
+        <article class="detail-card">
 
-                <h2>Secreto V3</h2>
+          <h2>Secreto V3</h2>
 
-                <p>
-                    Projeto pessoal #016.
-                </p>
+          <p>
+            Projeto pessoal desenvolvido como aplicação estática
+            para GitHub Pages.
+          </p>
 
-                <p>
-                    Desenvolvido com HTML, CSS e JavaScript
-                    para funcionar no GitHub Pages.
-                </p>
+          <p>
+            Os dados ficam armazenados localmente no navegador
+            através do localStorage.
+          </p>
 
-                <p>
-                    O projeto utiliza armazenamento local,
-                    Service Worker e funcionamento offline.
-                </p>
+          <p>
+            O projeto também possui funcionamento offline através
+            de Service Worker e Cache API.
+          </p>
 
-                <p>
-                    Sem banco de dados e sem servidor próprio.
-                </p>
+          <p>
+            Não utiliza banco de dados nem servidor próprio.
+          </p>
 
-            </div>
+        </article>
 
-        </main>
+      </main>
 
     </section>
 
 
     <!-- =========================
-         SCRIPT
+         LIXEIRA
     ========================== -->
+    <section id="trashScreen" class="screen sub-screen hidden">
 
-    <script src="script.js"></script>
+      <header class="page-header">
+
+        <button
+          id="trashBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+          <h1>Lixeira</h1>
+        </div>
+
+        <div></div>
+
+      </header>
+
+      <main class="page-content">
+
+        <p class="small-info">
+          Itens apagados permanecem por até 50 dias.
+        </p>
+
+        <div id="trashList" class="items-list"></div>
+
+      </main>
+
+    </section>
+
+
+    <!-- =========================
+         TELA DE DETALHES
+    ========================== -->
+    <section id="detailScreen" class="screen sub-screen hidden">
+
+      <header class="page-header">
+
+        <button
+          id="detailBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+
+          <h1 id="detailTitle"></h1>
+
+          <p id="detailMeta"></p>
+
+        </div>
+
+        <div></div>
+
+      </header>
+
+      <main class="page-content">
+
+        <article class="detail-card">
+
+          <div id="detailContent"></div>
+
+        </article>
+
+      </main>
+
+    </section>
+
+
+  </section>
+
+
+  <!-- =========================
+       MODAL
+  ========================== -->
+  <div
+    id="appModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal-card">
+
+      <h2 id="modalTitle"></h2>
+
+      <div id="modalBody"></div>
+
+      <div
+        id="modalActions"
+        class="modal-actions"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       TOAST
+  ========================== -->
+  <div
+    id="toast"
+    class="toast hidden"
+  ></div>
+
+
+  <script src="script.js"></script>
 
 </body>
-    </html>
+            </html>
