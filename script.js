@@ -1,42 +1,56 @@
-"use strict";
-
 /* =========================================================
    SECRETO V3
-   Projeto estático para GitHub Pages
+   SCRIPT PRINCIPAL
 ========================================================= */
 
 
 /* =========================================================
-   CHAVES
+   CONFIGURAÇÕES
 ========================================================= */
 
 const KEYS = {
-  accessPassword: "secreto_v3_access_password",
-  goals: "secreto_v3_goals",
-  tasks: "secreto_v3_tasks",
-  notes: "secreto_v3_notes",
-  clothes: "secreto_v3_clothes",
-  trash: "secreto_v3_trash",
-  theme: "secreto_v3_theme",
-  viewer: "secreto_v3_viewer",
-  timeFormat: "secreto_v3_time_format",
-  timerSeconds: "secreto_v3_timer_seconds",
 
-  /* Sessão */
-  loggedIn: "secreto_v3_logged_in",
-  sessionLocked: "secreto_v3_session_locked",
+  accessPassword:
+    "secreto_v3_access_password",
 
-  /* Tela atual */
-  currentScreen: "secreto_v3_current_screen"
+  goals:
+    "secreto_v3_goals",
+
+  tasks:
+    "secreto_v3_tasks",
+
+  notes:
+    "secreto_v3_notes",
+
+  clothes:
+    "secreto_v3_clothes",
+
+  trash:
+    "secreto_v3_trash",
+
+  theme:
+    "secreto_v3_theme",
+
+  viewer:
+    "secreto_v3_viewer",
+
+  timeFormat:
+    "secreto_v3_time_format",
+
+  timerSeconds:
+    "secreto_v3_timer_seconds",
+
+  loggedIn:
+    "secreto_v3_logged_in",
+
+  currentScreen:
+    "secreto_v3_current_screen"
+
 };
-
-const MASTER_DELETE_PASSWORD = "Hg88";
-const DEFAULT_ACCESS_PASSWORD = "Hg99";
-const TRASH_DAYS = 50;
 
 
 /* =========================================================
-   ESTADO
+   VARIÁVEIS
 ========================================================= */
 
 let goals = [];
@@ -45,25 +59,30 @@ let notes = [];
 let clothes = [];
 let trash = [];
 
-let currentScreen = "dashboardScreen";
-let detailReturnScreen = "dashboardScreen";
+let currentGoalFilter = "all";
+let currentTaskFilter = "all";
 
-let timerSeconds = 0;
 let timerInterval = null;
-let timerRunning = false;
+let timerSeconds = 0;
 
-let modalCloseFunction = null;
+let previousScreen = "dashboardScreen";
+
+let toastTimeout = null;
 
 
 /* =========================================================
-   ELEMENTOS
+   ATALHO PARA ELEMENTOS
 ========================================================= */
 
-const $ = (id) => document.getElementById(id);
+function $(id) {
+
+  return document.getElementById(id);
+
+}
 
 
 /* =========================================================
-   STORAGE
+   LOCALSTORAGE
 ========================================================= */
 
 function readStorage(key, fallback) {
@@ -74,7 +93,9 @@ function readStorage(key, fallback) {
       localStorage.getItem(key);
 
     if (value === null) {
+
       return fallback;
+
     }
 
     return JSON.parse(value);
@@ -82,7 +103,7 @@ function readStorage(key, fallback) {
   } catch (error) {
 
     console.error(
-      "Erro ao ler storage:",
+      "Erro ao ler armazenamento:",
       key,
       error
     );
@@ -92,6 +113,7 @@ function readStorage(key, fallback) {
   }
 
 }
+
 
 function writeStorage(key, value) {
 
@@ -105,7 +127,7 @@ function writeStorage(key, value) {
   } catch (error) {
 
     console.error(
-      "Erro ao salvar storage:",
+      "Erro ao salvar armazenamento:",
       key,
       error
     );
@@ -116,81 +138,93 @@ function writeStorage(key, value) {
 
 
 /* =========================================================
-   INICIALIZAÇÃO DA SESSÃO
+   ESCAPE HTML
 ========================================================= */
 
-function initializeSessionState() {
+function escapeHtml(value) {
 
-  const sessionLocked =
-    localStorage.getItem(
-      KEYS.sessionLocked
-    );
-
-  const legacyLoggedIn =
-    localStorage.getItem(
-      KEYS.loggedIn
-    );
-
-  /*
-    Migração da versão anterior.
-
-    Se a versão anterior tinha:
-    loggedIn = true
-
-    entendemos que o usuário já estava
-    autenticado e mantemos a sessão aberta.
-
-    Se não existia nenhuma informação de sessão,
-    exigimos o login normalmente.
-  */
-
-  if (sessionLocked === null) {
-
-    if (
-      legacyLoggedIn === "true"
-    ) {
-
-      localStorage.setItem(
-        KEYS.sessionLocked,
-        "false"
-      );
-
-    } else {
-
-      localStorage.setItem(
-        KEYS.sessionLocked,
-        "true"
-      );
-
-    }
-
-  }
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 }
 
 
 /* =========================================================
-   CARREGAR DADOS
+   DATA E HORA
+========================================================= */
+
+function formatDateTime(dateValue) {
+
+  if (!dateValue) {
+
+    return "Não informado";
+
+  }
+
+  const date =
+    new Date(dateValue);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return "Não informado";
+
+  }
+
+  const format =
+    localStorage.getItem(
+      KEYS.timeFormat
+    ) || "24h";
+
+  const options = {
+
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+
+    hour: "2-digit",
+    minute: "2-digit"
+
+  };
+
+  if (format === "12h") {
+
+    options.hour12 = true;
+
+  } else {
+
+    options.hour12 = false;
+
+  }
+
+  return new Intl.DateTimeFormat(
+    "pt-BR",
+    options
+  ).format(date);
+
+}
+
+
+function getNowISO() {
+
+  return new Date()
+    .toISOString();
+
+}
+
+
+/* =========================================================
+   CARREGAMENTO DOS DADOS
 ========================================================= */
 
 function loadData() {
-
-  let storedPassword =
-    localStorage.getItem(
-      KEYS.accessPassword
-    );
-
-  if (!storedPassword) {
-
-    storedPassword =
-      DEFAULT_ACCESS_PASSWORD;
-
-    localStorage.setItem(
-      KEYS.accessPassword,
-      storedPassword
-    );
-
-  }
 
   goals =
     readStorage(
@@ -229,143 +263,67 @@ function loadData() {
       ) || 0
     );
 
-  pruneTrash();
+  removeExpiredTrash();
 
-  applyTheme();
-
-  applyViewerMode();
-
-  updateTimerDisplay();
+  renderTimer();
 
 }
 
 
 /* =========================================================
-   UTILITÁRIOS
+   SENHA INICIAL
 ========================================================= */
 
-function generateId() {
-
-  return (
-    Date.now().toString(36) +
-    Math.random()
-      .toString(36)
-      .substring(2, 8)
-  );
-
-}
-
-function escapeHTML(value) {
-
-  return String(value ?? "")
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
-
-function formatDateTime(dateValue) {
-
-  const date =
-    new Date(dateValue);
+function initializePassword() {
 
   if (
-    Number.isNaN(
-      date.getTime()
-    )
+    localStorage.getItem(
+      KEYS.accessPassword
+    ) === null
   ) {
 
-    return "";
+    localStorage.setItem(
+      KEYS.accessPassword,
+      "Hg99"
+    );
 
   }
 
-  const format =
+}
+
+
+/* =========================================================
+   SESSÃO
+========================================================= */
+
+function initializeSessionState() {
+
+  if (
     localStorage.getItem(
-      KEYS.timeFormat
-    ) || "24h";
+      KEYS.loggedIn
+    ) === null
+  ) {
 
-  const time =
-    date.toLocaleTimeString(
-      "pt-BR",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12:
-          format === "12h"
-      }
+    localStorage.setItem(
+      KEYS.loggedIn,
+      "false"
     );
 
-  const dateText =
-    date.toLocaleDateString(
-      "pt-BR"
-    );
-
-  return `${dateText} • ${time}`;
+  }
 
 }
 
-function getAccessPassword() {
+
+function isLoggedIn() {
 
   return (
     localStorage.getItem(
-      KEYS.accessPassword
-    ) ||
-    DEFAULT_ACCESS_PASSWORD
-  );
-
-}
-
-function isViewerMode() {
-
-  return (
-    localStorage.getItem(
-      KEYS.viewer
+      KEYS.loggedIn
     ) === "true"
   );
 
 }
 
-
-/* =========================================================
-   LOGIN / SESSÃO
-========================================================= */
-
-function isLoggedIn() {
-
-  /*
-    A sessão permanece aberta enquanto
-    sessionLocked não estiver como "true".
-
-    Isso é independente do valor antigo
-    loggedIn, evitando que um reload faça
-    o site voltar para a senha.
-  */
-
-  return (
-    localStorage.getItem(
-      KEYS.sessionLocked
-    ) === "false"
-  );
-
-}
 
 function setLoggedIn(value) {
 
@@ -376,22 +334,12 @@ function setLoggedIn(value) {
       : "false"
   );
 
-  /*
-    Quando entra:
-    sessionLocked = false
-
-    Quando sai/bloqueia:
-    sessionLocked = true
-  */
-
-  localStorage.setItem(
-    KEYS.sessionLocked,
-    value
-      ? "false"
-      : "true"
-  );
-
 }
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 function login() {
 
@@ -404,14 +352,15 @@ function login() {
   const password =
     input.value;
 
+  const correctPassword =
+    localStorage.getItem(
+      KEYS.accessPassword
+    ) || "Hg99";
+
   if (
     password ===
-    getAccessPassword()
+    correctPassword
   ) {
-
-    /*
-      Marca a sessão como desbloqueada.
-    */
 
     setLoggedIn(true);
 
@@ -419,36 +368,16 @@ function login() {
 
     input.value = "";
 
-    const savedScreen =
-      localStorage.getItem(
-        KEYS.currentScreen
-      ) ||
-      "dashboardScreen";
-
     showApp();
 
-    if (
-      savedScreen &&
-      $(savedScreen) &&
-      !$(savedScreen)
-        .classList
-        .contains("login-screen")
-    ) {
-
-      showScreen(
-        savedScreen
-      );
-
-    } else {
-
-      showScreen(
-        "dashboardScreen"
-      );
-
-    }
+    showScreen(
+      localStorage.getItem(
+        KEYS.currentScreen
+      ) || "dashboardScreen"
+    );
 
     showToast(
-      "Entrada liberada."
+      "Acesso liberado."
     );
 
   } else {
@@ -464,46 +393,10 @@ function login() {
 
 }
 
-function lockSite() {
 
-  /*
-    Aqui é o único momento em que
-    a sessão é realmente bloqueada.
-  */
-
-  setLoggedIn(false);
-
-  localStorage.setItem(
-    KEYS.currentScreen,
-    "dashboardScreen"
-  );
-
-  stopTimer();
-
-  $("appScreen")
-    .classList
-    .add("hidden");
-
-  $("loginScreen")
-    .classList
-    .remove("hidden");
-
-  $("accessPassword")
-    .value = "";
-
-  $("loginMessage")
-    .textContent = "";
-
-  window.scrollTo(
-    0,
-    0
-  );
-
-  showToast(
-    "Site bloqueado."
-  );
-
-}
+/* =========================================================
+   MOSTRAR APLICATIVO
+========================================================= */
 
 function showApp() {
 
@@ -519,111 +412,87 @@ function showApp() {
 
 
 /* =========================================================
-   NAVEGAÇÃO
+   BLOQUEAR
 ========================================================= */
 
-function getAllAppScreens() {
+function lockSite() {
 
-  return [
-    "dashboardScreen",
-    "goalsScreen",
-    "tasksScreen",
-    "notesScreen",
-    "clothesScreen",
-    "timerScreen",
-    "progressScreen",
-    "settingsScreen",
-    "aboutScreen",
-    "trashScreen",
-    "detailScreen"
-  ];
+  setLoggedIn(false);
+
+  localStorage.setItem(
+    KEYS.currentScreen,
+    "dashboardScreen"
+  );
+
+  $("appScreen")
+    .classList
+    .add("hidden");
+
+  $("loginScreen")
+    .classList
+    .remove("hidden");
+
+  $("accessPassword")
+    .value = "";
+
+  $("accessPassword")
+    .focus();
+
+  showToast(
+    "Aplicativo bloqueado."
+  );
 
 }
 
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+
 function showScreen(screenId) {
+
+  const screens =
+    document.querySelectorAll(
+      "#appScreen > .screen"
+    );
+
+  screens.forEach(
+    (screen) => {
+
+      screen.classList.add(
+        "hidden"
+      );
+
+    }
+  );
 
   const target =
     $(screenId);
 
   if (!target) {
 
-    console.error(
-      "Tela não encontrada:",
-      screenId
-    );
-
     return;
 
   }
 
-  getAllAppScreens()
-    .forEach(
-      (id) => {
+  target.classList.remove(
+    "hidden"
+  );
 
-        const screen =
-          $(id);
+  if (
+    screenId !==
+    "dashboardScreen"
+  ) {
 
-        if (screen) {
+    previousScreen =
+      screenId;
 
-          screen.classList
-            .add("hidden");
-
-        }
-
-      }
-    );
-
-  target.classList
-    .remove("hidden");
-
-  currentScreen =
-    screenId;
+  }
 
   localStorage.setItem(
     KEYS.currentScreen,
     screenId
   );
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
-  if (
-    screenId ===
-    "goalsScreen"
-  ) {
-
-    renderGoals();
-
-  }
-
-  if (
-    screenId ===
-    "tasksScreen"
-  ) {
-
-    renderTasks();
-
-  }
-
-  if (
-    screenId ===
-    "notesScreen"
-  ) {
-
-    renderNotes();
-
-  }
-
-  if (
-    screenId ===
-    "clothesScreen"
-  ) {
-
-    renderClothes();
-
-  }
 
   if (
     screenId ===
@@ -639,35 +508,266 @@ function showScreen(screenId) {
     "trashScreen"
   ) {
 
-    pruneTrash();
-
     renderTrash();
 
   }
 
-  updateClock();
+}
+
+
+function goBack() {
+
+  showScreen(
+    "dashboardScreen"
+  );
 
 }
 
-function goBack(
-  targetScreen = "dashboardScreen"
-) {
 
-  if (
-    targetScreen ===
-    "dashboardScreen"
-  ) {
+function setupDetailBackButton() {
 
-    showScreen(
-      "dashboardScreen"
-    );
+  /*
+    As telas de detalhes usam o próprio
+    botão criado dentro do modal.
+  */
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message) {
+
+  const toast =
+    $("toast");
+
+  if (!toast) {
 
     return;
 
   }
 
-  showScreen(
-    targetScreen
+  toast.textContent =
+    message;
+
+  toast.classList.add(
+    "show"
+  );
+
+  clearTimeout(
+    toastTimeout
+  );
+
+  toastTimeout =
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      2500
+    );
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function openModal(title, content) {
+
+  const modal =
+    $("appModal");
+
+  const modalContent =
+    $("modalContent");
+
+  modalContent.innerHTML = `
+
+    <div class="modal-form">
+
+      <h3>
+        ${escapeHtml(title)}
+      </h3>
+
+      ${content}
+
+    </div>
+
+  `;
+
+  modal.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+function closeModal() {
+
+  $("appModal")
+    .classList
+    .add("hidden");
+
+  $("modalContent")
+    .innerHTML = "";
+
+}
+
+
+/* =========================================================
+   MODO VISUALIZADOR
+========================================================= */
+
+function isViewerMode() {
+
+  return (
+    localStorage.getItem(
+      KEYS.viewer
+    ) === "true"
+  );
+
+}
+
+
+function applyViewerMode() {
+
+  if (
+    isViewerMode()
+  ) {
+
+    document.body.classList.add(
+      "viewer-mode"
+    );
+
+  } else {
+
+    document.body.classList.remove(
+      "viewer-mode"
+    );
+
+  }
+
+}
+
+
+function toggleViewerMode() {
+
+  const current =
+    isViewerMode();
+
+  localStorage.setItem(
+    KEYS.viewer,
+    current
+      ? "false"
+      : "true"
+  );
+
+  applyViewerMode();
+
+  showToast(
+    current
+      ? "Modo Visualizador desativado."
+      : "Modo Visualizador ativado."
+  );
+
+}
+
+
+/* =========================================================
+   TEMA
+========================================================= */
+
+function applyTheme() {
+
+  const theme =
+    localStorage.getItem(
+      KEYS.theme
+    ) || "dark";
+
+  if (
+    theme === "light"
+  ) {
+
+    document.body.classList.add(
+      "light-theme"
+    );
+
+  } else {
+
+    document.body.classList.remove(
+      "light-theme"
+    );
+
+  }
+
+}
+
+
+function toggleTheme() {
+
+  const current =
+    localStorage.getItem(
+      KEYS.theme
+    ) || "dark";
+
+  const next =
+    current === "dark"
+      ? "light"
+      : "dark";
+
+  localStorage.setItem(
+    KEYS.theme,
+    next
+  );
+
+  applyTheme();
+
+  showToast(
+    next === "dark"
+      ? "Tema escuro ativado."
+      : "Tema claro ativado."
+  );
+
+}
+
+
+/* =========================================================
+   FORMATO DE HORÁRIO
+========================================================= */
+
+function changeTimeFormat() {
+
+  const current =
+    localStorage.getItem(
+      KEYS.timeFormat
+    ) || "24h";
+
+  const next =
+    current === "24h"
+      ? "12h"
+      : "24h";
+
+  localStorage.setItem(
+    KEYS.timeFormat,
+    next
+  );
+
+  updateClock();
+
+  renderGoals();
+  renderTasks();
+  renderNotes();
+  renderClothes();
+  renderTrash();
+
+  showToast(
+    `Formato alterado para ${next}.`
   );
 
 }
@@ -679,6 +779,15 @@ function goBack(
 
 function updateClock() {
 
+  const clock =
+    $("dashboardClock");
+
+  if (!clock) {
+
+    return;
+
+  }
+
   const now =
     new Date();
 
@@ -687,192 +796,22 @@ function updateClock() {
       KEYS.timeFormat
     ) || "24h";
 
-  const dateText =
-    now.toLocaleDateString(
-      "pt-BR",
-      {
-        weekday: "long",
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      }
-    );
+  const options = {
 
-  const timeText =
-    now.toLocaleTimeString(
-      "pt-BR",
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12:
-          format === "12h"
-      }
-    );
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
 
-  $("clockDate")
-    .textContent =
-    dateText;
-
-  $("clockTime")
-    .textContent =
-    timeText;
-
-}
-
-
-/* =========================================================
-   MODAL
-========================================================= */
-
-function openModal(
-  title,
-  bodyHTML,
-  actions = []
-) {
-
-  const overlay =
-    $("appModal");
-
-  const titleElement =
-    $("modalTitle");
-
-  const bodyElement =
-    $("modalBody");
-
-  const actionsElement =
-    $("modalActions");
-
-  titleElement.textContent =
-    title;
-
-  bodyElement.innerHTML =
-    bodyHTML;
-
-  actionsElement.innerHTML =
-    "";
-
-  actions.forEach(
-    (action) => {
-
-      const button =
-        document.createElement(
-          "button"
-        );
-
-      button.textContent =
-        action.label;
-
-      button.className =
-        action.className ||
-        "primary-button";
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          if (
-            typeof action.onClick ===
-            "function"
-          ) {
-
-            action.onClick();
-
-          }
-
-        }
-      );
-
-      actionsElement.appendChild(
-        button
-      );
-
-    }
-  );
-
-  overlay.classList
-    .remove("hidden");
-
-}
-
-function closeModal() {
-
-  $("appModal")
-    .classList
-    .add("hidden");
-
-  $("modalTitle")
-    .textContent = "";
-
-  $("modalBody")
-    .innerHTML = "";
-
-  $("modalActions")
-    .innerHTML = "";
-
-  if (
-    typeof modalCloseFunction ===
-    "function"
-  ) {
-
-    const callback =
-      modalCloseFunction;
-
-    modalCloseFunction =
-      null;
-
-    callback();
-
-  }
-
-}
-
-function addModalCancelButton() {
-
-  return {
-    label: "Cancelar",
-    className:
-      "secondary-button",
-    onClick:
-      closeModal
   };
 
-}
+  options.hour12 =
+    format === "12h";
 
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-let toastTimer = null;
-
-function showToast(
-  message
-) {
-
-  const toast =
-    $("toast");
-
-  toast.textContent =
-    message;
-
-  toast.classList
-    .remove("hidden");
-
-  clearTimeout(
-    toastTimer
-  );
-
-  toastTimer =
-    setTimeout(
-      () => {
-
-        toast.classList
-          .add("hidden");
-
-      },
-      2200
-    );
+  clock.textContent =
+    new Intl.DateTimeFormat(
+      "pt-BR",
+      options
+    ).format(now);
 
 }
 
@@ -881,229 +820,197 @@ function showToast(
    METAS
 ========================================================= */
 
-function openGoalForm(
-  goal = null
-) {
+function openGoalForm(goal = null) {
 
-  const isEditing =
-    Boolean(goal);
+  const editing =
+    !!goal;
 
-  const title =
-    isEditing
+  openModal(
+    editing
       ? "Editar meta"
-      : "Adicionar meta";
+      : "Adicionar meta",
+    `
 
-  const body = `
-    <div class="form-group">
-      <label for="goalFormTitle">Título</label>
+      <label>Título</label>
+
       <input
-        id="goalFormTitle"
+        id="goalTitle"
         type="text"
-        value="${escapeHTML(
+        value="${escapeHtml(
           goal?.title || ""
         )}"
         placeholder="Título da meta"
-        autocomplete="off"
       >
-    </div>
 
-    <div class="form-group">
-      <label for="goalFormContent">Conteúdo</label>
+      <label>Descrição</label>
+
       <textarea
-        id="goalFormContent"
-        placeholder="Escreva os detalhes da meta..."
-      >${escapeHTML(
-        goal?.content || ""
+        id="goalDescription"
+        placeholder="Descrição da meta"
+      >${escapeHtml(
+        goal?.description || ""
       )}</textarea>
-    </div>
-  `;
 
-  openModal(
-    title,
-    body,
-    [
-      {
-        label:
-          isEditing
-            ? "Salvar alterações"
-            : "Adicionar",
+      <button
+        id="saveGoalButton"
+        class="primary-button"
+      >
+        ${editing
+          ? "Salvar alterações"
+          : "Adicionar meta"}
+      </button>
 
-        className:
-          "primary-button",
-
-        onClick: () => {
-
-          const titleInput =
-            $("goalFormTitle");
-
-          const contentInput =
-            $("goalFormContent");
-
-          const newTitle =
-            titleInput.value
-              .trim();
-
-          const newContent =
-            contentInput.value
-              .trim();
-
-          if (!newTitle) {
-
-            showToast(
-              "Digite um título."
-            );
-
-            titleInput.focus();
-
-            return;
-
-          }
-
-          if (isEditing) {
-
-            goal.title =
-              newTitle;
-
-            goal.content =
-              newContent;
-
-            writeStorage(
-              KEYS.goals,
-              goals
-            );
-
-            closeModal();
-
-            renderGoals();
-
-            updateProgress();
-
-            showToast(
-              "Meta atualizada."
-            );
-
-          } else {
-
-            goals.push({
-
-              id:
-                generateId(),
-
-              title:
-                newTitle,
-
-              content:
-                newContent,
-
-              completed:
-                false,
-
-              pinned:
-                false,
-
-              createdAt:
-                new Date()
-                  .toISOString()
-
-            });
-
-            writeStorage(
-              KEYS.goals,
-              goals
-            );
-
-            closeModal();
-
-            renderGoals();
-
-            updateProgress();
-
-            showToast(
-              "Meta adicionada."
-            );
-
-          }
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
+    `
   );
 
-}
-
-function sortItems(
-  items
-) {
-
-  return [...items]
-    .sort(
-      (a, b) => {
+  $("saveGoalButton")
+    .addEventListener(
+      "click",
+      () => {
 
         if (
-          a.pinned &&
-          !b.pinned
+          isViewerMode()
         ) {
 
-          return -1;
+          closeModal();
+
+          return;
 
         }
 
-        if (
-          !a.pinned &&
-          b.pinned
-        ) {
+        const title =
+          $("goalTitle")
+            .value
+            .trim();
 
-          return 1;
+        const description =
+          $("goalDescription")
+            .value
+            .trim();
+
+        if (!title) {
+
+          showToast(
+            "Digite um título."
+          );
+
+          return;
 
         }
 
-        return (
-          new Date(
-            b.createdAt
-          ) -
-          new Date(
-            a.createdAt
-          )
+        if (editing) {
+
+          goal.title =
+            title;
+
+          goal.description =
+            description;
+
+        } else {
+
+          goals.unshift({
+
+            id:
+              Date.now(),
+
+            title,
+
+            description,
+
+            completed:
+              false,
+
+            pinned:
+              false,
+
+            createdAt:
+              getNowISO()
+
+          });
+
+        }
+
+        writeStorage(
+          KEYS.goals,
+          goals
         );
+
+        renderGoals();
+
+        updateProgress();
+
+        closeModal();
 
       }
     );
 
 }
 
+
 function renderGoals() {
 
-  const list =
+  const container =
     $("goalsList");
 
+  if (!container) {
+
+    return;
+
+  }
+
   const search =
-    $("goalSearch")
-      .value
-      .trim()
-      .toLowerCase();
+    (
+      $("goalSearch")?.value ||
+      ""
+    )
+    .trim()
+    .toLowerCase();
 
   let filtered =
     goals.filter(
-      (goal) =>
-        goal.title
-          .toLowerCase()
-          .includes(search)
-    );
+      (goal) => {
 
-  filtered =
-    sortItems(
-      filtered
+        const matchesSearch =
+          goal.title
+            .toLowerCase()
+            .includes(search);
+
+        if (
+          !matchesSearch
+        ) {
+
+          return false;
+
+        }
+
+        if (
+          currentGoalFilter ===
+          "pending"
+        ) {
+
+          return !goal.completed;
+
+        }
+
+        if (
+          currentGoalFilter ===
+          "completed"
+        ) {
+
+          return goal.completed;
+
+        }
+
+        return true;
+
+      }
     );
 
   if (
     filtered.length === 0
   ) {
 
-    list.innerHTML = `
+    container.innerHTML = `
       <div class="empty-message">
         Nenhuma meta encontrada.
       </div>
@@ -1113,389 +1020,157 @@ function renderGoals() {
 
   }
 
-  list.innerHTML = "";
-
-  filtered.forEach(
-    (goal) => {
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-      row.className =
-        "item-row";
-
-      if (goal.pinned) {
-
-        row.classList
-          .add(
-            "item-pinned"
-          );
-
-      }
-
-      if (goal.completed) {
-
-        row.classList
-          .add(
-            "item-completed"
-          );
-
-      }
-
-      const main =
-        document.createElement(
-          "button"
-        );
-
-      main.className =
-        "item-main";
-
-      main.innerHTML = `
-        <span class="item-title">
-          ${
-            goal.pinned
-              ? "📌 "
-              : ""
-          }
-          ${escapeHTML(
-            goal.title
-          )}
-        </span>
-      `;
-
-      main.addEventListener(
-        "click",
-        () =>
-          openGoalDetail(
-            goal
-          )
-      );
-
-      const actions =
-        document.createElement(
-          "div"
-        );
-
-      actions.className =
-        "item-actions";
-
-      const complete =
-        document.createElement(
-          "button"
-        );
-
-      complete.className =
-        "item-action complete complete-only";
-
-      complete.textContent =
-        goal.completed
-          ? "✓"
-          : "○";
-
-      complete.title =
-        goal.completed
-          ? "Marcar como pendente"
-          : "Concluir";
-
-      complete.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          goal.completed =
-            !goal.completed;
-
-          writeStorage(
-            KEYS.goals,
-            goals
-          );
-
-          renderGoals();
-
-          updateProgress();
-
-        }
-      );
-
-      const pin =
-        document.createElement(
-          "button"
-        );
-
-      pin.className =
-        "item-action pin pin-only";
-
-      pin.textContent =
-        goal.pinned
-          ? "📌"
-          : "☆";
-
-      pin.title =
-        "Fixar";
-
-      pin.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          goal.pinned =
-            !goal.pinned;
-
-          writeStorage(
-            KEYS.goals,
-            goals
-          );
-
-          renderGoals();
-
-        }
-      );
-
-      const edit =
-        document.createElement(
-          "button"
-        );
-
-      edit.className =
-        "item-action edit-only";
-
-      edit.textContent =
-        "✎";
-
-      edit.title =
-        "Editar";
-
-      edit.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          openGoalForm(
-            goal
-          );
-
-        }
-      );
-
-      const deleteButton =
-        document.createElement(
-          "button"
-        );
-
-      deleteButton.className =
-        "item-action delete delete-only";
-
-      deleteButton.textContent =
-        "🗑";
-
-      deleteButton.title =
-        "Excluir";
-
-      deleteButton.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          deleteGoal(
-            goal
-          );
-
-        }
-      );
-
-      actions.appendChild(
-        complete
-      );
-
-      actions.appendChild(
-        pin
-      );
-
-      actions.appendChild(
-        edit
-      );
-
-      actions.appendChild(
-        deleteButton
-      );
-
-      row.appendChild(
-        main
-      );
-
-      row.appendChild(
-        actions
-      );
-
-      list.appendChild(
-        row
-      );
-
-    }
-  );
+  container.innerHTML =
+    filtered
+      .map(
+        (goal) =>
+          renderGoalCard(goal)
+      )
+      .join("");
 
 }
 
-function openGoalDetail(
-  goal
-) {
 
-  detailReturnScreen =
-    "goalsScreen";
+function renderGoalCard(goal) {
 
-  $("detailTitle")
-    .textContent =
-    goal.title;
+  return `
 
-  $("detailMeta")
-    .textContent =
-    goal.completed
-      ? "Concluída"
-      : "Em andamento";
+    <article
+      class="
+        item-card
+        ${goal.pinned ? "pinned" : ""}
+        ${goal.completed ? "completed" : ""}
+      "
+    >
 
-  $("detailContent")
-    .innerHTML = `
-      <div class="detail-content">
-        ${escapeHTML(
-          goal.content ||
-          "Sem conteúdo."
-        )}
+      <div class="item-main">
+
+        <button
+          class="item-title-button"
+          data-action="view-goal"
+          data-id="${goal.id}"
+        >
+
+          <div class="item-title">
+            ${escapeHtml(
+              goal.title
+            )}
+          </div>
+
+          <div class="item-meta">
+            Criado em:
+            ${formatDateTime(
+              goal.createdAt
+            )}
+          </div>
+
+        </button>
+
+
+        <div class="item-actions">
+
+          <button
+            class="icon-button"
+            data-action="toggle-goal"
+            data-id="${goal.id}"
+            title="Concluir"
+          >
+            ${goal.completed
+              ? "↩️"
+              : "✓"}
+          </button>
+
+          <button
+            class="icon-button"
+            data-action="pin-goal"
+            data-id="${goal.id}"
+            title="Fixar"
+          >
+            ${goal.pinned
+              ? "📌"
+              : "📍"}
+          </button>
+
+          <button
+            class="icon-button"
+            data-action="edit-goal"
+            data-id="${goal.id}"
+            title="Editar"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="icon-button danger"
+            data-action="delete-goal"
+            data-id="${goal.id}"
+            title="Excluir"
+          >
+            🗑️
+          </button>
+
+        </div>
+
       </div>
 
-      <div class="detail-created">
-        Criado em ${
-          formatDateTime(
-            goal.createdAt
-          )
-        }
-      </div>
-    `;
+    </article>
 
-  showScreen(
-    "detailScreen"
-  );
+  `;
 
 }
 
-function deleteGoal(
-  goal
-) {
+
+function showGoalDetail(goal) {
 
   openModal(
-    "Excluir meta",
-
+    "Detalhes da meta",
     `
-      <p>
-        A meta
-        <strong>
-          ${escapeHTML(
+
+      <div class="detail-container">
+
+        <div class="detail-title">
+          ${escapeHtml(
             goal.title
           )}
-        </strong>
-        será enviada para a lixeira.
-      </p>
-    `,
+        </div>
 
-    [
-      {
-        label:
-          "Enviar para lixeira",
+        <div class="detail-content">
 
-        className:
-          "danger-button",
+          ${
+            escapeHtml(
+              goal.description ||
+              "Sem descrição."
+            )
+          }
 
-        onClick: () => {
+        </div>
 
-          trash.push({
+        <div class="detail-date">
 
-            id:
-              generateId(),
+          Criado em:
+          ${formatDateTime(
+            goal.createdAt
+          )}
 
-            type:
-              "goal",
+        </div>
 
-            original:
-              { ...goal },
+      </div>
 
-            deletedAt:
-              new Date()
-                .toISOString()
+      <button
+        id="closeGoalDetail"
+        class="secondary-button"
+      >
+        Fechar
+      </button>
 
-          });
-
-          goals =
-            goals.filter(
-              (item) =>
-                item.id !==
-                goal.id
-            );
-
-          writeStorage(
-            KEYS.goals,
-            goals
-          );
-
-          writeStorage(
-            KEYS.trash,
-            trash
-          );
-
-          closeModal();
-
-          renderGoals();
-
-          updateProgress();
-
-          showToast(
-            "Meta enviada para a lixeira."
-          );
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
+    `
   );
+
+  $("closeGoalDetail")
+    .addEventListener(
+      "click",
+      closeModal
+    );
 
 }
 
@@ -1504,186 +1179,194 @@ function deleteGoal(
    TAREFAS
 ========================================================= */
 
-function openTaskForm(
-  task = null
-) {
+function openTaskForm(task = null) {
 
-  const isEditing =
-    Boolean(task);
+  const editing =
+    !!task;
 
-  const body = `
-    <div class="form-group">
-      <label for="taskFormTitle">Título</label>
+  openModal(
+    editing
+      ? "Editar tarefa"
+      : "Adicionar tarefa",
+    `
+
+      <label>Título</label>
 
       <input
-        id="taskFormTitle"
+        id="taskTitle"
         type="text"
-        value="${escapeHTML(
+        value="${escapeHtml(
           task?.title || ""
         )}"
         placeholder="Título da tarefa"
-        autocomplete="off"
       >
-    </div>
 
-    <div class="form-group">
-      <label for="taskFormContent">Conteúdo</label>
+      <label>Descrição</label>
 
       <textarea
-        id="taskFormContent"
-        placeholder="Detalhes da tarefa..."
-      >${escapeHTML(
-        task?.content || ""
+        id="taskDescription"
+        placeholder="Descrição da tarefa"
+      >${escapeHtml(
+        task?.description || ""
       )}</textarea>
-    </div>
-  `;
 
-  openModal(
-    isEditing
-      ? "Editar tarefa"
-      : "Adicionar tarefa",
+      <button
+        id="saveTaskButton"
+        class="primary-button"
+      >
+        ${editing
+          ? "Salvar alterações"
+          : "Adicionar tarefa"}
+      </button>
 
-    body,
+    `
+  );
 
-    [
-      {
-        label:
-          isEditing
-            ? "Salvar alterações"
-            : "Adicionar",
+  $("saveTaskButton")
+    .addEventListener(
+      "click",
+      () => {
 
-        className:
-          "primary-button",
+        if (
+          isViewerMode()
+        ) {
 
-        onClick: () => {
+          closeModal();
 
-          const titleInput =
-            $("taskFormTitle");
-
-          const contentInput =
-            $("taskFormContent");
-
-          const newTitle =
-            titleInput.value
-              .trim();
-
-          const newContent =
-            contentInput.value
-              .trim();
-
-          if (!newTitle) {
-
-            showToast(
-              "Digite um título."
-            );
-
-            titleInput.focus();
-
-            return;
-
-          }
-
-          if (isEditing) {
-
-            task.title =
-              newTitle;
-
-            task.content =
-              newContent;
-
-            writeStorage(
-              KEYS.tasks,
-              tasks
-            );
-
-            closeModal();
-
-            renderTasks();
-
-            showToast(
-              "Tarefa atualizada."
-            );
-
-          } else {
-
-            tasks.push({
-
-              id:
-                generateId(),
-
-              title:
-                newTitle,
-
-              content:
-                newContent,
-
-              completed:
-                false,
-
-              pinned:
-                false,
-
-              createdAt:
-                new Date()
-                  .toISOString()
-
-            });
-
-            writeStorage(
-              KEYS.tasks,
-              tasks
-            );
-
-            closeModal();
-
-            renderTasks();
-
-            showToast(
-              "Tarefa adicionada."
-            );
-
-          }
+          return;
 
         }
 
-      },
+        const title =
+          $("taskTitle")
+            .value
+            .trim();
 
-      addModalCancelButton()
+        const description =
+          $("taskDescription")
+            .value
+            .trim();
 
-    ]
-  );
+        if (!title) {
+
+          showToast(
+            "Digite um título."
+          );
+
+          return;
+
+        }
+
+        if (editing) {
+
+          task.title =
+            title;
+
+          task.description =
+            description;
+
+        } else {
+
+          tasks.unshift({
+
+            id:
+              Date.now(),
+
+            title,
+
+            description,
+
+            completed:
+              false,
+
+            pinned:
+              false,
+
+            createdAt:
+              getNowISO()
+
+          });
+
+        }
+
+        writeStorage(
+          KEYS.tasks,
+          tasks
+        );
+
+        renderTasks();
+
+        updateProgress();
+
+        closeModal();
+
+      }
+    );
 
 }
 
+
 function renderTasks() {
 
-  const list =
+  const container =
     $("tasksList");
 
+  if (!container) {
+
+    return;
+
+  }
+
   const search =
-    $("taskSearch")
-      .value
-      .trim()
-      .toLowerCase();
+    (
+      $("taskSearch")?.value ||
+      ""
+    )
+    .trim()
+    .toLowerCase();
 
-  let filtered =
+  const filtered =
     tasks.filter(
-      (task) =>
-        task.title
-          .toLowerCase()
-          .includes(search)
-    );
+      (task) => {
 
-  filtered =
-    sortItems(
-      filtered
+        if (
+          !task.title
+            .toLowerCase()
+            .includes(search)
+        ) {
+
+          return false;
+
+        }
+
+        if (
+          currentTaskFilter ===
+          "pending"
+        ) {
+
+          return !task.completed;
+
+        }
+
+        if (
+          currentTaskFilter ===
+          "completed"
+        ) {
+
+          return task.completed;
+
+        }
+
+        return true;
+
+      }
     );
 
   if (
     filtered.length === 0
   ) {
 
-    list.innerHTML = `
+    container.innerHTML = `
       <div class="empty-message">
         Nenhuma tarefa encontrada.
       </div>
@@ -1693,371 +1376,68 @@ function renderTasks() {
 
   }
 
-  list.innerHTML = "";
-
-  filtered.forEach(
-    (task) => {
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-      row.className =
-        "item-row";
-
-      if (task.pinned) {
-
-        row.classList
-          .add(
-            "item-pinned"
-          );
-
-      }
-
-      if (task.completed) {
-
-        row.classList
-          .add(
-            "item-completed"
-          );
-
-      }
-
-      const main =
-        document.createElement(
-          "button"
-        );
-
-      main.className =
-        "item-main";
-
-      main.innerHTML = `
-        <span class="item-title">
-          ${
-            task.pinned
-              ? "📌 "
-              : ""
-          }
-          ${escapeHTML(
-            task.title
-          )}
-        </span>
-      `;
-
-      main.addEventListener(
-        "click",
-        () =>
-          openTaskDetail(
-            task
-          )
-      );
-
-      const actions =
-        document.createElement(
-          "div"
-        );
-
-      actions.className =
-        "item-actions";
-
-      const complete =
-        document.createElement(
-          "button"
-        );
-
-      complete.className =
-        "item-action complete complete-only";
-
-      complete.textContent =
-        task.completed
-          ? "✓"
-          : "○";
-
-      complete.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          task.completed =
-            !task.completed;
-
-          writeStorage(
-            KEYS.tasks,
-            tasks
-          );
-
-          renderTasks();
-
-        }
-      );
-
-      const pin =
-        document.createElement(
-          "button"
-        );
-
-      pin.className =
-        "item-action pin pin-only";
-
-      pin.textContent =
-        task.pinned
-          ? "📌"
-          : "☆";
-
-      pin.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          task.pinned =
-            !task.pinned;
-
-          writeStorage(
-            KEYS.tasks,
-            tasks
-          );
-
-          renderTasks();
-
-        }
-      );
-
-      const edit =
-        document.createElement(
-          "button"
-        );
-
-      edit.className =
-        "item-action edit-only";
-
-      edit.textContent =
-        "✎";
-
-      edit.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          openTaskForm(
-            task
-          );
-
-        }
-      );
-
-      const deleteButton =
-        document.createElement(
-          "button"
-        );
-
-      deleteButton.className =
-        "item-action delete delete-only";
-
-      deleteButton.textContent =
-        "🗑";
-
-      deleteButton.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          deleteTask(
-            task
-          );
-
-        }
-      );
-
-      actions.appendChild(
-        complete
-      );
-
-      actions.appendChild(
-        pin
-      );
-
-      actions.appendChild(
-        edit
-      );
-
-      actions.appendChild(
-        deleteButton
-      );
-
-      row.appendChild(
-        main
-      );
-
-      row.appendChild(
-        actions
-      );
-
-      list.appendChild(
-        row
-      );
-
-    }
-  );
+  container.innerHTML =
+    filtered
+      .map(
+        (task) =>
+          renderTaskCard(task)
+      )
+      .join("");
 
 }
 
-function openTaskDetail(
-  task
-) {
 
-  detailReturnScreen =
-    "tasksScreen";
+function renderTaskCard(task) {
 
-  $("detailTitle")
-    .textContent =
-    task.title;
+  return `
 
-  $("detailMeta")
-    .textContent =
-    task.completed
-      ? "Concluída"
-      : "Em andamento";
+    <article
+      class="
+        item-card
+        ${task.pinned ? "pinned" : ""}
+        ${task.completed ? "completed" : ""}
+      "
+    >
 
-  $("detailContent")
-    .innerHTML = `
-      <div class="detail-content">
-        ${escapeHTML(
-          task.content ||
-          "Sem conteúdo."
-        )}
-      </div>
+      <div class="item-main">
 
-      <div class="detail-created">
-        Criado em ${
-          formatDateTime(
+        <button
+          class="item-title-button"
+          data-action="view-task"
+          data-id="${task.id}"
+        >
+
+          <div class="item-title">
+            ${escapeHtml(
+              task.title
+            )}
+          </div>
+
+          <div class="item-meta">
+            Criado em:
+            ${formatDateTime(
             task.createdAt
-          )
-        }
+          )}
+
+        </div>
+
       </div>
-    `;
 
-  showScreen(
-    "detailScreen"
-  );
-
-}
-
-function deleteTask(
-  task
-) {
-
-  openModal(
-    "Excluir tarefa",
+      <button
+        id="closeTaskDetail"
+        class="secondary-button"
+      >
+        Fechar
+      </button>
 
     `
-      <p>
-        A tarefa
-        <strong>
-          ${escapeHTML(
-            task.title
-          )}
-        </strong>
-        será enviada para a lixeira.
-      </p>
-    `,
-
-    [
-      {
-        label:
-          "Enviar para lixeira",
-
-        className:
-          "danger-button",
-
-        onClick: () => {
-
-          trash.push({
-
-            id:
-              generateId(),
-
-            type:
-              "task",
-
-            original:
-              { ...task },
-
-            deletedAt:
-              new Date()
-                .toISOString()
-
-          });
-
-          tasks =
-            tasks.filter(
-              (item) =>
-                item.id !==
-                task.id
-            );
-
-          writeStorage(
-            KEYS.tasks,
-            tasks
-          );
-
-          writeStorage(
-            KEYS.trash,
-            trash
-          );
-
-          closeModal();
-
-          renderTasks();
-
-          showToast(
-            "Tarefa enviada para a lixeira."
-          );
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
   );
+
+  $("closeTaskDetail")
+    .addEventListener(
+      "click",
+      closeModal
+    );
 
 }
 
@@ -2066,166 +1446,148 @@ function deleteTask(
    NOTAS
 ========================================================= */
 
-function openNoteForm(
-  note = null
-) {
+function openNoteForm(note = null) {
 
-  const isEditing =
-    Boolean(note);
+  const editing =
+    !!note;
 
-  const body = `
-    <div class="form-group">
-      <label for="noteFormTitle">Título</label>
+  openModal(
+    editing
+      ? "Editar nota"
+      : "Adicionar nota",
+    `
+
+      <label>Título</label>
 
       <input
-        id="noteFormTitle"
+        id="noteTitle"
         type="text"
-        value="${escapeHTML(
+        value="${escapeHtml(
           note?.title || ""
         )}"
         placeholder="Título da nota"
-        autocomplete="off"
       >
-    </div>
 
-    <div class="form-group">
-      <label for="noteFormContent">Conteúdo</label>
+      <label>Conteúdo</label>
 
       <textarea
-        id="noteFormContent"
+        id="noteContent"
         placeholder="Escreva sua nota..."
-      >${escapeHTML(
+      >${escapeHtml(
         note?.content || ""
       )}</textarea>
-    </div>
-  `;
 
-  openModal(
-    isEditing
-      ? "Editar nota"
-      : "Adicionar nota",
+      <button
+        id="saveNoteButton"
+        class="primary-button"
+      >
+        ${editing
+          ? "Salvar alterações"
+          : "Adicionar nota"}
+      </button>
 
-    body,
+    `
+  );
 
-    [
-      {
-        label:
-          isEditing
-            ? "Salvar alterações"
-            : "Adicionar",
+  $("saveNoteButton")
+    .addEventListener(
+      "click",
+      () => {
 
-        className:
-          "primary-button",
+        if (
+          isViewerMode()
+        ) {
 
-        onClick: () => {
+          closeModal();
 
-          const titleInput =
-            $("noteFormTitle");
-
-          const contentInput =
-            $("noteFormContent");
-
-          const newTitle =
-            titleInput.value
-              .trim();
-
-          const newContent =
-            contentInput.value
-              .trim();
-
-          if (!newTitle) {
-
-            showToast(
-              "Digite um título."
-            );
-
-            titleInput.focus();
-
-            return;
-
-          }
-
-          if (isEditing) {
-
-            note.title =
-              newTitle;
-
-            note.content =
-              newContent;
-
-            writeStorage(
-              KEYS.notes,
-              notes
-            );
-
-            closeModal();
-
-            renderNotes();
-
-            showToast(
-              "Nota atualizada."
-            );
-
-          } else {
-
-            notes.push({
-
-              id:
-                generateId(),
-
-              title:
-                newTitle,
-
-              content:
-                newContent,
-
-              pinned:
-                false,
-
-              createdAt:
-                new Date()
-                  .toISOString()
-
-            });
-
-            writeStorage(
-              KEYS.notes,
-              notes
-            );
-
-            closeModal();
-
-            renderNotes();
-
-            showToast(
-              "Nota adicionada."
-            );
-
-          }
+          return;
 
         }
 
-      },
+        const title =
+          $("noteTitle")
+            .value
+            .trim();
 
-      addModalCancelButton()
+        const content =
+          $("noteContent")
+            .value
+            .trim();
 
-    ]
-  );
+        if (!title) {
+
+          showToast(
+            "Digite um título."
+          );
+
+          return;
+
+        }
+
+        if (editing) {
+
+          note.title =
+            title;
+
+          note.content =
+            content;
+
+        } else {
+
+          notes.unshift({
+
+            id:
+              Date.now(),
+
+            title,
+
+            content,
+
+            pinned:
+              false,
+
+            createdAt:
+              getNowISO()
+
+          });
+
+        }
+
+        writeStorage(
+          KEYS.notes,
+          notes
+        );
+
+        renderNotes();
+
+        closeModal();
+
+      }
+    );
 
 }
 
+
 function renderNotes() {
 
-  const list =
+  const container =
     $("notesList");
 
-  const search =
-    $("noteSearch")
-      .value
-      .trim()
-      .toLowerCase();
+  if (!container) {
 
-  let filtered =
+    return;
+
+  }
+
+  const search =
+    (
+      $("noteSearch")?.value ||
+      ""
+    )
+    .trim()
+    .toLowerCase();
+
+  const filtered =
     notes.filter(
       (note) =>
         note.title
@@ -2233,16 +1595,11 @@ function renderNotes() {
           .includes(search)
     );
 
-  filtered =
-    sortItems(
-      filtered
-    );
-
   if (
     filtered.length === 0
   ) {
 
-    list.innerHTML = `
+    container.innerHTML = `
       <div class="empty-message">
         Nenhuma nota encontrada.
       </div>
@@ -2252,316 +1609,141 @@ function renderNotes() {
 
   }
 
-  list.innerHTML = "";
-
-  filtered.forEach(
-    (note) => {
-
-      const row =
-        document.createElement(
-          "div"
-        );
-
-      row.className =
-        "item-row";
-
-      if (note.pinned) {
-
-        row.classList
-          .add(
-            "item-pinned"
-          );
-
-      }
-
-      const main =
-        document.createElement(
-          "button"
-        );
-
-      main.className =
-        "item-main";
-
-      main.innerHTML = `
-        <span class="item-title">
-          ${
-            note.pinned
-              ? "📌 "
-              : ""
-          }
-          ${escapeHTML(
-            note.title
-          )}
-        </span>
-      `;
-
-      main.addEventListener(
-        "click",
-        () =>
-          openNoteDetail(
-            note
-          )
-      );
-
-      const actions =
-        document.createElement(
-          "div"
-        );
-
-      actions.className =
-        "item-actions";
-
-      const pin =
-        document.createElement(
-          "button"
-        );
-
-      pin.className =
-        "item-action pin pin-only";
-
-      pin.textContent =
-        note.pinned
-          ? "📌"
-          : "☆";
-
-      pin.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          note.pinned =
-            !note.pinned;
-
-          writeStorage(
-            KEYS.notes,
-            notes
-          );
-
-          renderNotes();
-
-        }
-      );
-
-      const edit =
-        document.createElement(
-          "button"
-        );
-
-      edit.className =
-        "item-action edit-only";
-
-      edit.textContent =
-        "✎";
-
-      edit.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          openNoteForm(
-            note
-          );
-
-        }
-      );
-
-      const deleteButton =
-        document.createElement(
-          "button"
-        );
-
-      deleteButton.className =
-        "item-action delete delete-only";
-
-      deleteButton.textContent =
-        "🗑";
-
-      deleteButton.addEventListener(
-        "click",
-        (event) => {
-
-          event.stopPropagation();
-
-          if (
-            isViewerMode()
-          ) {
-
-            return;
-
-          }
-
-          deleteNote(
-            note
-          );
-
-        }
-      );
-
-      actions.appendChild(
-        pin
-      );
-
-      actions.appendChild(
-        edit
-      );
-
-      actions.appendChild(
-        deleteButton
-      );
-
-      row.appendChild(
-        main
-      );
-
-      row.appendChild(
-        actions
-      );
-
-      list.appendChild(
-        row
-      );
-
-    }
-  );
+  container.innerHTML =
+    filtered
+      .map(
+        (note) =>
+          renderNoteCard(note)
+      )
+      .join("");
 
 }
 
-function openNoteDetail(
-  note
-) {
 
-  detailReturnScreen =
-    "notesScreen";
+function renderNoteCard(note) {
 
-  $("detailTitle")
-    .textContent =
-    note.title;
+  return `
 
-  $("detailMeta")
-    .textContent =
-    "";
+    <article
+      class="
+        item-card
+        ${note.pinned ? "pinned" : ""}
+      "
+    >
 
-  $("detailContent")
-    .innerHTML = `
-      <div class="detail-content">
-        ${escapeHTML(
-          note.content ||
-          "Sem conteúdo."
-        )}
+      <div class="item-main">
+
+        <button
+          class="item-title-button"
+          data-action="view-note"
+          data-id="${note.id}"
+        >
+
+          <div class="item-title">
+            ${escapeHtml(
+              note.title
+            )}
+          </div>
+
+          <div class="item-meta">
+            Criado em:
+            ${formatDateTime(
+              note.createdAt
+            )}
+          </div>
+
+        </button>
+
+
+        <div class="item-actions">
+
+          <button
+            class="icon-button"
+            data-action="pin-note"
+            data-id="${note.id}"
+            title="Fixar"
+          >
+            ${note.pinned
+              ? "📌"
+              : "📍"}
+          </button>
+
+          <button
+            class="icon-button"
+            data-action="edit-note"
+            data-id="${note.id}"
+            title="Editar"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="icon-button danger"
+            data-action="delete-note"
+            data-id="${note.id}"
+            title="Excluir"
+          >
+            🗑️
+          </button>
+
+        </div>
+
       </div>
 
-      <div class="detail-created">
-        Criado em ${
-          formatDateTime(
-            note.createdAt
-          )
-        }
-      </div>
-    `;
+    </article>
 
-  showScreen(
-    "detailScreen"
-  );
+  `;
 
 }
 
-function deleteNote(
-  note
-) {
+
+function showNoteDetail(note) {
 
   openModal(
-    "Excluir nota",
-
+    "Detalhes da nota",
     `
-      <p>
-        A nota
-        <strong>
-          ${escapeHTML(
+
+      <div class="detail-container">
+
+        <div class="detail-title">
+          ${escapeHtml(
             note.title
           )}
-        </strong>
-        será enviada para a lixeira.
-      </p>
-    `,
+        </div>
 
-    [
-      {
-        label:
-          "Enviar para lixeira",
+        <div class="detail-content">
+          ${escapeHtml(
+            note.content ||
+            "Sem conteúdo."
+          )}
+        </div>
 
-        className:
-          "danger-button",
+        <div class="detail-date">
 
-        onClick: () => {
+          Criado em:
+          ${formatDateTime(
+            note.createdAt
+          )}
 
-          trash.push({
+        </div>
 
-            id:
-              generateId(),
+      </div>
 
-            type:
-              "note",
+      <button
+        id="closeNoteDetail"
+        class="secondary-button"
+      >
+        Fechar
+      </button>
 
-            original:
-              { ...note },
-
-            deletedAt:
-              new Date()
-                .toISOString()
-
-          });
-
-          notes =
-            notes.filter(
-              (item) =>
-                item.id !==
-                note.id
-            );
-
-          writeStorage(
-            KEYS.notes,
-            notes
-          );
-
-          writeStorage(
-            KEYS.trash,
-            trash
-          );
-
-          closeModal();
-
-          renderNotes();
-
-          showToast(
-            "Nota enviada para a lixeira."
-          );
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
+    `
   );
+
+  $("closeNoteDetail")
+    .addEventListener(
+      "click",
+      closeModal
+    );
 
 }
 
@@ -2570,57 +1752,62 @@ function deleteNote(
    ROUPAS SÍTIO
 ========================================================= */
 
-function openClothingForm(clothing = null) {
+function openClothingForm(
+  clothing = null
+) {
 
-  const isEditing = !!clothing;
+  const editing =
+    !!clothing;
 
   openModal(
-    isEditing
+    editing
       ? "Editar roupa"
       : "Adicionar roupa",
     `
+
       <label>Título</label>
+
       <input
         id="clothingTitle"
         type="text"
-        value="${escapeHtml(clothing?.title || "")}"
+        value="${escapeHtml(
+          clothing?.title || ""
+        )}"
         placeholder="Ex.: Roupa para o sítio"
       >
 
       <label>Na cabeça</label>
+
       <input
         id="clothingNaCabeca"
         type="text"
         value="${escapeHtml(
-          clothing?.naCabeca ??
-          clothing?.touca ??
-          ""
+          clothing?.naCabeca || ""
         )}"
       >
 
       <label>No corpo 1</label>
+
       <input
         id="clothingCorpo1"
         type="text"
         value="${escapeHtml(
-          clothing?.corpo1 ??
-          clothing?.camiseta ??
-          ""
+          clothing?.corpo1 || ""
         )}"
       >
 
       <label>No corpo 2</label>
+
       <input
         id="clothingCorpo2"
         type="text"
         value="${escapeHtml(
-          clothing?.corpo2 ??
-          clothing?.blusa ??
-          ""
+          clothing?.corpo2 || ""
         )}"
       >
 
       <label>Calça</label>
+
       <input
         id="clothingCalca"
         type="text"
@@ -2630,6 +1817,7 @@ function openClothingForm(clothing = null) {
       >
 
       <label>Meia</label>
+
       <input
         id="clothingMeia"
         type="text"
@@ -2639,6 +1827,7 @@ function openClothingForm(clothing = null) {
       >
 
       <label>Sapato</label>
+
       <input
         id="clothingSapato"
         type="text"
@@ -2648,6 +1837,7 @@ function openClothingForm(clothing = null) {
       >
 
       <label>Adicionar extras</label>
+
       <textarea
         id="clothingExtras"
       >${escapeHtml(
@@ -2658,10 +1848,11 @@ function openClothingForm(clothing = null) {
         id="saveClothingButton"
         class="primary-button"
       >
-        ${isEditing
+        ${editing
           ? "Salvar alterações"
           : "Adicionar roupa"}
       </button>
+
     `
   );
 
@@ -2730,7 +1921,7 @@ function openClothingForm(clothing = null) {
 
         }
 
-        if (isEditing) {
+        if (editing) {
 
           clothing.title =
             title;
@@ -2783,14 +1974,16 @@ function openClothingForm(clothing = null) {
               false,
 
             createdAt:
-              new Date()
-                .toISOString()
+              getNowISO()
 
           });
 
         }
 
-        saveData();
+        writeStorage(
+          KEYS.clothes,
+          clothes
+        );
 
         renderClothes();
 
@@ -2802,30 +1995,319 @@ function openClothingForm(clothing = null) {
 }
 
 
-/* =========================================================
-   DETALHES
-========================================================= */
+function renderClothes() {
 
-function setupDetailBackButton() {
+  const container =
+    $("clothesList");
 
-  const button =
-    $("detailBackButton");
+  if (!container) {
 
-  if (!button) {
     return;
+
   }
 
-  button.addEventListener(
-    "click",
-    () => {
+  if (
+    clothes.length === 0
+  ) {
 
-      showScreen(
-        detailReturnScreen ||
-        "dashboardScreen"
+    container.innerHTML = `
+      <div class="empty-message">
+        Nenhuma roupa cadastrada.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  const ordered =
+    [...clothes]
+      .sort(
+        (a, b) => {
+
+          if (
+            a.pinned &&
+            !b.pinned
+          ) {
+
+            return -1;
+
+          }
+
+          if (
+            !a.pinned &&
+            b.pinned
+          ) {
+
+            return 1;
+
+          }
+
+          return 0;
+
+        }
       );
 
-    }
+  container.innerHTML =
+    ordered
+      .map(
+        (clothing) =>
+          renderClothingCard(
+            clothing
+          )
+      )
+      .join("");
+
+}
+
+
+function renderClothingCard(
+  clothing
+) {
+
+  return `
+
+    <article
+      class="
+        item-card
+        ${clothing.pinned
+          ? "pinned"
+          : ""}
+      "
+    >
+
+      <div class="item-main">
+
+        <button
+          class="item-title-button"
+          data-action="view-clothing"
+          data-id="${clothing.id}"
+        >
+
+          <div class="item-title">
+
+            ${escapeHtml(
+              clothing.title
+            )}
+
+          </div>
+
+          <div class="item-meta">
+
+            Criado em:
+            ${formatDateTime(
+              clothing.createdAt
+            )}
+
+          </div>
+
+        </button>
+
+
+        <div class="item-actions">
+
+          <button
+            class="icon-button"
+            data-action="pin-clothing"
+            data-id="${clothing.id}"
+            title="Fixar"
+          >
+            ${clothing.pinned
+              ? "📌"
+              : "📍"}
+          </button>
+
+          <button
+            class="icon-button"
+            data-action="edit-clothing"
+            data-id="${clothing.id}"
+            title="Editar"
+          >
+            ✏️
+          </button>
+
+          <button
+            class="icon-button danger"
+            data-action="delete-clothing"
+            data-id="${clothing.id}"
+            title="Excluir"
+          >
+            🗑️
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  `;
+
+}
+
+
+function showClothingDetail(
+  clothing
+) {
+
+  openModal(
+    "Detalhes da roupa",
+    `
+
+      <div class="detail-container">
+
+        <div class="detail-title">
+
+          ${escapeHtml(
+            clothing.title
+          )}
+
+        </div>
+
+
+        <div class="detail-content">
+
+          <div class="detail-item">
+
+            <strong>
+              Na cabeça
+            </strong>
+
+            <span>
+              ${escapeHtml(
+                clothing.naCabeca ||
+                "Não informado"
+              )}
+            </span>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <strong>
+              No corpo 1
+            </strong>
+
+            <span>
+              ${escapeHtml(
+                clothing.corpo1 ||
+                "Não informado"
+              )}
+            </span>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <strong>
+              No corpo 2
+            </strong>
+
+            <span>
+              ${escapeHtml(
+                clothing.corpo2 ||
+                "Não informado"
+              )}
+            </span>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <strong>
+              Calça
+            </strong>
+
+            <span>
+              ${escapeHtml(
+                clothing.calca ||
+                "Não informado"
+              )}
+            </span>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <strong>
+              Meia
+            </strong>
+
+            <span>
+              ${escapeHtml(
+                clothing.meia ||
+                "Não informado"
+              )}
+            </span>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <strong>
+              Sapato
+            </strong>
+
+            <span>
+              ${escapeHtml(
+                clothing.sapato ||
+                "Não informado"
+              )}
+            </span>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <strong>
+              Extras
+            </strong>
+
+            <span>
+              ${escapeHtml(
+                clothing.extras ||
+                "Nenhum"
+              )}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="detail-date">
+
+          Criado em:
+          ${formatDateTime(
+            clothing.createdAt
+          )}
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="closeClothingDetail"
+        class="secondary-button"
+      >
+        Fechar
+      </button>
+
+    `
   );
+
+  $("closeClothingDetail")
+    .addEventListener(
+      "click",
+      closeModal
+    );
 
 }
 
@@ -2834,13 +2316,46 @@ function setupDetailBackButton() {
    LIXEIRA
 ========================================================= */
 
-function pruneTrash() {
+function addToTrash(
+  type,
+  item
+) {
+
+  trash.unshift({
+
+    id:
+      Date.now(),
+
+    type,
+
+    originalId:
+      item.id,
+
+    item:
+      JSON.parse(
+        JSON.stringify(item)
+      ),
+
+    deletedAt:
+      getNowISO()
+
+  });
+
+  writeStorage(
+    KEYS.trash,
+    trash
+  );
+
+}
+
+
+function removeExpiredTrash() {
 
   const now =
     Date.now();
 
-  const limit =
-    TRASH_DAYS *
+  const fiftyDays =
+    50 *
     24 *
     60 *
     60 *
@@ -2848,17 +2363,16 @@ function pruneTrash() {
 
   const filtered =
     trash.filter(
-      (item) => {
+      (entry) => {
 
-        const deletedAt =
+        const deleted =
           new Date(
-            item.deletedAt
+            entry.deletedAt
           ).getTime();
 
         return (
-          now -
-          deletedAt <
-          limit
+          now - deleted <
+          fiftyDays
         );
 
       }
@@ -2881,50 +2395,25 @@ function pruneTrash() {
 
 }
 
-function trashTypeName(
-  type
-) {
-
-  if (
-    type === "goal"
-  ) {
-
-    return "Meta";
-
-  }
-
-  if (
-    type === "task"
-  ) {
-
-    return "Tarefa";
-
-  }
-
-  if (
-    type === "note"
-  ) {
-
-    return "Nota";
-
-  }
-
-  return "Item";
-
-}
 
 function renderTrash() {
 
-  pruneTrash();
-
-  const list =
+  const container =
     $("trashList");
+
+  if (!container) {
+
+    return;
+
+  }
+
+  removeExpiredTrash();
 
   if (
     trash.length === 0
   ) {
 
-    list.innerHTML = `
+    container.innerHTML = `
       <div class="empty-message">
         A lixeira está vazia.
       </div>
@@ -2934,806 +2423,216 @@ function renderTrash() {
 
   }
 
-  list.innerHTML = "";
-
-  [...trash]
-    .sort(
-      (a, b) =>
-        new Date(
-          b.deletedAt
-        ) -
-        new Date(
-          a.deletedAt
-        )
-    )
-    .forEach(
-      (item) => {
-
-        const row =
-          document.createElement(
-            "div"
-          );
-
-        row.className =
-          "item-row";
-
-        const main =
-          document.createElement(
-            "div"
-          );
-
-        main.className =
-          "item-main";
-
-        main.innerHTML = `
-
-          <span class="item-title">
-            ${escapeHTML(
-              item.original.title
-            )}
-          </span>
-
-          <div class="trash-meta">
-            ${trashTypeName(
-              item.type
-            )}
-            • Apagado em
-            ${formatDateTime(
-              item.deletedAt
-            )}
-          </div>
-
-        `;
-
-        const actions =
-          document.createElement(
-            "div"
-          );
-
-        actions.className =
-          "item-actions";
-
-        const restore =
-          document.createElement(
-            "button"
-          );
-
-        restore.className =
-          "item-action";
-
-        restore.textContent =
-          "↩";
-
-        restore.title =
-          "Restaurar";
-
-        restore.addEventListener(
-          "click",
-          () => {
-
-            if (
-              isViewerMode()
-            ) {
-
-              return;
-
-            }
-
-            restoreTrashItem(
-              item
-            );
-
-          }
-        );
-
-        const permanentDelete =
-          document.createElement(
-            "button"
-          );
-
-        permanentDelete.className =
-          "item-action delete";
-
-        permanentDelete.textContent =
-          "🗑";
-
-        permanentDelete.title =
-          "Excluir definitivamente";
-
-        permanentDelete.addEventListener(
-          "click",
-          () => {
-
-            if (
-              isViewerMode()
-            ) {
-
-              return;
-
-            }
-
-            permanentlyDeleteTrashItem(
-              item
-            );
-
-          }
-        );
-
-        actions.appendChild(
-          restore
-        );
-
-        actions.appendChild(
-          permanentDelete
-        );
-
-        row.appendChild(
-          main
-        );
-
-        row.appendChild(
-          actions
-        );
-
-        list.appendChild(
-          row
-        );
-
-      }
-    );
+  container.innerHTML =
+    trash
+      .map(
+        (entry) =>
+          renderTrashCard(
+            entry
+          )
+      )
+      .join("");
 
 }
+
+
+function renderTrashCard(
+  entry
+) {
+
+  const item =
+    entry.item;
+
+  const typeNames = {
+
+    note:
+      "Nota",
+
+    goal:
+      "Meta",
+
+    task:
+      "Tarefa"
+
+  };
+
+  return `
+
+    <article class="trash-card">
+
+      <div class="trash-type">
+
+        ${escapeHtml(
+          typeNames[
+            entry.type
+          ] ||
+          "Item"
+        )}
+
+      </div>
+
+
+      <strong>
+
+        ${escapeHtml(
+          item.title ||
+          "Sem título"
+        )}
+
+      </strong>
+
+
+      <div class="trash-date">
+
+        Excluído em:
+        ${formatDateTime(
+          entry.deletedAt
+        )}
+
+      </div>
+
+
+      <div class="item-actions">
+
+        <button
+          class="icon-button"
+          data-action="restore-trash"
+          data-id="${entry.id}"
+          title="Restaurar"
+        >
+          ♻️
+        </button>
+
+        <button
+          class="icon-button danger"
+          data-action="delete-trash"
+          data-id="${entry.id}"
+          title="Excluir definitivamente"
+        >
+          🗑️
+        </button>
+
+      </div>
+
+    </article>
+
+  `;
+
+}
+
 
 function restoreTrashItem(
-  item
+  entry
 ) {
-
-  openModal(
-    "Restaurar item",
-
-    `
-      <p>
-        Restaurar
-        <strong>
-          ${escapeHTML(
-            item.original.title
-          )}
-        </strong>?
-      </p>
-    `,
-
-    [
-
-      {
-        label:
-          "Restaurar",
-
-        className:
-          "primary-button",
-
-        onClick: () => {
-
-          if (
-            item.type ===
-            "goal"
-          ) {
-
-            goals.push(
-              item.original
-            );
-
-            writeStorage(
-              KEYS.goals,
-              goals
-            );
-
-          }
-
-          if (
-            item.type ===
-            "task"
-          ) {
-
-            tasks.push(
-              item.original
-            );
-
-            writeStorage(
-              KEYS.tasks,
-              tasks
-            );
-
-          }
-
-          if (
-            item.type ===
-            "note"
-          ) {
-
-            notes.push(
-              item.original
-            );
-
-            writeStorage(
-              KEYS.notes,
-              notes
-            );
-
-          }
-
-          trash =
-            trash.filter(
-              (trashItem) =>
-                trashItem.id !==
-                item.id
-            );
-
-          writeStorage(
-            KEYS.trash,
-            trash
-          );
-
-          closeModal();
-
-          renderTrash();
-
-          updateProgress();
-
-          showToast(
-            "Item restaurado."
-          );
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
-  );
-
-}
-
-function permanentlyDeleteTrashItem(
-  item
-) {
-
-  openModal(
-    "Excluir definitivamente",
-
-    `
-      <p>
-        Este item será apagado
-        definitivamente.
-      </p>
-    `,
-
-    [
-
-      {
-        label:
-          "Excluir definitivamente",
-
-        className:
-          "danger-button",
-
-        onClick: () => {
-
-          trash =
-            trash.filter(
-              (trashItem) =>
-                trashItem.id !==
-                item.id
-            );
-
-          writeStorage(
-            KEYS.trash,
-            trash
-          );
-
-          closeModal();
-
-          renderTrash();
-
-          showToast(
-            "Item excluído definitivamente."
-          );
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
-  );
-
-}
-
-
-/* =========================================================
-   PROGRESSO
-========================================================= */
-
-function updateProgress() {
-
-  const total =
-    goals.length;
-
-  const completed =
-    goals.filter(
-      (goal) =>
-        goal.completed
-    ).length;
-
-  const pending =
-    total -
-    completed;
-
-  const percentage =
-    total === 0
-      ? 0
-      : Math.round(
-          (completed /
-            total) *
-          100
-        );
-
-  $("totalGoalsStat")
-    .textContent =
-    total;
-
-  $("completedGoalsStat")
-    .textContent =
-    completed;
-
-  $("pendingGoalsStat")
-    .textContent =
-    pending;
-
-  $("goalPercentage")
-    .textContent =
-    `${percentage}%`;
-
-  $("goalProgressBar")
-    .style.width =
-    `${percentage}%`;
-
-}
-
-
-/* =========================================================
-   CRONÔMETRO
-========================================================= */
-
-function formatTimer(
-  seconds
-) {
-
-  const hours =
-    Math.floor(
-      seconds /
-      3600
-    );
-
-  const minutes =
-    Math.floor(
-      (seconds %
-        3600) /
-      60
-    );
-
-  const secs =
-    seconds %
-    60;
-
-  return [
-    hours,
-    minutes,
-    secs
-  ]
-    .map(
-      (value) =>
-        String(value)
-          .padStart(
-            2,
-            "0"
-          )
-    )
-    .join(":");
-
-}
-
-function updateTimerDisplay() {
-
-  $("timerDisplay")
-    .textContent =
-    formatTimer(
-      timerSeconds
-    );
-
-}
-
-function startTimer() {
 
   if (
-    timerRunning
+    isViewerMode()
   ) {
 
     return;
 
   }
 
-  timerRunning =
-    true;
-
-  timerInterval =
-    setInterval(
-      () => {
-
-        timerSeconds++;
-
-        localStorage.setItem(
-          KEYS.timerSeconds,
-          String(
-            timerSeconds
-          )
-        );
-
-        updateTimerDisplay();
-
-      },
-      1000
-    );
-
-}
-
-function stopTimer() {
-
-  timerRunning =
-    false;
+  const item =
+    entry.item;
 
   if (
-    timerInterval
+    entry.type ===
+    "note"
   ) {
 
-    clearInterval(
-      timerInterval
+    notes.unshift(item);
+
+    writeStorage(
+      KEYS.notes,
+      notes
     );
 
-    timerInterval =
-      null;
+  }
+
+  if (
+    entry.type ===
+    "goal"
+  ) {
+
+    goals.unshift(item);
+
+    writeStorage(
+      KEYS.goals,
+      goals
+    );
 
   }
 
-}
+  if (
+    entry.type ===
+    "task"
+  ) {
 
-function pauseTimer() {
+    tasks.unshift(item);
 
-  stopTimer();
-
-}
-
-function resetTimer() {
-
-  openModal(
-    "Zerar cronômetro",
-
-    `
-      <p>
-        Deseja zerar o cronômetro?
-      </p>
-    `,
-
-    [
-
-      {
-        label:
-          "Zerar",
-
-        className:
-          "danger-button",
-
-        onClick: () => {
-
-          stopTimer();
-
-          timerSeconds =
-            0;
-
-          localStorage.setItem(
-            KEYS.timerSeconds,
-            "0"
-          );
-
-          updateTimerDisplay();
-
-          closeModal();
-
-          showToast(
-            "Cronômetro zerado."
-          );
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
-  );
-
-}
-
-
-/* =========================================================
-   TEMA
-========================================================= */
-
-function applyTheme() {
-
-  const theme =
-    localStorage.getItem(
-      KEYS.theme
-    ) || "dark";
-
-  document.body.classList.toggle(
-    "light-theme",
-    theme === "light"
-  );
-
-}
-
-function toggleTheme() {
-
-  const current =
-    localStorage.getItem(
-      KEYS.theme
-    ) || "dark";
-
-  const next =
-    current === "dark"
-      ? "light"
-      : "dark";
-
-  localStorage.setItem(
-    KEYS.theme,
-    next
-  );
-
-  applyTheme();
-
-  showToast(
-    next === "light"
-      ? "Tema claro ativado."
-      : "Tema escuro ativado."
-  );
-
-}
-
-
-/* =========================================================
-   MODO VISUALIZADOR
-========================================================= */
-
-function applyViewerMode() {
-
-  const viewer =
-    isViewerMode();
-
-  document.body.classList.toggle(
-    "viewer-mode",
-    viewer
-  );
-
-  const button =
-    $("viewerToggleButton");
-
-  if (button) {
-
-    button.textContent =
-      viewer
-        ? "👁️ Modo Visualizador: ligado"
-        : "👁️ Modo Visualizador: desligado";
+    writeStorage(
+      KEYS.tasks,
+      tasks
+    );
 
   }
 
-}
+  trash =
+    trash.filter(
+      (trashItem) =>
+        trashItem.id !==
+        entry.id
+    );
 
-function toggleViewerMode() {
-
-  const next =
-    !isViewerMode();
-
-  localStorage.setItem(
-    KEYS.viewer,
-    next
-      ? "true"
-      : "false"
+  writeStorage(
+    KEYS.trash,
+    trash
   );
 
-  applyViewerMode();
+  renderTrash();
 
+  renderNotes();
   renderGoals();
   renderTasks();
-  renderNotes();
-  renderClothes();
+
+  updateProgress();
 
   showToast(
-    next
-      ? "Modo Visualizador ativado."
-      : "Modo Visualizador desativado."
+    "Item restaurado."
   );
 
 }
 
 
-/* =========================================================
-   ALTERAR SENHA
-========================================================= */
+function permanentlyDeleteTrash(
+  entry
+) {
 
-function openChangePassword() {
+  if (
+    isViewerMode()
+  ) {
 
-  const body = `
+    return;
 
-    <div class="form-group">
+  }
 
-      <label for="currentPassword">
-        Senha atual
-      </label>
+  trash =
+    trash.filter(
+      (trashItem) =>
+        trashItem.id !==
+        entry.id
+    );
 
-      <input
-        id="currentPassword"
-        type="password"
-        autocomplete="off"
-      >
-
-    </div>
-
-
-    <div class="form-group">
-
-      <label for="newPassword">
-        Nova senha
-      </label>
-
-      <input
-        id="newPassword"
-        type="password"
-        autocomplete="off"
-      >
-
-    </div>
-
-
-    <div class="form-group">
-
-      <label for="confirmPassword">
-        Confirmar nova senha
-      </label>
-
-      <input
-        id="confirmPassword"
-        type="password"
-        autocomplete="off"
-      >
-
-    </div>
-
-  `;
-
-  openModal(
-    "Alterar senha",
-    body,
-    [
-
-      {
-        label:
-          "Alterar senha",
-
-        className:
-          "primary-button",
-
-        onClick: () => {
-
-          const current =
-            $("currentPassword")
-              .value;
-
-          const next =
-            $("newPassword")
-              .value
-              .trim();
-
-          const confirm =
-            $("confirmPassword")
-              .value
-              .trim();
-
-          if (
-            current !==
-            getAccessPassword()
-          ) {
-
-            showToast(
-              "Senha atual incorreta."
-            );
-
-            return;
-
-          }
-
-          if (!next) {
-
-            showToast(
-              "Digite uma nova senha."
-            );
-
-            return;
-
-          }
-
-          if (
-            next !==
-            confirm
-          ) {
-
-            showToast(
-              "As senhas não coincidem."
-            );
-
-            return;
-
-          }
-
-          localStorage.setItem(
-            KEYS.accessPassword,
-            next
-          );
-
-          closeModal();
-
-          showToast(
-            "Senha alterada."
-          );
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
+  writeStorage(
+    KEYS.trash,
+    trash
   );
 
-}
-
-
-/* =========================================================
-   FORMATO DA HORA
-========================================================= */
-
-function changeTimeFormat() {
-
-  const current =
-    localStorage.getItem(
-      KEYS.timeFormat
-    ) || "24h";
-
-  const next =
-    current === "24h"
-      ? "12h"
-      : "24h";
-
-  localStorage.setItem(
-    KEYS.timeFormat,
-    next
-  );
-
-  updateClock();
+  renderTrash();
 
   showToast(
-    `Formato alterado para ${next}.`
+    "Item excluído definitivamente."
   );
 
 }
@@ -3745,1190 +2644,4 @@ function changeTimeFormat() {
 
 function openDeleteAll() {
 
-  const body = `
-
-    <p>
-      Esta função apagará metas, tarefas,
-      notas, roupas, lixeira e o cronômetro.
-    </p>
-
-    <div class="form-group">
-
-      <label for="masterDeletePassword">
-        Senha de confirmação
-      </label>
-
-      <input
-        id="masterDeletePassword"
-        type="password"
-        autocomplete="off"
-        placeholder="Senha"
-      >
-
-    </div>
-
-  `;
-
-  openModal(
-    "Apagar geral",
-    body,
-    [
-
-      {
-        label:
-          "Continuar",
-
-        className:
-          "danger-button",
-
-        onClick: () => {
-
-          const password =
-            $("masterDeletePassword")
-              .value;
-
-          if (
-            password !==
-            MASTER_DELETE_PASSWORD
-          ) {
-
-            showToast(
-              "Senha de confirmação incorreta."
-            );
-
-            return;
-
-          }
-
-          openDeleteAllConfirmation();
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
-  );
-
-}
-
-function openDeleteAllConfirmation() {
-
-  openModal(
-    "Última confirmação",
-
-    `
-      <p>
-        Tem certeza?
-      </p>
-
-      <p>
-        Tudo será apagado e as
-        configurações voltarão aos padrões.
-      </p>
-    `,
-
-    [
-
-      {
-        label:
-          "SIM, APAGAR TUDO",
-
-        className:
-          "danger-button",
-
-        onClick: () => {
-
-          localStorage.removeItem(
-            KEYS.goals
-          );
-
-          localStorage.removeItem(
-            KEYS.tasks
-          );
-
-          localStorage.removeItem(
-            KEYS.notes
-          );
-
-          localStorage.removeItem(
-            KEYS.clothes
-          );
-
-          localStorage.removeItem(
-            KEYS.trash
-          );
-
-          localStorage.removeItem(
-            KEYS.timerSeconds
-          );
-
-          localStorage.setItem(
-            KEYS.accessPassword,
-            DEFAULT_ACCESS_PASSWORD
-          );
-
-          localStorage.setItem(
-            KEYS.theme,
-            "dark"
-          );
-
-          localStorage.setItem(
-            KEYS.viewer,
-            "false"
-          );
-
-          localStorage.setItem(
-            KEYS.timeFormat,
-            "24h"
-          );
-
-          localStorage.setItem(
-            KEYS.currentScreen,
-            "dashboardScreen"
-          );
-
-          goals = [];
-          tasks = [];
-          notes = [];
-          clothes = [];
-          trash = [];
-          timerSeconds = 0;
-
-          stopTimer();
-
-          closeModal();
-
-          lockSite();
-
-        }
-
-      },
-
-      addModalCancelButton()
-
-    ]
-  );
-
-}
-
-
-/* =========================================================
-   COMPARTILHAMENTO
-========================================================= */
-
-async function shareOrFallback(
-  title,
-  text
-) {
-
-  if (
-    navigator.share
-  ) {
-
-    try {
-
-      await navigator.share({
-        title,
-        text
-      });
-
-      return;
-
-    } catch (error) {
-
-      if (
-        error.name ===
-        "AbortError"
-      ) {
-
-        return;
-
-      }
-
-    }
-
-  }
-
-  openModal(
-    title,
-
-    `
-      <textarea
-        id="shareFallbackText"
-        readonly
-      >${escapeHTML(
-        text
-      )}</textarea>
-    `,
-
-    [
-
-      {
-        label:
-          "Copiar",
-
-        className:
-          "primary-button",
-
-        onClick:
-          async () => {
-
-            const textArea =
-              $("shareFallbackText");
-
-            try {
-
-              await navigator.clipboard
-                .writeText(
-                  text
-                );
-
-              showToast(
-                "Texto copiado."
-              );
-
-            } catch {
-
-              textArea.select();
-
-              document.execCommand(
-                "copy"
-              );
-
-              showToast(
-                "Texto copiado."
-              );
-
-            }
-
-          }
-
-      },
-
-      addModalCancelButton()
-
-    ]
-  );
-
-}
-
-function buildGoalsShareText() {
-
-  let text =
-    "METAS — SECRETO V3\n\n";
-
-  if (
-    goals.length === 0
-  ) {
-
-    text +=
-      "Nenhuma meta cadastrada.\n";
-
-    return text;
-
-  }
-
-  sortItems(
-    goals
-  ).forEach(
-    (goal, index) => {
-
-      text +=
-        `${index + 1}. ${goal.title}\n`;
-
-      text +=
-        `Status: ${
-          goal.completed
-            ? "Concluída"
-            : "Em andamento"
-        }\n`;
-
-      text +=
-        `Conteúdo: ${
-          goal.content ||
-          "Sem conteúdo"
-        }\n`;
-
-      text +=
-        `Criado: ${
-          formatDateTime(
-            goal.createdAt
-          )
-        }\n\n`;
-
-    }
-  );
-
-  return text;
-
-}
-
-function buildTasksShareText() {
-
-  let text =
-    "TAREFAS — SECRETO V3\n\n";
-
-  if (
-    tasks.length === 0
-  ) {
-
-    text +=
-      "Nenhuma tarefa cadastrada.\n";
-
-    return text;
-
-  }
-
-  sortItems(
-    tasks
-  ).forEach(
-    (task, index) => {
-
-      text +=
-        `${index + 1}. ${task.title}\n`;
-
-      text +=
-        `Status: ${
-          task.completed
-            ? "Concluída"
-            : "Em andamento"
-        }\n`;
-
-      text +=
-        `Conteúdo: ${
-          task.content ||
-          "Sem conteúdo"
-        }\n`;
-
-      text +=
-        `Criado: ${
-          formatDateTime(
-            task.createdAt
-          )
-        }\n\n`;
-
-    }
-  );
-
-  return text;
-
-}
-
-function buildNotesShareText() {
-
-  let text =
-    "NOTAS — SECRETO V3\n\n";
-
-  if (
-    notes.length === 0
-  ) {
-
-    text +=
-      "Nenhuma nota cadastrada.\n";
-
-    return text;
-
-  }
-
-  sortItems(
-    notes
-  ).forEach(
-    (note, index) => {
-
-      text +=
-        `${index + 1}. ${note.title}\n`;
-
-      text +=
-        `Conteúdo: ${
-          note.content ||
-          "Sem conteúdo"
-        }\n`;
-
-      text +=
-        `Criado: ${
-          formatDateTime(
-            note.createdAt
-          )
-        }\n\n`;
-
-    }
-  );
-
-  return text;
-
-}
-
-function buildProgressShareText() {
-
-  const total =
-    goals.length;
-
-  const completed =
-    goals.filter(
-      (goal) =>
-        goal.completed
-    ).length;
-
-  const pending =
-    total -
-    completed;
-
-  const percentage =
-    total === 0
-      ? 0
-      : Math.round(
-          (completed /
-            total) *
-          100
-        );
-
-  return `
-PROGRESSO — SECRETO V3
-
-Total de metas: ${total}
-Concluídas: ${completed}
-Em andamento: ${pending}
-Progresso: ${percentage}%
-`.trim();
-
-}
-
-function buildGeneralShareText() {
-
-  let text =
-    "SECRETO V3 — COMPARTILHAMENTO GERAL\n\n";
-
-  text +=
-    "=== METAS ===\n";
-
-  text +=
-    buildGoalsShareText();
-
-  text +=
-    "\n=== TAREFAS ===\n";
-
-  text +=
-    buildTasksShareText();
-
-  text +=
-    "\n=== NOTAS ===\n";
-
-  text +=
-    buildNotesShareText();
-
-  text +=
-     "\n=== ROUPAS SÍTIO ===\n";
-
-  if (
-    clothes.length === 0
-  ) {
-
-    text +=
-      "Nenhuma roupa cadastrada.\n";
-
-  } else {
-
-    clothes.forEach(
-      (clothing, index) => {
-
-        text +=
-          `${index + 1}. ${clothing.title}\n`;
-
-        text +=
-          `Na cabeça: ${
-            clothing.naCabeca ??
-            clothing.touca ??
-            "Não informado"
-          }\n`;
-
-        text +=
-          `No corpo 1: ${
-            clothing.corpo1 ??
-            clothing.camiseta ??
-            "Não informado"
-          }\n`;
-
-        text +=
-          `No corpo 2: ${
-            clothing.corpo2 ??
-            clothing.blusa ??
-            "Não informado"
-          }\n`;
-
-        text +=
-          `Calça: ${
-            clothing.calca ||
-            "Não informado"
-          }\n`;
-
-        text +=
-          `Meia: ${
-            clothing.meia ||
-            "Não informado"
-          }\n`;
-
-        text +=
-          `Sapato: ${
-            clothing.sapato ||
-            "Não informado"
-          }\n`;
-
-        text +=
-          `Extras: ${
-            clothing.extras ||
-            "Nenhum"
-          }\n`;
-
-        text +=
-          `Criado: ${
-            formatDateTime(
-              clothing.createdAt
-            )
-          }\n\n`;
-
-      }
-    );
-
-  }
-
-  text +=
-    "\n=== CRONÔMETRO ===\n";
-
-  text +=
-    formatTimer(
-      timerSeconds
-    );
-
-  return text;
-
-}
-
-
-/* =========================================================
-   EVENTOS
-========================================================= */
-
-function setupEvents() {
-
-  /* LOGIN */
-
-  $("loginButton")
-    .addEventListener(
-      "click",
-      login
-    );
-
-  $("accessPassword")
-    .addEventListener(
-      "keydown",
-      (event) => {
-
-        if (
-          event.key ===
-          "Enter"
-        ) {
-
-          login();
-
-        }
-
-      }
-    );
-
-
-  /* DASHBOARD */
-
-  $("openNotesButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "notesScreen"
-        )
-    );
-
-  $("openGoalsButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "goalsScreen"
-        )
-    );
-
-  $("openTasksButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "tasksScreen"
-        )
-    );
-
-  $("openClothesButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "clothesScreen"
-        )
-    );
-
-  $("openTimerButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "timerScreen"
-        )
-    );
-
-  $("openProgressButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "progressScreen"
-        )
-    );
-
-  $("openSettingsButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "settingsScreen"
-        )
-    );
-
-
-  /* VOLTAR */
-
-  $("goalsBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        goBack()
-    );
-
-  $("tasksBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        goBack()
-    );
-
-  $("notesBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        goBack()
-    );
-
-  $("clothesBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        goBack()
-    );
-
-  $("timerBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        goBack()
-    );
-
-  $("progressBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        goBack()
-    );
-
-  $("settingsBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        goBack()
-    );
-
-  $("aboutBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "settingsScreen"
-        )
-    );
-
-  $("trashBackButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "settingsScreen"
-        )
-    );
-
-
-  /* ADICIONAR */
-
-  $("addGoalButton")
-    .addEventListener(
-      "click",
-      () => {
-
-        if (
-          isViewerMode()
-        ) {
-
-          return;
-
-        }
-
-        openGoalForm();
-
-      }
-    );
-
-  $("addTaskButton")
-    .addEventListener(
-      "click",
-      () => {
-
-        if (
-          isViewerMode()
-        ) {
-
-          return;
-
-        }
-
-        openTaskForm();
-
-      }
-    );
-
-  $("addNoteButton")
-    .addEventListener(
-      "click",
-      () => {
-
-        if (
-          isViewerMode()
-        ) {
-
-          return;
-
-        }
-
-        openNoteForm();
-
-      }
-    );
-
-  $("addClothingButton")
-    .addEventListener(
-      "click",
-      () => {
-
-        if (
-          isViewerMode()
-        ) {
-
-          return;
-
-        }
-
-        openClothingForm();
-
-      }
-    );
-
-
-  /* PESQUISA */
-
-  $("goalSearch")
-    .addEventListener(
-      "input",
-      renderGoals
-    );
-
-  $("taskSearch")
-    .addEventListener(
-      "input",
-      renderTasks
-    );
-
-  $("noteSearch")
-    .addEventListener(
-      "input",
-      renderNotes
-    );
-
-
-  /* COMPARTILHAR */
-
-  $("shareGoalsButton")
-    .addEventListener(
-      "click",
-      () =>
-        shareOrFallback(
-          "Metas — Secreto V3",
-          buildGoalsShareText()
-        )
-    );
-
-  $("shareTasksButton")
-    .addEventListener(
-      "click",
-      () =>
-        shareOrFallback(
-          "Tarefas — Secreto V3",
-          buildTasksShareText()
-        )
-    );
-
-  $("shareNotesButton")
-    .addEventListener(
-      "click",
-      () =>
-        shareOrFallback(
-          "Notas — Secreto V3",
-          buildNotesShareText()
-        )
-    );
-
-  $("shareProgressButton")
-    .addEventListener(
-      "click",
-      () =>
-        shareOrFallback(
-          "Progresso — Secreto V3",
-          buildProgressShareText()
-        )
-    );
-
-
-  /* CRONÔMETRO */
-
-  $("timerStartButton")
-    .addEventListener(
-      "click",
-      startTimer
-    );
-
-  $("timerPauseButton")
-    .addEventListener(
-      "click",
-      pauseTimer
-    );
-
-  $("timerResetButton")
-    .addEventListener(
-      "click",
-      resetTimer
-    );
-
-
-  /* CONFIGURAÇÕES */
-
-  $("lockSiteButton")
-    .addEventListener(
-      "click",
-      lockSite
-    );
-
-  $("deleteAllButton")
-    .addEventListener(
-      "click",
-      () => {
-
-        if (
-          isViewerMode()
-        ) {
-
-          showToast(
-            "Desative o Modo Visualizador primeiro."
-          );
-
-          return;
-
-        }
-
-        openDeleteAll();
-
-      }
-    );
-
-  $("viewerToggleButton")
-    .addEventListener(
-      "click",
-      toggleViewerMode
-    );
-
-  $("themeButton")
-    .addEventListener(
-      "click",
-      toggleTheme
-    );
-
-  $("changePasswordButton")
-    .addEventListener(
-      "click",
-      () => {
-
-        if (
-          isViewerMode()
-        ) {
-
-          showToast(
-            "Desative o Modo Visualizador primeiro."
-          );
-
-          return;
-
-        }
-
-        openChangePassword();
-
-      }
-    );
-
-  $("timeFormatButton")
-    .addEventListener(
-      "click",
-      changeTimeFormat
-    );
-
-  $("trashButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "trashScreen"
-        )
-    );
-
-  $("shareAllButton")
-    .addEventListener(
-      "click",
-      () =>
-        shareOrFallback(
-          "Secreto V3",
-          buildGeneralShareText()
-        )
-    );
-
-  $("aboutButton")
-    .addEventListener(
-      "click",
-      () =>
-        showScreen(
-          "aboutScreen"
-        )
-    );
-
-
-  /* MODAL */
-
-  $("appModal")
-    .addEventListener(
-      "click",
-      (event) => {
-
-        if (
-          event.target ===
-          $("appModal")
-        ) {
-
-          closeModal();
-
-        }
-
-      }
-    );
-
-}
-
-
-/* =========================================================
-   SERVICE WORKER
-========================================================= */
-
-function registerServiceWorker() {
-
-  if (
-    "serviceWorker" in
-    navigator
-  ) {
-
-    window.addEventListener(
-      "load",
-      async () => {
-
-        try {
-
-          const registration =
-            await navigator.serviceWorker
-              .register(
-                "./sw.js"
-              );
-
-          await registration.update();
-
-        } catch (error) {
-
-          console.error(
-            "Erro no Service Worker:",
-            error
-          );
-
-        }
-
-      }
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
-
-function init() {
-
-  /*
-    Primeiro carregamos os dados.
-  */
-
-  loadData();
-
-  /*
-    Depois corrigimos/inicializamos
-    o estado persistente da sessão.
-  */
-
-  initializeSessionState();
-
-  /*
-    Eventos precisam ser configurados
-    depois que o DOM estiver pronto.
-  */
-
-  setupEvents();
-
-  setupDetailBackButton();
-
-  updateClock();
-
-  setInterval(
-    updateClock,
-    1000
-  );
-
-  updateProgress();
-
-  renderGoals();
-
-  renderTasks();
-
-  renderNotes();
-
-  renderClothes();
-
-  renderTrash();
-
-  applyTheme();
-
-  applyViewerMode();
-
-
-  /* =======================================================
-     RESTAURAR SESSÃO APÓS RECARREGAR
-  ======================================================= */
-
-  if (
-    isLoggedIn()
-  ) {
-
-    /*
-      A sessão estava desbloqueada.
-
-      Portanto NÃO mostramos a senha.
-
-      Restauramos exatamente a última tela
-      que estava aberta antes do reload.
-    */
-
-    showApp();
-
-    const savedScreen =
-      localStorage.getItem(
-        KEYS.currentScreen
-      ) ||
-      "dashboardScreen";
-
-    if (
-      $(savedScreen) &&
-      savedScreen !==
-        "loginScreen"
-    ) {
-
-      showScreen(
-        savedScreen
-      );
-
-    } else {
-
-      showScreen(
-        "dashboardScreen"
-      );
-
-    }
-
-  } else {
-
-    /*
-      Primeira entrada ou bloqueio manual.
-    */
-
-    $("appScreen")
-      .classList
-      .add("hidden");
-
-    $("loginScreen")
-      .classList
-      .remove("hidden");
-
-  }
-
-  registerServiceWorker();
-
-}
-
-
-/* =========================================================
-   INICIAR QUANDO DOM ESTIVER PRONTO
-========================================================= */
-
-if (
-  document.readyState ===
-  "loading"
-) {
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    init
-  );
-
-} else {
-
-  init();
-
-         }
+  openModal
