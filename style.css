@@ -1,33 +1,51 @@
-/* =========================================================
-   RESET
-========================================================= */
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html {
+:root {
+  --bg: #000000;
+  --surface: #111111;
+  --surface-2: #181818;
+  --text: #ffffff;
+  --muted: #aaaaaa;
+  --red: #e00000;
+  --red-dark: #a80000;
+  --border: #333333;
+  --green: #00b050;
+  --yellow: #d6a500;
+}
+
+html,
+body {
   min-height: 100%;
 }
 
 body {
-  min-height: 100vh;
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-  background: #000;
-  color: #fff;
-  transition:
-    background 0.25s ease,
-    color 0.25s ease;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.4;
+}
+
+body.light-theme {
+  --bg: #ffffff;
+  --surface: #f2f2f2;
+  --surface-2: #e7e7e7;
+  --text: #000000;
+  --muted: #555555;
+  --red: #d00000;
+  --red-dark: #a00000;
+  --border: #cccccc;
+  --green: #087f23;
+  --yellow: #a87800;
 }
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
@@ -35,18 +53,24 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .hidden {
   display: none !important;
 }
 
-
-/* =========================================================
-   TELA
-========================================================= */
+/* =====================================================
+   TELAS
+===================================================== */
 
 .screen {
   width: 100%;
+  max-width: 760px;
   min-height: 100vh;
+  margin: 0 auto;
   padding: 20px;
 }
 
@@ -57,26 +81,169 @@ button {
   min-height: 100vh;
 }
 
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
 .login-box {
   width: 100%;
   max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px 22px;
   text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .login-box h1 {
-  font-size: 34px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .login-box p {
+  color: var(--muted);
   margin-bottom: 20px;
-  opacity: 0.8;
 }
+
+/* =====================================================
+   CABEÇALHOS
+===================================================== */
+
+.app-header {
+  padding: 10px 0 25px;
+  text-align: center;
+}
+
+.app-header h1 {
+  font-size: 30px;
+  margin-bottom: 4px;
+}
+
+#dashboardClock {
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.screen-header h2 {
+  font-size: 25px;
+}
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.dashboard-button {
+  min-height: 115px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 16px;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.dashboard-button:first-child {
+  grid-column: span 2;
+}
+
+.dashboard-button:hover {
+  border-color: var(--red);
+}
+
+.dashboard-button:active {
+  transform: scale(0.97);
+}
+
+.dashboard-button span {
+  font-weight: bold;
+}
+
+/* =====================================================
+   BOTÕES
+===================================================== */
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.back-button,
+.small-button,
+.filter-button,
+.settings-button {
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+  min-height: 44px;
+  padding: 10px 16px;
+}
+
+.primary-button {
+  background: var(--red);
+}
+
+.secondary-button {
+  background: #444444;
+}
+
+.danger-button {
+  background: #8b0000;
+}
+
+.primary-button:active,
+.secondary-button:active,
+.danger-button:active,
+.back-button:active,
+.small-button:active,
+.filter-button:active,
+.settings-button:active {
+  transform: scale(0.97);
+}
+
+.back-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 24px;
+}
+
+.small-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  background: var(--surface-2);
+}
+
+.screen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* =====================================================
+   CAMPOS
+===================================================== */
 
 .password-wrapper {
   display: flex;
@@ -88,504 +255,231 @@ button {
   flex: 1;
 }
 
-.password-wrapper .small-button {
-  width: 52px;
-  flex-shrink: 0;
-}
-
-
-/* =========================================================
-   CAMPOS
-========================================================= */
-
 input,
-textarea {
+textarea,
+select {
   width: 100%;
-  border: 1px solid #333;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 13px;
-  background: #111;
-  color: #fff;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 12px;
   outline: none;
 }
 
 input:focus,
-textarea:focus {
-  border-color: #f00;
+textarea:focus,
+select:focus {
+  border-color: var(--red);
 }
 
 textarea {
-  min-height: 120px;
+  min-height: 130px;
   resize: vertical;
 }
 
-input::placeholder,
-textarea::placeholder {
-  color: #777;
-}
-
-
-/* =========================================================
-   BOTÕES
-========================================================= */
-
-button {
-  border: none;
-  border-radius: 10px;
-  padding: 12px 16px;
-  color: #fff;
-  background: #222;
-  transition:
-    transform 0.15s ease,
-    opacity 0.15s ease,
-    background 0.15s ease;
-}
-
-button:active {
-  transform: scale(0.97);
-}
-
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.primary-button {
-  width: 100%;
-  background: #e00000;
-  color: #fff;
-}
-
-.primary-button:hover {
-  background: #ff0000;
-}
-
-.secondary-button {
-  width: 100%;
-  background: #333;
-  color: #fff;
-}
-
-.danger-button {
-  background: #8b0000;
-  color: #fff;
-}
-
-.small-button {
-  background: #222;
-  color: #fff;
-}
-
-
-/* =========================================================
-   CABEÇALHO
-========================================================= */
-
-.app-header {
-  max-width: 900px;
-  margin: 0 auto 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.app-header h1 {
-  font-size: 30px;
-}
-
-.app-header p {
-  margin-top: 5px;
-  opacity: 0.65;
-}
-
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
-.dashboard-grid {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.dashboard-button {
-  min-height: 115px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 14px;
-  color: #fff;
-}
-
-.dashboard-button:hover {
-  border-color: #e00000;
-}
-
-.dashboard-button:first-child {
-  border-color: #e00000;
-}
-
-.dashboard-button span {
-  font-size: 16px;
-}
-
-.dashboard-button::first-line {
-  font-size: 28px;
-}
-
-
-/* =========================================================
-   CABEÇALHOS DAS TELAS
-========================================================= */
-
-.screen-header {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.screen-header h2 {
-  font-size: 26px;
-}
-
-.back-button {
-  width: 45px;
-  height: 45px;
-  padding: 0;
-  flex-shrink: 0;
-  font-size: 25px;
-  background: #222;
-}
-
-
-/* =========================================================
-   AÇÕES
-========================================================= */
-
-.screen-actions {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto 15px;
-  display: flex;
-  gap: 10px;
-}
-
-.screen-actions button {
-  flex: 1;
-}
-
-
-/* =========================================================
-   PESQUISA
-========================================================= */
-
 .search-input {
-  display: block;
-  max-width: 900px;
-  margin: 0 auto 15px;
+  margin-bottom: 15px;
 }
 
+.form-group {
+  margin-bottom: 14px;
+}
 
-/* =========================================================
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.message {
+  min-height: 22px;
+  margin-top: 12px;
+  color: #ff5555 !important;
+}
+
+/* =====================================================
    FILTROS
-========================================================= */
+===================================================== */
 
 .filter-buttons {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto 15px;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 15px;
 }
 
 .filter-button {
-  flex: 1;
-  background: #222;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 9px 13px;
 }
 
 .filter-button.active {
-  background: #e00000;
+  background: var(--red);
+  color: #ffffff;
 }
 
-
-/* =========================================================
+/* =====================================================
    LISTAS
-========================================================= */
+===================================================== */
 
 .items-list {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
-.empty-message {
-  padding: 30px 20px;
-  text-align: center;
-  opacity: 0.6;
-  border: 1px dashed #333;
-  border-radius: 12px;
-}
-
-
-/* =========================================================
-   ITEM
-========================================================= */
 
 .item-card {
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 12px;
-  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 15px;
 }
 
-.item-card.pinned {
-  border-color: #e00000;
-}
-
-.item-card.completed {
-  opacity: 0.65;
-}
-
-.item-main {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.item-title {
-  flex: 1;
-  min-width: 0;
-  font-size: 17px;
+.item-card-title {
   font-weight: bold;
-  overflow-wrap: anywhere;
+  font-size: 17px;
+  margin-bottom: 6px;
 }
 
-.item-title-button {
-  width: 100%;
-  padding: 0;
-  text-align: left;
-  background: transparent;
-  color: #fff;
-}
-
-.item-meta {
-  margin-top: 8px;
+.item-card-date {
+  color: var(--muted);
   font-size: 12px;
-  opacity: 0.55;
+  margin-bottom: 10px;
 }
 
-.item-actions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.icon-button {
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #222;
-}
-
-.icon-button.danger {
-  background: #5d0000;
-}
-
-
-/* =========================================================
-   ITEM CONCLUÍDO
-========================================================= */
-
-.item-card.completed .item-title {
-  text-decoration: line-through;
-}
-
-
-/* =========================================================
-   DETALHES
-========================================================= */
-
-.detail-container {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.detail-title {
-  font-size: 28px;
-  margin-bottom: 18px;
-  overflow-wrap: anywhere;
-}
-
-.detail-content {
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 12px;
-  padding: 16px;
+.item-card-content {
+  color: var(--muted);
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.detail-item {
-  padding: 12px 0;
-  border-bottom: 1px solid #222;
+.item-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
 }
 
-.detail-item:first-child {
-  padding-top: 0;
+.item-card-actions button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text);
 }
 
-.detail-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.item-card-actions .danger {
+  background: #8b0000;
+  color: #ffffff;
 }
 
-.detail-item strong {
+.item-card-actions .success {
+  background: var(--green);
+  color: #ffffff;
+}
+
+.item-card-actions .pinned {
+  background: var(--yellow);
+  color: #ffffff;
+}
+
+/* =====================================================
+   ROUPAS
+===================================================== */
+
+.clothing-field {
+  margin-bottom: 12px;
+}
+
+.clothing-field label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
+  font-weight: bold;
 }
 
-.detail-item span {
-  display: block;
-  opacity: 0.8;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+.clothing-extra {
+  margin-top: 8px;
 }
 
-.detail-date {
-  margin-top: 15px;
-  font-size: 13px;
-  opacity: 0.55;
-}
-
-
-/* =========================================================
-   FORMULÁRIO DO MODAL
-========================================================= */
-
-.modal-form {
+.clothing-detail {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.modal-form label {
-  margin-top: 4px;
-  font-weight: bold;
+.clothing-detail-row {
+  padding: 11px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 
-.modal-form button {
-  margin-top: 8px;
+.clothing-detail-row strong {
+  display: block;
+  margin-bottom: 3px;
 }
 
-.form-row {
-  display: flex;
-  gap: 10px;
-}
-
-.form-row > * {
-  flex: 1;
-}
-
-
-/* =========================================================
+/* =====================================================
    CRONÔMETRO
-========================================================= */
+===================================================== */
 
 .timer-box {
-  width: 100%;
-  max-width: 700px;
-  margin: 50px auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 30px 20px;
   text-align: center;
 }
 
 .timer-display {
-  font-size: 58px;
+  font-size: 46px;
   font-weight: bold;
   letter-spacing: 2px;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .timer-buttons {
   display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
-.timer-buttons button {
-  flex: 1;
-}
-
-
-/* =========================================================
+/* =====================================================
    PROGRESSO
-========================================================= */
+===================================================== */
 
 .progress-content {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .progress-card {
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 12px;
-  padding: 18px;
-  margin-bottom: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
 }
 
 .progress-card h3 {
-  margin-bottom: 10px;
+  margin-bottom: 7px;
 }
 
 .progress-number {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 10px;
 }
 
-.progress-bar {
-  width: 100%;
-  height: 14px;
-  overflow: hidden;
-  background: #222;
-  border-radius: 999px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #e00000;
-  transition: width 0.25s ease;
-}
-
-
-/* =========================================================
+/* =====================================================
    CONFIGURAÇÕES
-========================================================= */
+===================================================== */
 
 .settings-list {
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -593,88 +487,51 @@ button:disabled {
 
 .settings-button {
   width: 100%;
+  min-height: 48px;
+  padding: 12px 15px;
   text-align: left;
-  padding: 16px;
-  background: #111;
-  border: 1px solid #222;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
 }
 
 .settings-button:hover {
-  border-color: #e00000;
+  border-color: var(--red);
 }
 
-
-/* =========================================================
+/* =====================================================
    SOBRE
-========================================================= */
+===================================================== */
 
 .about-box {
-  width: 100%;
-  max-width: 700px;
-  margin: 30px auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   padding: 20px;
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 12px;
 }
 
 .about-box h3 {
-  margin-bottom: 15px;
-  font-size: 24px;
+  margin-bottom: 12px;
 }
 
 .about-box p {
+  color: var(--muted);
   margin-bottom: 12px;
-  line-height: 1.5;
-  opacity: 0.8;
 }
 
-
-/* =========================================================
-   LIXEIRA
-========================================================= */
-
-.screen-description {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto 15px;
-  opacity: 0.65;
-}
-
-.trash-card {
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 14px;
-}
-
-.trash-type {
-  font-size: 12px;
-  color: #e00000;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-}
-
-.trash-date {
-  margin-top: 7px;
-  font-size: 12px;
-  opacity: 0.55;
-}
-
-
-/* =========================================================
+/* =====================================================
    MODAL
-========================================================= */
+===================================================== */
 
 .modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.78);
+  padding: 18px;
 }
 
 .modal-content {
@@ -682,190 +539,55 @@ button:disabled {
   max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
   padding: 20px;
-  border-radius: 14px;
-  background: #151515;
-  border: 1px solid #333;
 }
 
 .modal-content h3 {
-  margin-bottom: 15px;
+  margin-bottom: 18px;
 }
 
-.modal-content p {
-  line-height: 1.5;
-  margin-bottom: 12px;
-  opacity: 0.8;
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 18px;
 }
 
-.modal-content label {
-  display: block;
-  margin-top: 10px;
-  margin-bottom: 6px;
-  font-weight: bold;
-}
-
-.modal-content input,
-.modal-content textarea {
-  margin-bottom: 5px;
-}
-
-.modal-content button {
-  margin-top: 10px;
-}
-
-
-/* =========================================================
+/* =====================================================
    TOAST
-========================================================= */
+===================================================== */
 
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 20px;
+  bottom: 22px;
   z-index: 2000;
-  transform:
-    translateX(-50%)
-    translateY(20px);
-  max-width: calc(100% - 40px);
-  padding: 12px 18px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 30px);
+  background: #222222;
+  color: #ffffff;
+  padding: 11px 16px;
   border-radius: 10px;
-  background: #e00000;
-  color: #fff;
   opacity: 0;
   pointer-events: none;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  transition: opacity 0.2s;
   text-align: center;
 }
 
 .toast.show {
   opacity: 1;
-  transform:
-    translateX(-50%)
-    translateY(0);
 }
 
-
-/* =========================================================
-   MENSAGENS
-========================================================= */
-
-.message {
-  min-height: 20px;
-  margin-top: 10px;
-  color: #ff4b4b;
-}
-
-
-/* =========================================================
-   MODO VISUALIZADOR
-========================================================= */
-
-.viewer-mode .primary-button {
-  opacity: 0.45;
-}
-
-.viewer-mode .danger-button {
-  opacity: 0.45;
-}
-
-
-/* =========================================================
-   TEMA CLARO
-========================================================= */
-
-body.light-theme {
-  background: #fff;
-  color: #000;
-}
-
-body.light-theme input,
-body.light-theme textarea {
-  background: #fff;
-  color: #000;
-  border-color: #ccc;
-}
-
-body.light-theme input::placeholder,
-body.light-theme textarea::placeholder {
-  color: #888;
-}
-
-body.light-theme button {
-  color: #fff;
-}
-
-body.light-theme .secondary-button,
-body.light-theme .small-button,
-body.light-theme .back-button,
-body.light-theme .filter-button {
-  background: #111;
-}
-
-body.light-theme .dashboard-button,
-body.light-theme .item-card,
-body.light-theme .detail-content,
-body.light-theme .progress-card,
-body.light-theme .settings-button,
-body.light-theme .about-box,
-body.light-theme .trash-card,
-body.light-theme .modal-content {
-  background: #fff;
-  color: #000;
-  border-color: #ddd;
-}
-
-body.light-theme .dashboard-button {
-  color: #000;
-}
-
-body.light-theme .item-title-button {
-  color: #000;
-}
-
-body.light-theme .detail-item {
-  border-color: #ddd;
-}
-
-body.light-theme .progress-bar {
-  background: #ddd;
-}
-
-body.light-theme .item-actions .icon-button {
-  background: #111;
-  color: #fff;
-}
-
-body.light-theme .item-actions .icon-button.danger {
-  background: #700000;
-  color: #fff;
-}
-
-
-/* =========================================================
+/* =====================================================
    RESPONSIVO
-========================================================= */
-
-@media (min-width: 700px) {
-
-  .dashboard-grid {
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
-  }
-
-}
-
+===================================================== */
 
 @media (max-width: 520px) {
-
   .screen {
     padding: 15px;
-  }
-
-  .login-box h1 {
-    font-size: 30px;
   }
 
   .app-header h1 {
@@ -873,103 +595,32 @@ body.light-theme .item-actions .icon-button.danger {
   }
 
   .screen-header h2 {
-    font-size: 23px;
+    font-size: 22px;
+  }
+
+  .dashboard-button {
+    min-height: 105px;
+  }
+
+  .timer-display {
+    font-size: 36px;
   }
 
   .screen-actions {
     flex-direction: column;
   }
 
-  .filter-buttons {
-    gap: 5px;
+  .screen-actions button {
+    width: 100%;
   }
-
-  .filter-button {
-    padding: 10px 5px;
-    font-size: 13px;
-  }
-
-  .item-main {
-    align-items: flex-start;
-  }
-
-  .item-actions {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .timer-display {
-    font-size: 42px;
-  }
-
-  .timer-buttons {
-    flex-direction: column;
-  }
-
-  .modal {
-    padding: 12px;
-  }
-
-  .modal-content {
-    padding: 16px;
-  }
-
 }
 
-
-@media (max-width: 360px) {
-
+@media (min-width: 700px) {
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  .dashboard-button {
-    min-height: 90px;
+  .dashboard-button:first-child {
+    grid-column: span 1;
   }
-
-  .item-actions {
-    gap: 4px;
-  }
-
-  .icon-button {
-    width: 34px;
-    height: 34px;
-  }
-
-}
-
-
-/* =========================================================
-   ACESSIBILIDADE
-========================================================= */
-
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid #e00000;
-  outline-offset: 2px;
-}
-
-
-/* =========================================================
-   ANIMAÇÕES
-========================================================= */
-
-@keyframes fadeIn {
-
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-}
-
-.screen:not(.hidden) {
-  animation:
-    fadeIn 0.18s ease;
-           }
+   }
