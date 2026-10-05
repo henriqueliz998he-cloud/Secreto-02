@@ -1,4 +1,4 @@
-const CACHE_NAME = "secreto-v3-cache-v1";
+const CACHE_NAME = "secreto-v3-cache-v4";
 
 const APP_SHELL = [
   "./",
@@ -8,56 +8,184 @@ const APP_SHELL = [
   "./sw.js"
 ];
 
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
-});
 
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys =>
-        Promise.all(
-          keys
-            .filter(key => key !== CACHE_NAME)
-            .map(key => caches.delete(key))
-        )
+/* =========================
+   INSTALAÇÃO
+========================= */
+
+self.addEventListener(
+  "install",
+  (event) => {
+
+    event.waitUntil(
+
+      caches.open(
+        CACHE_NAME
       )
-      .then(() => self.clients.claim())
-  );
-});
+      .then(
+        (cache) =>
+          cache.addAll(
+            APP_SHELL
+          )
+      )
+      .then(
+        () =>
+          self.skipWaiting()
+      )
 
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        if (
-          response &&
-          response.status === 200 &&
-          response.type === "basic"
-        ) {
-          const responseClone = response.clone();
+    );
 
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseClone);
-            });
+  }
+);
+
+
+/* =========================
+   ATIVAÇÃO
+========================= */
+
+self.addEventListener(
+  "activate",
+  (event) => {
+
+    event.waitUntil(
+
+      caches.keys()
+        .then(
+          (cacheNames) => {
+
+            return Promise.all(
+
+              cacheNames
+                .filter(
+                  (name) =>
+                    name !==
+                    CACHE_NAME
+                )
+                .map(
+                  (name) =>
+                    caches.delete(
+                      name
+                    )
+                )
+
+            );
+
+          }
+        )
+        .then(
+          () =>
+            self.clients.claim()
+        )
+
+    );
+
+  }
+);
+
+
+/* =========================
+   REDE PRIMEIRO
+========================= */
+
+self.addEventListener(
+  "fetch",
+  (event) => {
+
+    if (
+      event.request.method !==
+      "GET"
+    ) {
+      return;
+    }
+
+    const requestURL =
+      new URL(
+        event.request.url
+      );
+
+    if (
+      requestURL.origin !==
+      self.location.origin
+    ) {
+      return;
+    }
+
+    event.respondWith(
+
+      fetch(
+        event.request
+      )
+      .then(
+        (response) => {
+
+          if (
+            response &&
+            response.status === 200
+          ) {
+
+            const copy =
+              response.clone();
+
+            caches.open(
+              CACHE_NAME
+            )
+            .then(
+              (cache) =>
+                cache.put(
+                  event.request,
+                  copy
+                )
+            );
+
+          }
+
+          return response;
+
         }
+      )
+      .catch(
+        async () => {
 
-        return response;
-      })
-      .catch(() => {
-        return caches.match(event.request)
-          .then(cachedResponse => {
-            if (cachedResponse) {
-              return cachedResponse;
+          const cached =
+            await caches.match(
+              event.request
+            );
+
+          if (cached) {
+            return cached;
+          }
+
+          if (
+            event.request.mode ===
+            "navigate"
+          ) {
+
+            const fallback =
+              await caches.match(
+                "./index.html"
+              );
+
+            if (fallback) {
+              return fallback;
             }
 
-            return caches.match("./index.html");
-          });
-      })
-  );
-});
+          }
+
+          return new Response(
+            "Offline",
+            {
+              status: 503,
+              headers: {
+                "Content-Type":
+                  "text/plain; charset=utf-8"
+              }
+            }
+          );
+
+        }
+      )
+
+    );
+
+  }
+);
