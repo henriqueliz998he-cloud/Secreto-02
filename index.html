@@ -4,519 +4,717 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="Secreto V3">
   <title>Secreto V3</title>
-  <link rel="manifest" href="./manifest.json">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- LOGIN -->
-  <section id="loginScreen" class="screen active">
-    <div class="login-box">
-      <h1>Secreto V3</h1>
-      <p>Digite sua senha para entrar</p>
+  <!-- =========================
+       TELA DE SENHA
+  ========================== -->
+  <section id="loginScreen" class="screen login-screen hidden">
+
+    <div class="login-card">
+
+      <div class="login-icon">🔒</div>
 
       <input
-        id="passwordInput"
+        id="accessPassword"
         type="password"
         placeholder="Senha"
-        autocomplete="current-password"
+        autocomplete="off"
       >
 
-      <button id="loginButton" class="primary-btn">
+      <button id="loginButton" class="primary-button">
         Entrar
       </button>
 
       <p id="loginMessage" class="message"></p>
+
     </div>
+
   </section>
 
 
-  <!-- APLICATIVO -->
-  <main id="appScreen" class="hidden">
+  <!-- =========================
+       APLICAÇÃO
+  ========================== -->
+  <section id="appScreen" class="hidden">
 
-    <!-- DASHBOARD -->
-    <section id="dashboardScreen" class="app-screen active">
+    <!-- =========================
+         DASHBOARD
+    ========================== -->
+    <section id="dashboardScreen" class="screen">
 
-      <header class="topbar">
+      <header class="dashboard-header">
+
         <div>
-          <h1>Secreto V3</h1>
-          <p id="clock">--:--</p>
-        </div>
-      </header>
-
-      <div class="dashboard-grid">
-
-        <button class="menu-card" data-screen="notesScreen">
-          <span>📝</span>
-          <strong>Notas</strong>
-        </button>
-
-        <button class="menu-card" data-screen="goalsScreen">
-          <span>🎯</span>
-          <strong>Metas</strong>
-        </button>
-
-        <button class="menu-card" data-screen="tasksScreen">
-          <span>✅</span>
-          <strong>Tarefas</strong>
-        </button>
-
-        <button class="menu-card" data-screen="clothesScreen">
-          <span>👕</span>
-          <strong>Roupas Sítio</strong>
-        </button>
-
-        <button class="menu-card" data-screen="timerScreen">
-          <span>⏱️</span>
-          <strong>Cronômetro</strong>
-        </button>
-
-        <button class="menu-card" data-screen="progressScreen">
-          <span>📊</span>
-          <strong>Progresso</strong>
-        </button>
-
-        <button class="menu-card" data-screen="settingsScreen">
-          <span>⚙️</span>
-          <strong>Configurações</strong>
-        </button>
-
-      </div>
-    </section>
-
-
-    <!-- NOTAS -->
-    <section id="notesScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="dashboardScreen">←</button>
-        <h2>Notas</h2>
-      </header>
-
-      <div class="toolbar">
-        <input id="noteSearch" type="search" placeholder="Pesquisar por título">
-        <button id="addNoteButton" class="primary-btn">+ Adicionar</button>
-        <button id="shareNotesButton" class="secondary-btn">Compartilhar</button>
-      </div>
-
-      <div id="notesList" class="list"></div>
-    </section>
-
-
-    <!-- FORMULÁRIO DE NOTA -->
-    <section id="noteFormScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="notesScreen">←</button>
-        <h2 id="noteFormTitle">Nova nota</h2>
-      </header>
-
-      <form id="noteForm" class="form">
-
-        <label>
-          Título
-          <input id="noteTitle" required maxlength="100">
-        </label>
-
-        <label>
-          Conteúdo
-          <textarea id="noteContent" rows="10" required></textarea>
-        </label>
-
-        <button type="submit" class="primary-btn">
-          Salvar
-        </button>
-
-      </form>
-    </section>
-
-
-    <!-- DETALHE DA NOTA -->
-    <section id="noteDetailScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="notesScreen">←</button>
-        <h2>Nota</h2>
-      </header>
-
-      <article id="noteDetail" class="detail-card"></article>
-    </section>
-
-
-    <!-- METAS -->
-    <section id="goalsScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="dashboardScreen">←</button>
-        <h2>Metas</h2>
-      </header>
-
-      <div class="toolbar">
-
-        <div class="filter-row">
-          <button class="filter-button active" data-goal-filter="all">Todas</button>
-          <button class="filter-button" data-goal-filter="pending">Pendentes</button>
-          <button class="filter-button" data-goal-filter="completed">Concluídas</button>
+          <p id="clockDate" class="dashboard-date"></p>
+          <p id="clockTime" class="dashboard-time"></p>
         </div>
 
-        <button id="addGoalButton" class="primary-btn">+ Adicionar</button>
-        <button id="shareGoalsButton" class="secondary-btn">Compartilhar</button>
-
-      </div>
-
-      <div id="goalsList" class="list"></div>
-    </section>
-
-
-    <!-- FORMULÁRIO DE META -->
-    <section id="goalFormScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="goalsScreen">←</button>
-        <h2 id="goalFormTitle">Nova meta</h2>
       </header>
 
-      <form id="goalForm" class="form">
+      <main class="dashboard-content">
 
-        <label>
-          Título
-          <input id="goalTitle" required maxlength="100">
-        </label>
-
-        <label>
-          Descrição
-          <textarea id="goalDescription" rows="6"></textarea>
-        </label>
-
-        <button type="submit" class="primary-btn">
-          Salvar
+        <!-- 1 -->
+        <button
+          id="openNotesButton"
+          class="dashboard-card"
+          data-screen="notesScreen"
+        >
+          <span class="card-icon">📝</span>
+          <span class="card-title">Notas</span>
+          <span class="card-arrow">›</span>
         </button>
 
-      </form>
+        <!-- 2 -->
+        <button
+          id="openGoalsButton"
+          class="dashboard-card"
+          data-screen="goalsScreen"
+        >
+          <span class="card-icon">🎯</span>
+          <span class="card-title">Metas</span>
+          <span class="card-arrow">›</span>
+        </button>
+
+        <!-- 3 -->
+        <button
+          id="openTasksButton"
+          class="dashboard-card"
+          data-screen="tasksScreen"
+        >
+          <span class="card-icon">✅</span>
+          <span class="card-title">Tarefas</span>
+          <span class="card-arrow">›</span>
+        </button>
+
+        <!-- 4 -->
+        <button
+          id="openClothesButton"
+          class="dashboard-card"
+          data-screen="clothesScreen"
+        >
+          <span class="card-icon">👕</span>
+          <span class="card-title">Roupas Sítio</span>
+          <span class="card-arrow">›</span>
+        </button>
+
+        <!-- 5 -->
+        <button
+          id="openTimerButton"
+          class="dashboard-card"
+          data-screen="timerScreen"
+        >
+          <span class="card-icon">⏱️</span>
+          <span class="card-title">Cronômetro</span>
+          <span class="card-arrow">›</span>
+        </button>
+
+        <!-- 6 -->
+        <button
+          id="openProgressButton"
+          class="dashboard-card"
+          data-screen="progressScreen"
+        >
+          <span class="card-icon">📊</span>
+          <span class="card-title">Progresso</span>
+          <span class="card-arrow">›</span>
+        </button>
+
+        <!-- 7 -->
+        <button
+          id="openSettingsButton"
+          class="dashboard-card"
+          data-screen="settingsScreen"
+        >
+          <span class="card-icon">⚙️</span>
+          <span class="card-title">Configurações</span>
+          <span class="card-arrow">›</span>
+        </button>
+
+      </main>
+
     </section>
 
 
-    <!-- DETALHE DA META -->
-    <section id="goalDetailScreen" class="app-screen">
+    <!-- =========================
+         METAS
+    ========================== -->
+    <section id="goalsScreen" class="screen sub-screen hidden">
 
       <header class="page-header">
-        <button class="back-button" data-back="goalsScreen">←</button>
-        <h2>Meta</h2>
-      </header>
 
-      <article id="goalDetail" class="detail-card"></article>
-    </section>
+        <button
+          id="goalsBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-
-    <!-- TAREFAS -->
-    <section id="tasksScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="dashboardScreen">←</button>
-        <h2>Tarefas</h2>
-      </header>
-
-      <div class="toolbar">
-
-        <div class="filter-row">
-          <button class="filter-button active" data-task-filter="all">Todas</button>
-          <button class="filter-button" data-task-filter="pending">Pendentes</button>
-          <button class="filter-button" data-task-filter="completed">Concluídas</button>
+        <div class="page-heading">
+          <h1>Metas</h1>
         </div>
 
-        <button id="addTaskButton" class="primary-btn">+ Adicionar</button>
-        <button id="shareTasksButton" class="secondary-btn">Compartilhar</button>
-
-      </div>
-
-      <div id="tasksList" class="list"></div>
-    </section>
-
-
-    <!-- FORMULÁRIO DE TAREFA -->
-    <section id="taskFormScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="tasksScreen">←</button>
-        <h2 id="taskFormTitle">Nova tarefa</h2>
-      </header>
-
-      <form id="taskForm" class="form">
-
-        <label>
-          Título
-          <input id="taskTitle" required maxlength="100">
-        </label>
-
-        <label>
-          Descrição
-          <textarea id="taskDescription" rows="6"></textarea>
-        </label>
-
-        <button type="submit" class="primary-btn">
-          Salvar
+        <button
+          id="shareGoalsButton"
+          class="icon-button"
+        >
+          ↗
         </button>
 
-      </form>
-    </section>
-
-
-    <!-- DETALHE DA TAREFA -->
-    <section id="taskDetailScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="tasksScreen">←</button>
-        <h2>Tarefa</h2>
       </header>
 
-      <article id="taskDetail" class="detail-card"></article>
-    </section>
+      <main class="page-content">
 
-
-    <!-- ROUPAS -->
-    <section id="clothesScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="dashboardScreen">←</button>
-        <h2>Roupas Sítio</h2>
-      </header>
-
-      <div class="toolbar">
-        <button id="addClothingButton" class="primary-btn">
-          + Adicionar roupa
+        <button
+          id="addGoalButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar meta
         </button>
-      </div>
 
-      <div id="clothesList" class="list"></div>
+        <input
+          id="goalSearch"
+          class="search-input"
+          type="search"
+          placeholder="Pesquisar pelo título..."
+          autocomplete="off"
+        >
+
+        <div id="goalsList" class="items-list"></div>
+
+      </main>
+
     </section>
 
 
-    <!-- FORMULÁRIO ROUPA -->
-    <section id="clothingFormScreen" class="app-screen">
+    <!-- =========================
+         TAREFAS
+    ========================== -->
+    <section id="tasksScreen" class="screen sub-screen hidden">
 
       <header class="page-header">
-        <button class="back-button" data-back="clothesScreen">←</button>
-        <h2 id="clothingFormTitle">Nova roupa</h2>
-      </header>
 
-      <form id="clothingForm" class="form">
+        <button
+          id="tasksBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-        <label>
-          Título
-          <input id="clothingTitle" required maxlength="100">
-        </label>
-
-        <label>
-          Na cabeça
-          <input id="clothingHead">
-        </label>
-
-        <label>
-          No corpo 1
-          <input id="clothingBody1">
-        </label>
-
-        <label>
-          No corpo 2
-          <input id="clothingBody2">
-        </label>
-
-        <label>
-          Calça
-          <input id="clothingPants">
-        </label>
-
-        <label>
-          Meia
-          <input id="clothingSocks">
-        </label>
-
-        <label>
-          Sapato
-          <input id="clothingShoes">
-        </label>
-
-        <div class="extras-section">
-          <h3>Extras</h3>
-
-          <div id="extrasFields"></div>
-
-          <button
-            type="button"
-            id="addExtraButton"
-            class="secondary-btn"
-          >
-            + Adicionar extras
-          </button>
+        <div class="page-heading">
+          <h1>Tarefas</h1>
         </div>
 
-        <button type="submit" class="primary-btn">
-          Salvar roupa
+        <button
+          id="shareTasksButton"
+          class="icon-button"
+        >
+          ↗
         </button>
 
-      </form>
+      </header>
+
+      <main class="page-content">
+
+        <button
+          id="addTaskButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar tarefa
+        </button>
+
+        <input
+          id="taskSearch"
+          class="search-input"
+          type="search"
+          placeholder="Pesquisar pelo título..."
+          autocomplete="off"
+        >
+
+        <div id="tasksList" class="items-list"></div>
+
+      </main>
+
     </section>
 
 
-    <!-- DETALHE ROUPA -->
-    <section id="clothingDetailScreen" class="app-screen">
+    <!-- =========================
+         NOTAS
+    ========================== -->
+    <section id="notesScreen" class="screen sub-screen hidden">
 
       <header class="page-header">
-        <button class="back-button" data-back="clothesScreen">←</button>
-        <h2>Roupa</h2>
+
+        <button
+          id="notesBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+          <h1>Notas</h1>
+        </div>
+
+        <button
+          id="shareNotesButton"
+          class="icon-button"
+        >
+          ↗
+        </button>
+
       </header>
 
-      <article id="clothingDetail" class="detail-card"></article>
+      <main class="page-content">
+
+        <button
+          id="addNoteButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar nota
+        </button>
+
+        <input
+          id="noteSearch"
+          class="search-input"
+          type="search"
+          placeholder="Pesquisar pelo título..."
+          autocomplete="off"
+        >
+
+        <div id="notesList" class="items-list"></div>
+
+      </main>
+
     </section>
 
 
-    <!-- CRONÔMETRO -->
-    <section id="timerScreen" class="app-screen">
+    <!-- =========================
+         ROUPAS SÍTIO
+    ========================== -->
+    <section id="clothesScreen" class="screen sub-screen hidden">
 
       <header class="page-header">
-        <button class="back-button" data-back="dashboardScreen">←</button>
-        <h2>Cronômetro</h2>
+
+        <button
+          id="clothesBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+          <h1>Roupas Sítio</h1>
+        </div>
+
+        <div></div>
+
       </header>
 
-      <div class="timer-box">
+      <main class="page-content">
 
-        <div id="timerDisplay">00:00:00</div>
+        <button
+          id="addClothingButton"
+          class="primary-button full-button"
+        >
+          ＋ Adicionar roupa
+        </button>
+
+        <div id="clothesList" class="items-list"></div>
+
+      </main>
+
+    </section>
+
+
+    <!-- =========================
+         CRONÔMETRO
+    ========================== -->
+    <section id="timerScreen" class="screen sub-screen hidden">
+
+      <header class="page-header">
+
+        <button
+          id="timerBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+          <h1>Cronômetro</h1>
+        </div>
+
+        <div></div>
+
+      </header>
+
+      <main class="page-content timer-content">
+
+        <div id="timerDisplay" class="timer-display">
+          00:00:00
+        </div>
 
         <div class="timer-buttons">
-          <button id="startTimerButton" class="primary-btn">Iniciar</button>
-          <button id="pauseTimerButton" class="secondary-btn">Pausar</button>
-          <button id="resetTimerButton" class="danger-btn">Zerar</button>
+
+          <button
+            id="timerStartButton"
+            class="primary-button"
+          >
+            Iniciar
+          </button>
+
+          <button
+            id="timerPauseButton"
+            class="secondary-button"
+          >
+            Pausar
+          </button>
+
+          <button
+            id="timerResetButton"
+            class="danger-button"
+          >
+            Zerar
+          </button>
+
         </div>
 
-      </div>
-    </section>
-
-
-    <!-- PROGRESSO -->
-    <section id="progressScreen" class="app-screen">
-
-      <header class="page-header">
-        <button class="back-button" data-back="dashboardScreen">←</button>
-        <h2>Progresso</h2>
-      </header>
-
-      <div id="progressContent" class="progress-box"></div>
-
-      <button id="shareProgressButton" class="secondary-btn">
-        Compartilhar progresso
-      </button>
+      </main>
 
     </section>
 
 
-    <!-- CONFIGURAÇÕES -->
-    <section id="settingsScreen" class="app-screen">
+    <!-- =========================
+         PROGRESSO
+    ========================== -->
+    <section id="progressScreen" class="screen sub-screen hidden">
 
       <header class="page-header">
-        <button class="back-button" data-back="dashboardScreen">←</button>
-        <h2>Configurações</h2>
+
+        <button
+          id="progressBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+          <h1>Progresso</h1>
+        </div>
+
+        <button
+          id="shareProgressButton"
+          class="icon-button"
+        >
+          ↗
+        </button>
+
       </header>
 
-      <div class="settings-list">
+      <main class="page-content">
 
-        <button id="lockButton" class="setting-button">
-          🔒 Bloquear
+        <div class="progress-stats">
+
+          <div class="stat-card">
+            <strong id="totalGoalsStat">0</strong>
+            <span>Total de metas</span>
+          </div>
+
+          <div class="stat-card">
+            <strong id="completedGoalsStat">0</strong>
+            <span>Concluídas</span>
+          </div>
+
+          <div class="stat-card">
+            <strong id="pendingGoalsStat">0</strong>
+            <span>Em andamento</span>
+          </div>
+
+        </div>
+
+        <div class="progress-card">
+
+          <div class="progress-label">
+            <span>Progresso das metas</span>
+            <strong id="goalPercentage">0%</strong>
+          </div>
+
+          <div class="progress-bar">
+            <div
+              id="goalProgressBar"
+              class="progress-fill"
+            ></div>
+          </div>
+
+        </div>
+
+      </main>
+
+    </section>
+
+
+    <!-- =========================
+         CONFIGURAÇÕES
+    ========================== -->
+    <section id="settingsScreen" class="screen sub-screen hidden">
+
+      <header class="page-header">
+
+        <button
+          id="settingsBackButton"
+          class="icon-button"
+        >
+          ←
         </button>
 
-        <button id="viewerButton" class="setting-button">
-          👁️ Modo visitante
+        <div class="page-heading">
+          <h1>Configurações</h1>
+        </div>
+
+        <div></div>
+
+      </header>
+
+      <main class="page-content settings-list">
+
+        <button
+          id="lockSiteButton"
+          class="settings-button"
+        >
+          🔒 Voltar para tela de senha
         </button>
 
-        <button id="themeButton" class="setting-button">
-          🌙 Alterar tema
+        <button
+          id="deleteAllButton"
+          class="settings-button danger-setting"
+        >
+          🗑️ Apagar geral
         </button>
 
-        <button id="changePasswordButton" class="setting-button">
-          🔑 Alterar senha
+        <button
+          id="viewerToggleButton"
+          class="settings-button"
+        >
+          👁️ Modo Visualizador
         </button>
 
-        <button id="timeFormatButton" class="setting-button">
-          🕐 Formato de horário
+        <button
+          id="themeButton"
+          class="settings-button"
+        >
+          🎨 Tema
         </button>
 
-        <button id="trashButton" class="setting-button">
+        <button
+          id="changePasswordButton"
+          class="settings-button"
+        >
+          🔑 Alterar senha de acesso
+        </button>
+
+        <button
+          id="timeFormatButton"
+          class="settings-button"
+        >
+          🕐 Formato da hora
+        </button>
+
+        <button
+          id="trashButton"
+          class="settings-button"
+        >
           🗑️ Lixeira
         </button>
 
-        <button id="shareGeneralButton" class="setting-button">
-          📤 Compartilhar tudo
+        <button
+          id="shareAllButton"
+          class="settings-button"
+        >
+          ↗ Compartilhar geral
         </button>
 
-        <button id="aboutButton" class="setting-button">
-          ℹ️ Sobre
+        <button
+          id="aboutButton"
+          class="settings-button"
+        >
+          ℹ️ Sobre o projeto
         </button>
 
-        <button id="deleteAllButton" class="setting-button danger-setting">
-          ⚠️ Apagar geral
-        </button>
-
-      </div>
-
-      <div id="settingsInfo" class="settings-info"></div>
+      </main>
 
     </section>
 
 
-    <!-- LIXEIRA -->
-    <section id="trashScreen" class="app-screen">
+    <!-- =========================
+         SOBRE
+    ========================== -->
+    <section id="aboutScreen" class="screen sub-screen hidden">
 
       <header class="page-header">
-        <button class="back-button" data-back="settingsScreen">←</button>
-        <h2>Lixeira</h2>
+
+        <button
+          id="aboutBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+          <h1>Sobre</h1>
+        </div>
+
+        <div></div>
+
       </header>
 
-      <p class="small-info">
-        Itens permanecem por 50 dias antes da exclusão automática.
-      </p>
+      <main class="page-content">
 
-      <div id="trashList" class="list"></div>
+        <article class="detail-card">
+
+          <h2>Secreto V3</h2>
+
+          <p>
+            Projeto pessoal desenvolvido como aplicação estática
+            para GitHub Pages.
+          </p>
+
+          <p>
+            Os dados ficam armazenados localmente no navegador
+            através do localStorage.
+          </p>
+
+          <p>
+            O projeto também possui funcionamento offline através
+            de Service Worker e Cache API.
+          </p>
+
+          <p>
+            Não utiliza banco de dados nem servidor próprio.
+          </p>
+
+        </article>
+
+      </main>
 
     </section>
 
-  </main>
+
+    <!-- =========================
+         LIXEIRA
+    ========================== -->
+    <section id="trashScreen" class="screen sub-screen hidden">
+
+      <header class="page-header">
+
+        <button
+          id="trashBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
+
+        <div class="page-heading">
+          <h1>Lixeira</h1>
+        </div>
+
+        <div></div>
+
+      </header>
+
+      <main class="page-content">
+
+        <p class="small-info">
+          Itens apagados permanecem por até 50 dias.
+        </p>
+
+        <div id="trashList" class="items-list"></div>
+
+      </main>
+
+    </section>
 
 
-  <!-- MODAL DE COMPARTILHAMENTO -->
-  <div id="shareModal" class="modal hidden">
-    <div class="modal-box">
+    <!-- =========================
+         TELA DE DETALHES
+    ========================== -->
+    <section id="detailScreen" class="screen sub-screen hidden">
 
-      <button class="modal-close" data-close="shareModal">×</button>
+      <header class="page-header">
 
-      <h2>Compartilhar</h2>
+        <button
+          id="detailBackButton"
+          class="icon-button"
+        >
+          ←
+        </button>
 
-      <textarea id="shareText" readonly rows="12"></textarea>
+        <div class="page-heading">
 
-      <button id="copyShareButton" class="primary-btn">
-        Copiar
-      </button>
+          <h1 id="detailTitle"></h1>
+
+          <p id="detailMeta"></p>
+
+        </div>
+
+        <div></div>
+
+      </header>
+
+      <main class="page-content">
+
+        <article class="detail-card">
+
+          <div id="detailContent"></div>
+
+        </article>
+
+      </main>
+
+    </section>
+
+
+  </section>
+
+
+  <!-- =========================
+       MODAL
+  ========================== -->
+  <div
+    id="appModal"
+    class="modal-overlay hidden"
+  >
+
+    <div class="modal-card">
+
+      <h2 id="modalTitle"></h2>
+
+      <div id="modalBody"></div>
+
+      <div
+        id="modalActions"
+        class="modal-actions"
+      ></div>
 
     </div>
+
   </div>
 
 
-  <!-- MODAL GENÉRICO -->
-  <div id="genericModal" class="modal hidden">
-    <div class="modal-box">
-
-      <button class="modal-close" data-close="genericModal">×</button>
-
-      <h2 id="genericModalTitle"></h2>
-
-      <div id="genericModalContent"></div>
-
-    </div>
-  </div>
+  <!-- =========================
+       TOAST
+  ========================== -->
+  <div
+    id="toast"
+    class="toast hidden"
+  ></div>
 
 
-  <script src="./script.js"></script>
+  <script src="script.js"></script>
 
 </body>
-      </html>
+          </html>
